@@ -34,6 +34,7 @@ export interface IUser {
     smoking?: string;
     hijab?: string;
     interests?: string[];
+    personality?: string[];
     photos?: string[];
     
     // Preferences
@@ -113,6 +114,7 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
         smoking: String,
         hijab: String,
         interests: [String],
+        personality: [String],
         photos: [String],
         
         preferences: {
