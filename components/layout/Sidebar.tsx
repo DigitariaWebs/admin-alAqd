@@ -2,7 +2,8 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useAppDispatch } from '@/store/hooks';
 import {
     LayoutDashboard,
     Users,
@@ -34,9 +35,17 @@ const MENU_ITEMS = [
 
 export const Sidebar = () => {
     const pathname = usePathname();
+    const router = useRouter();
+    const dispatch = useAppDispatch();
+
+    const handleLogout = async () => {
+        const { logout } = await import('@/store/slices/authSlice');
+        await dispatch(logout());
+        router.push('/login');
+    };
 
     return (
-        <aside className="w-64 bg-white border-r border-gray-100 flex flex-col h-full hidden md:flex">
+        <aside className="w-64 bg-white border-r border-gray-100 flex flex-col h-screen sticky top-0 overflow-y-auto hidden md:flex">
             {/* Logo Area */}
             <div className="h-16 flex items-center px-6 border-b border-gray-50">
                 <div className="flex items-center gap-2">
@@ -81,7 +90,10 @@ export const Sidebar = () => {
 
             {/* Footer / User Profile Summary */}
             <div className="p-4 border-t border-gray-50">
-                <button className="flex items-center gap-3 w-full px-3 py-2 rounded-full hover:bg-red-50 text-gray-500 hover:text-red-600 transition-colors group">
+                <button 
+                    onClick={handleLogout}
+                    className="flex items-center gap-3 w-full px-3 py-2 rounded-full hover:bg-red-50 text-gray-500 hover:text-red-600 transition-colors group"
+                >
                     <LogOut size={16} />
                     <span className="text-xs font-medium">Déconnexion</span>
                 </button>

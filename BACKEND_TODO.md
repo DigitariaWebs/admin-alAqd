@@ -1,0 +1,181 @@
+# Backend API Implementation TODO
+
+## 1. Authentication & Authorization
+- [x] Admin login
+- [x] Admin logout
+- [x] Password recovery
+- [x] Reset password with token
+- [x] Get current admin user
+- [x] User phone login (OTP)
+- [x] Verify OTP
+- [x] Google OAuth login
+- [x] Apple OAuth login
+- [x] Refresh JWT token
+- [x] User logout
+
+## 2. User Profile Management
+- [ ] Get user profile by ID
+- [ ] Update user profile
+- [ ] Upload profile photos (multiple)
+- [ ] Delete profile photo
+- [ ] Set primary photo
+- [ ] Complete onboarding steps (name, DOB, gender, nationality, ethnicity, height, marital status, education, profession, location, bio, interests, faith, religious practice, personality, photos)
+- [ ] Get profile completion percentage
+- [ ] Delete user account
+
+## 3. User Discovery & Matching
+- [ ] Get potential matches (swipe queue) based on preferences
+- [ ] Swipe actions (like, pass, superlike)
+- [ ] Send emoji reaction
+- [ ] Get match history
+- [ ] Get mutual matches
+- [ ] Refresh/reload swipe queue
+- [ ] Check if two users matched
+
+## 4. Likes & Favorites
+- [ ] Get users who liked current user
+- [ ] Get users current user liked
+- [ ] Get filtered likes (new, mutual, premium)
+- [ ] Favorite/unfavorite user
+- [ ] Get favorite users list
+
+## 5. Chat & Messaging
+- [ ] Get chat conversations list
+- [ ] Get chat messages for conversation
+- [ ] Send text message
+- [ ] Send emoji message
+- [ ] Mark messages as read
+- [ ] Delete conversation
+- [ ] Get unread message count
+- [ ] Real-time message notifications
+
+## 6. User Preferences & Filters
+- [ ] Get user preferences
+- [ ] Update discovery preferences (distance, age range)
+- [ ] Update advanced filters (religious practice, ethnicity, education, children, prayer, diet)
+- [ ] Reset preferences to default
+
+## 7. Subscription & Premium
+- [ ] Get subscription plans
+- [ ] Purchase subscription
+- [ ] Cancel subscription
+- [ ] Get user subscription status
+- [ ] Check premium features access
+- [ ] Process payment (Stripe integration)
+
+## 8. Profile Actions
+- [ ] Block user
+- [ ] Unblock user
+- [ ] Get blocked users list
+- [ ] Report user
+- [ ] Share profile
+- [ ] View profile analytics
+
+## 9. Guardians/Mahram Management (Mobile & Admin)
+- [ ] Create guardian relationship (female user invites guardian)
+- [ ] Generate access code for guardian
+- [ ] Accept guardian invitation
+- [ ] Get guardian relationship details
+- [ ] Revoke guardian access
+- [ ] Resend guardian invitation
+- [ ] List all guardian relationships (Admin)
+- [ ] Update relationship status (Admin)
+- [ ] Export guardian relationships (Admin)
+
+## 10. Admin - Dashboard/Analytics
+- [ ] Total users, revenue, active subscriptions, growth stats
+- [ ] Weekly/monthly revenue data
+- [ ] Latest system activities
+- [ ] User growth over time
+- [ ] User engagement metrics
+- [ ] Generate custom reports
+- [ ] AI-generated insights
+
+## 11. Admin - Users Management
+- [ ] List users with filters (role, status, gender, nationality, age, date range)
+- [ ] Create new user
+- [ ] Get user details
+- [ ] Update user
+- [ ] Delete user
+- [ ] Update user status (active/inactive/suspended)
+- [ ] Export users to CSV/Excel
+- [ ] List available roles
+- [ ] Update user role
+
+## 12. Admin - Content Management
+- [ ] List all content (articles, videos, posts, pages)
+- [ ] Create new content
+- [ ] Get content details
+- [ ] Update content
+- [ ] Delete content
+- [ ] Update content status (published/draft/pending)
+- [ ] List content categories
+- [ ] Create category
+- [ ] Update category
+- [ ] Delete category
+- [ ] Get onboarding content
+- [ ] Update onboarding content
+
+## 13. Admin - Orders & Transactions
+- [ ] List all orders with filters
+- [ ] Get order details
+- [ ] Update order status
+- [ ] Transaction history
+- [ ] Export orders report
+
+## 14. Admin - Notifications
+- [ ] List notification history
+- [ ] Send push notification
+- [ ] Schedule notification
+- [ ] Delete scheduled notification
+- [ ] Notification delivery stats
+
+## 15. Admin - Settings
+- [ ] Get all system settings
+- [ ] Update general settings
+- [ ] Update security settings
+- [ ] List integrations status
+- [ ] Update integration config
+- [ ] Toggle maintenance mode
+
+## 16. Admin - Support & Logs
+- [ ] List support tickets
+- [ ] Get ticket details
+- [ ] Reply to ticket
+- [ ] Update ticket status
+- [ ] Support statistics
+- [ ] System logs with filters
+- [ ] Export system logs
+
+## 17. File Upload & Media
+- [ ] Upload image
+- [ ] Upload video
+- [ ] Upload document
+- [ ] Delete uploaded file
+- [ ] Get media URL
+- [ ] Compress/optimize images
+
+## 18. Configuration Data
+- [ ] List countries with flags
+- [ ] List ethnicities
+- [ ] List education levels
+- [ ] List religious practice options
+- [ ] List faith tags
+- [ ] List marital statuses
+- [ ] List personality types
+- [ ] List interests/hobbies
+
+## 19. Notifications & Push
+- [ ] Send push notification to user
+- [ ] Send notification for new match
+- [ ] Send notification for new message
+- [ ] Send notification for new like
+- [ ] Update notification preferences
+- [ ] Get notification history
+
+## 20. Search & Discovery
+- [ ] Advanced user search
+- [ ] Search by filters
+- [ ] Get similar users
+- [ ] Get recommendations
+- [ ] Search optimization
