@@ -24,13 +24,13 @@
 - [x] Delete user account
 
 ## 3. User Discovery & Matching
-- [ ] Get potential matches (swipe queue) based on preferences
-- [ ] Swipe actions (like, pass, superlike)
-- [ ] Send emoji reaction
-- [ ] Get match history
-- [ ] Get mutual matches
-- [ ] Refresh/reload swipe queue
-- [ ] Check if two users matched
+- [x] Get potential matches (swipe queue) based on preferences
+- [x] Swipe actions (like, pass, superlike)
+- [x] Send emoji reaction
+- [x] Get match history
+- [x] Get mutual matches
+- [x] Refresh/reload swipe queue
+- [x] Check if two users matched
 
 ## 4. Likes & Favorites
 - [ ] Get users who liked current user

@@ -1,0 +1,121 @@
+import { IUser } from '@/lib/db/models/User';
+
+/**
+ * Compute age in years from a date of birth.
+ */
+export function computeAge(dob: Date | undefined): number | null {
+    if (!dob) return null;
+    return Math.floor((Date.now() - new Date(dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+}
+
+/**
+ * Compute a simple compatibility score (0-100) between two users
+ * based on shared interests and matching religious practice.
+ */
+export function computeCompatibility(
+    myInterests: string[],
+    myReligiousPractice: string | undefined,
+    theirInterests: string[],
+    theirReligiousPractice: string | undefined
+): number {
+    const sharedInterests = myInterests.filter((i) => theirInterests.includes(i));
+    const religionMatch = myReligiousPractice && myReligiousPractice === theirReligiousPractice ? 15 : 0;
+    return Math.min(100, 50 + sharedInterests.length * 10 + religionMatch);
+}
+
+/**
+ * Build a MongoDB age-range filter from preferences ageRange.
+ */
+export function buildAgeRangeFilter(ageRange: { min: number; max: number } | undefined) {
+    if (!ageRange) return {};
+    const now = new Date();
+    return {
+        dateOfBirth: {
+            $gte: new Date(now.getFullYear() - ageRange.max, now.getMonth(), now.getDate()),
+            $lte: new Date(now.getFullYear() - ageRange.min, now.getMonth(), now.getDate()),
+        },
+    };
+}
+
+/**
+ * Serialize a lean user document into a ProfileCard shape for the mobile app.
+ * Includes all fields needed by the discovery screen UI.
+ */
+export function serializeProfileCard(
+    user: any,
+    myInterests: string[] = [],
+    myReligiousPractice?: string
+) {
+    const age = computeAge(user.dateOfBirth);
+    const compatibility = computeCompatibility(
+        myInterests,
+        myReligiousPractice,
+        user.interests || [],
+        user.religiousPractice
+    );
+
+    const locationParts = (user.location || '').split(',').map((s: string) => s.trim());
+
+    return {
+        id: user._id.toString(),
+        name: user.name || '',
+        firstName: (user.name || '').split(' ')[0],
+        age,
+        city: locationParts[0] || undefined,
+        country: locationParts[1] || undefined,
+        profilePhoto: (user.photos || [])[0] || '',
+        photos: user.photos || [],
+        bio: user.bio,
+        occupation: user.profession,
+        religiosity: user.religiousPractice,
+        // Extra fields used directly by the swipe card UI
+        height: user.height,
+        maritalStatus: user.maritalStatus,
+        nationality: (user.nationality || [])[0] as string | undefined,
+        ethnicity: (user.ethnicity || [])[0] as string | undefined,
+        drinking: user.drinking,
+        smoking: user.smoking,
+        hijab: user.hijab,
+        faithTags: user.faithTags || [],
+        education: user.education,
+        //
+        isVerified: !!(user.isPhoneVerified || user.isEmailVerified),
+        isPremium: !!(user.subscription?.plan !== 'free' && user.subscription?.isActive),
+        lastActive: user.lastActive ? new Date(user.lastActive).toISOString() : undefined,
+        compatibility,
+        interests: user.interests || [],
+        isOnline: user.lastActive
+            ? Date.now() - new Date(user.lastActive).getTime() < 15 * 60 * 1000
+            : false,
+    };
+}
+
+/**
+ * Serialize a Match document with the matched user's profile details.
+ */
+export function serializeMatch(match: any, currentUserId: string, otherUser: any) {
+    const age = computeAge(otherUser.dateOfBirth);
+    const locationParts = (otherUser.location || '').split(',').map((s: string) => s.trim());
+
+    return {
+        id: match._id.toString(),
+        matchedUserId: otherUser._id.toString(),
+        matchedUserName: otherUser.name,
+        matchedUserPhoto: (otherUser.photos || [])[0] || '',
+        matchedUserAge: age,
+        matchedUserCity: locationParts[0] || undefined,
+        isVerified: !!(otherUser.isPhoneVerified || otherUser.isEmailVerified),
+        isPremium: !!(otherUser.subscription?.plan !== 'free' && otherUser.subscription?.isActive),
+        matchedAt: match.createdAt?.toISOString(),
+        lastMessage: match.lastMessage,
+        lastMessageAt: match.lastMessageAt?.toISOString(),
+        isRead: true,
+        hasNewMessage: false,
+        isOnline: otherUser.lastActive
+            ? Date.now() - new Date(otherUser.lastActive).getTime() < 15 * 60 * 1000
+            : false,
+        lastActive: otherUser.lastActive ? new Date(otherUser.lastActive).toISOString() : undefined,
+        similarities: match.similarities || [],
+        compatibility: match.compatibility,
+    };
+}
