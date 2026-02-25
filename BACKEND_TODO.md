@@ -50,10 +50,10 @@
 - [x] Real-time message notifications (short-poll every 3 s; upgrade to SSE/WebSocket when needed)
 
 ## 6. User Preferences & Filters
-- [ ] Get user preferences
-- [ ] Update discovery preferences (distance, age range)
-- [ ] Update advanced filters (religious practice, ethnicity, education, children, prayer, diet)
-- [ ] Reset preferences to default
+- [x] Get user preferences
+- [x] Update discovery preferences (distance, age range)
+- [x] Update advanced filters (religious practice, ethnicity, education, children, prayer, diet)
+- [x] Reset preferences to default
 
 ## 7. Subscription & Premium
 - [ ] Get subscription plans
