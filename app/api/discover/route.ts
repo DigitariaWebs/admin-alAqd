@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongodb';
 import { User } from '@/lib/db/models/User';
 import { Swipe } from '@/lib/db/models/Swipe';
+import { Block } from '@/lib/db/models/Block';
 import { requireAuth } from '@/lib/auth/middleware';
 import { buildAgeRangeFilter, serializeProfileCard } from '@/lib/discover/helpers';
 
@@ -31,14 +32,25 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
-        // Exclude everyone the current user has already swiped
-        const swipedIds = await Swipe.find({ fromUser: authResult.user.userId }).distinct('toUser');
+        // Exclude swiped users + blocked users (both directions)
+        const [swipedIds, blockedByMe, blockedMe] = await Promise.all([
+            Swipe.find({ fromUser: authResult.user.userId }).distinct('toUser'),
+            Block.find({ blockerId: authResult.user.userId }).distinct('blockedId'),
+            Block.find({ blockedId: authResult.user.userId }).distinct('blockerId'),
+        ]);
+
+        const excludedIds = [
+            ...swipedIds,
+            ...blockedByMe,
+            ...blockedMe,
+            currentUser._id,
+        ];
 
         const targetGender = currentUser.gender === 'male' ? 'female' : 'male';
         const prefs = currentUser.preferences;
 
         const query: Record<string, unknown> = {
-            _id: { $nin: [...swipedIds, currentUser._id] },
+            _id: { $nin: excludedIds },
             gender: targetGender,
             status: 'active',
             isOnboarded: true,

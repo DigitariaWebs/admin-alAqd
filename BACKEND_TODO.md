@@ -64,12 +64,12 @@
 - [ ] Process payment (Stripe integration)
 
 ## 8. Profile Actions
-- [ ] Block user
-- [ ] Unblock user
-- [ ] Get blocked users list
-- [ ] Report user
-- [ ] Share profile
-- [ ] View profile analytics
+- [x] Block user
+- [x] Unblock user
+- [x] Get blocked users list
+- [x] Report user
+- [x] Share profile
+- [x] View profile analytics
 
 ## 9. Guardians/Mahram Management (Mobile & Admin)
 - [ ] Create guardian relationship (female user invites guardian)
