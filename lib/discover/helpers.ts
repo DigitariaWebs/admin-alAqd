@@ -1,5 +1,50 @@
 import { IUser } from '@/lib/db/models/User';
 
+// ─── Chat serializers ─────────────────────────────────────────────────────────
+
+export function serializeMessage(msg: any) {
+    return {
+        id:             msg._id.toString(),
+        conversationId: msg.conversationId.toString(),
+        senderId:       msg.senderId.toString(),
+        receiverId:     msg.receiverId.toString(),
+        content:        msg.content,
+        contentType:    msg.contentType,
+        sentAt:         msg.createdAt ? new Date(msg.createdAt).toISOString() : new Date().toISOString(),
+        readAt:         msg.readAt ? new Date(msg.readAt).toISOString() : undefined,
+        isDelivered:    true,
+        isRead:         msg.isRead,
+    };
+}
+
+export function serializeConversation(
+    match: any,
+    participant: any,
+    lastMessage: any | null,
+    unreadCount: number
+) {
+    const age = computeAge(participant.dateOfBirth);
+    return {
+        id:               match._id.toString(),
+        matchId:          match._id.toString(),
+        participantId:    participant._id.toString(),
+        participantName:  participant.name || '',
+        participantPhoto: (participant.photos ?? [])[0] ?? '',
+        participantAge:   age ?? 0,
+        isVerified:       !!(participant.isPhoneVerified || participant.isEmailVerified),
+        isPremium:        !!(participant.subscription?.plan !== 'free' && participant.subscription?.isActive),
+        isOnline:         participant.lastActive
+            ? Date.now() - new Date(participant.lastActive).getTime() < 15 * 60 * 1000
+            : false,
+        lastActive:       participant.lastActive ? new Date(participant.lastActive).toISOString() : undefined,
+        lastMessage:      lastMessage ? serializeMessage(lastMessage) : undefined,
+        unreadCount,
+        createdAt:        match.createdAt ? new Date(match.createdAt).toISOString() : new Date().toISOString(),
+        updatedAt:        match.updatedAt ? new Date(match.updatedAt).toISOString() : new Date().toISOString(),
+        isTyping:         false,
+    };
+}
+
 /**
  * Compute age in years from a date of birth.
  */

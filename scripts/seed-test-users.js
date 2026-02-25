@@ -78,12 +78,14 @@ swipeSchema.index({ fromUser: 1, toUser: 1 }, { unique: true });
 
 const matchSchema = new mongoose.Schema(
     {
-        user1:       { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-        user2:       { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-        matchType:   { type: String, enum: ['like', 'superlike'], default: 'like' },
-        isActive:    { type: Boolean, default: true },
-        similarities:[String],
-        compatibility: Number,
+        user1:          { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+        user2:          { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+        matchType:      { type: String, enum: ['like', 'superlike'], default: 'like' },
+        isActive:       { type: Boolean, default: true },
+        lastMessage:    String,
+        lastMessageAt:  Date,
+        similarities:   [String],
+        compatibility:  Number,
     },
     { timestamps: true }
 );
@@ -98,10 +100,26 @@ const favoriteSchema = new mongoose.Schema(
 );
 favoriteSchema.index({ fromUser: 1, toUser: 1 }, { unique: true });
 
+const messageSchema = new mongoose.Schema(
+    {
+        conversationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Match',  required: true },
+        senderId:       { type: mongoose.Schema.Types.ObjectId, ref: 'User',   required: true },
+        receiverId:     { type: mongoose.Schema.Types.ObjectId, ref: 'User',   required: true },
+        content:        { type: String, required: true },
+        contentType:    { type: String, enum: ['text', 'emoji', 'image'], default: 'text' },
+        isRead:         { type: Boolean, default: false },
+        readAt:         Date,
+        isDeleted:      { type: Boolean, default: false },
+    },
+    { timestamps: true }
+);
+messageSchema.index({ conversationId: 1, createdAt: -1 });
+
 const User     = mongoose.models.User     || mongoose.model('User',     userSchema);
 const Swipe    = mongoose.models.Swipe    || mongoose.model('Swipe',    swipeSchema);
 const Match    = mongoose.models.Match    || mongoose.model('Match',    matchSchema);
 const Favorite = mongoose.models.Favorite || mongoose.model('Favorite', favoriteSchema);
+const Message  = mongoose.models.Message  || mongoose.model('Message',  messageSchema);
 
 // ─── Male users ───────────────────────────────────────────────────────────────
 const MALE_USERS = [
@@ -848,15 +866,91 @@ async function seed() {
         console.log(`   ✅  Karim ⭐ ${name}`);
     }
 
+    // ── Seed chat messages for the 3 mutual matches ────────────────────────
+    console.log('\n💬  Seeding chat messages…');
+    const mutualPhones = KARIM_LIKES_FEMALES.slice(0, 3).map(([phone]) => phone);
+    const mutualNames  = ['Fatima', 'Amira', 'Nour']; // display names for logs
+
+    // Pre-written conversations per match (sender: 'karim' | 'other')
+    const CONVERSATIONS = [
+        // Fatima — active conversation, last message from her (unread for Karim)
+        [
+            { sender: 'other', content: 'Assalamu alaykum ! Comment vas-tu ?', minsAgo: 120 },
+            { sender: 'karim', content: 'Wa alaykum assalam ! Hamdoulillah, et toi ?', minsAgo: 118 },
+            { sender: 'other', content: 'Bien hamdoulillah. Tu es de quelle ville exactement ?', minsAgo: 115 },
+            { sender: 'karim', content: "Je suis à Paris, dans le 15ème. Et toi ?", minsAgo: 112 },
+            { sender: 'other', content: 'Lyon pour moi ! J\'aime bien Paris masha\'Allah 🌹', minsAgo: 10, isRead: false },
+        ],
+        // Amira — short exchange, both read
+        [
+            { sender: 'karim', content: 'Assalamu alaykum Amira 😊', minsAgo: 2880 }, // 2 days ago
+            { sender: 'other', content: 'Wa alaykum assalam ! Ravi de faire ta connaissance.', minsAgo: 2870 },
+            { sender: 'karim', content: 'Moi aussi ! Tu travailles dans quel domaine ?', minsAgo: 2865 },
+            { sender: 'other', content: 'Je suis médecin, et toi ?', minsAgo: 2860 },
+            { sender: 'karim', content: 'Ingénieur logiciel chez une startup. Masha\'Allah pour la médecine !', minsAgo: 2855 },
+        ],
+        // Nour — only a new match greeting, last message unread
+        [
+            { sender: 'other', content: '❤️', minsAgo: 5, contentType: 'emoji', isRead: false },
+        ],
+    ];
+
+    for (let i = 0; i < mutualPhones.length; i++) {
+        const phone    = mutualPhones[i];
+        const otherId  = femaleMap[phone];
+        if (!otherId) continue;
+
+        const [u1str, u2str] = [karimId.toString(), otherId.toString()].sort();
+        const match = await Match.findOne({ user1: u1str, user2: u2str });
+        if (!match) { console.log(`   ⚠️   Match not found for ${mutualNames[i]}, skipping`); continue; }
+
+        // Clear previous seed messages
+        await Message.deleteMany({ conversationId: match._id });
+
+        const convMsgs = CONVERSATIONS[i];
+        let lastMsg = null;
+        for (const m of convMsgs) {
+            const senderId   = m.sender === 'karim' ? karimId : otherId;
+            const receiverId = m.sender === 'karim' ? otherId : karimId;
+            const createdAt  = new Date(Date.now() - m.minsAgo * 60 * 1000);
+            const doc = await Message.create({
+                conversationId: match._id,
+                senderId,
+                receiverId,
+                content:     m.content,
+                contentType: m.contentType || 'text',
+                isRead:      m.isRead === false ? false : true,
+                readAt:      m.isRead === false ? undefined : createdAt,
+                createdAt,
+                updatedAt:   createdAt,
+            });
+            lastMsg = { content: m.content, at: createdAt };
+        }
+
+        // Update match preview
+        if (lastMsg) {
+            await Match.updateOne(
+                { _id: match._id },
+                { $set: { lastMessage: lastMsg.content.substring(0, 100), lastMessageAt: lastMsg.at } }
+            );
+        }
+        console.log(`   ✅  ${mutualNames[i]} — ${convMsgs.length} messages seeded`);
+    }
+
     // ── Summary ────────────────────────────────────────────────────────────
     console.log('\n══════════════════════════════════════════════════════════════════');
-    console.log('🎉  Seed complete! Here is what every filter tab will show:\n');
+    console.log('🎉  Seed complete! Here is what every screen will show:\n');
+    console.log('  LIKES TAB');
     console.log('   ❤️  Tout         →  15 profiles (all received likes)');
     console.log('   ⚡  Nouveaux     →   6 profiles (liked within last 48 h)');
     console.log('   🤝  Mutuels      →   3 profiles (Fatima, Amira, Nour — matched!)');
     console.log('   👑  Premium      →   3 profiles (Yasmine, Rim, Sana)');
     console.log('   ⭐  Coup de cœur →   2 profiles (Sana, Lina — pre-favorited)');
     console.log('   📤  Envoyés      →   5 profiles (Karim liked them)\n');
+    console.log('  CHAT TAB');
+    console.log('   💬  Fatima  → 5 messages, last from her (UNREAD badge = 1)');
+    console.log('   💬  Amira   → 5 messages, fully read');
+    console.log('   💬  Nour    → 1 emoji message (UNREAD badge = 1)\n');
     console.log('📱  Login as Karim:');
     console.log('   POST /api/auth/phone-login  →  { "phoneNumber": "+213555000001" }');
     console.log('   POST /api/auth/verify-otp   →  { "phoneNumber": "+213555000001", "otp": "<dev_otp>" }');

@@ -40,14 +40,14 @@
 - [x] Get favorite users list
 
 ## 5. Chat & Messaging
-- [ ] Get chat conversations list
-- [ ] Get chat messages for conversation
-- [ ] Send text message
-- [ ] Send emoji message
-- [ ] Mark messages as read
-- [ ] Delete conversation
-- [ ] Get unread message count
-- [ ] Real-time message notifications
+- [x] Get chat conversations list
+- [x] Get chat messages for conversation
+- [x] Send text message
+- [x] Send emoji message
+- [x] Mark messages as read
+- [x] Delete conversation
+- [x] Get unread message count
+- [x] Real-time message notifications (short-poll every 3 s; upgrade to SSE/WebSocket when needed)
 
 ## 6. User Preferences & Filters
 - [ ] Get user preferences
