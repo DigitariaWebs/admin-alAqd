@@ -33,11 +33,11 @@
 - [x] Check if two users matched
 
 ## 4. Likes & Favorites
-- [ ] Get users who liked current user
-- [ ] Get users current user liked
-- [ ] Get filtered likes (new, mutual, premium)
-- [ ] Favorite/unfavorite user
-- [ ] Get favorite users list
+- [x] Get users who liked current user
+- [x] Get users current user liked
+- [x] Get filtered likes (new, mutual, premium)
+- [x] Favorite/unfavorite user
+- [x] Get favorite users list
 
 ## 5. Chat & Messaging
 - [ ] Get chat conversations list

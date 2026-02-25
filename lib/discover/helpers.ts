@@ -91,6 +91,73 @@ export function serializeProfileCard(
 }
 
 /**
+ * Serialize a Swipe document + user into a LikeCard for the likes feed.
+ */
+export function serializeLikeCard(
+    swipe: any,
+    user: any,
+    isMutual: boolean,
+    isFavorited: boolean
+) {
+    const age = computeAge(user.dateOfBirth);
+    const locationParts = (user.location || '').split(',').map((s: string) => s.trim());
+
+    return {
+        id: swipe._id.toString(),
+        userId: user._id.toString(),
+        name: user.name || '',
+        firstName: (user.name || '').split(' ')[0],
+        age,
+        city: locationParts[0] || undefined,
+        profilePhoto: (user.photos || [])[0] || '',
+        photos: user.photos || [],
+        occupation: user.profession,
+        religiosity: user.religiousPractice,
+        isVerified: !!(user.isPhoneVerified || user.isEmailVerified),
+        isPremium: !!(user.subscription?.plan !== 'free' && user.subscription?.isActive),
+        isOnline: user.lastActive
+            ? Date.now() - new Date(user.lastActive).getTime() < 15 * 60 * 1000
+            : false,
+        lastActive: user.lastActive ? new Date(user.lastActive).toISOString() : undefined,
+        likedAt: swipe.createdAt ? new Date(swipe.createdAt).toISOString() : new Date().toISOString(),
+        action: swipe.action as 'like' | 'superlike',
+        isFavorited,
+        isMutual,
+    };
+}
+
+/**
+ * Serialize a Favorite document + user into a LikeCard for the favorites feed.
+ */
+export function serializeFavoriteCard(favorite: any, user: any) {
+    const age = computeAge(user.dateOfBirth);
+    const locationParts = (user.location || '').split(',').map((s: string) => s.trim());
+
+    return {
+        id: favorite._id.toString(),
+        userId: user._id.toString(),
+        name: user.name || '',
+        firstName: (user.name || '').split(' ')[0],
+        age,
+        city: locationParts[0] || undefined,
+        profilePhoto: (user.photos || [])[0] || '',
+        photos: user.photos || [],
+        occupation: user.profession,
+        religiosity: user.religiousPractice,
+        isVerified: !!(user.isPhoneVerified || user.isEmailVerified),
+        isPremium: !!(user.subscription?.plan !== 'free' && user.subscription?.isActive),
+        isOnline: user.lastActive
+            ? Date.now() - new Date(user.lastActive).getTime() < 15 * 60 * 1000
+            : false,
+        lastActive: user.lastActive ? new Date(user.lastActive).toISOString() : undefined,
+        likedAt: favorite.createdAt ? new Date(favorite.createdAt).toISOString() : new Date().toISOString(),
+        action: 'like' as const,
+        isFavorited: true,
+        isMutual: false,
+    };
+}
+
+/**
  * Serialize a Match document with the matched user's profile details.
  */
 export function serializeMatch(match: any, currentUserId: string, otherUser: any) {
