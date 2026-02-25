@@ -56,12 +56,12 @@
 - [x] Reset preferences to default
 
 ## 7. Subscription & Premium
-- [ ] Get subscription plans
-- [ ] Purchase subscription
-- [ ] Cancel subscription
-- [ ] Get user subscription status
-- [ ] Check premium features access
-- [ ] Process payment (Stripe integration)
+- [x] Get subscription plans
+- [x] Purchase subscription
+- [x] Cancel subscription
+- [x] Get user subscription status
+- [x] Check premium features access
+- [x] Process payment (Stripe integration)
 
 ## 8. Profile Actions
 - [x] Block user

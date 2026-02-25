@@ -55,7 +55,10 @@ export interface IUser {
         startDate?: Date;
         endDate?: Date;
         isActive: boolean;
+        cancelledAt?: Date;
     };
+    stripeCustomerId?: string;
+    stripeSubscriptionId?: string;
     
     // Status
     role: 'user' | 'admin' | 'moderator';
@@ -132,11 +135,14 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
         },
         
         subscription: {
-            plan: { type: String, enum: ['free', 'premium', 'gold'], default: 'free' },
-            startDate: Date,
-            endDate: Date,
-            isActive: { type: Boolean, default: false }
+            plan:        { type: String, enum: ['free', 'premium', 'gold'], default: 'free' },
+            startDate:   Date,
+            endDate:     Date,
+            isActive:    { type: Boolean, default: false },
+            cancelledAt: Date,
         },
+        stripeCustomerId:    { type: String, sparse: true },
+        stripeSubscriptionId:{ type: String, sparse: true },
         
         role: { type: String, enum: ['user', 'admin', 'moderator'], default: 'user' },
         status: { type: String, enum: ['active', 'inactive', 'suspended', 'banned'], default: 'active' },
