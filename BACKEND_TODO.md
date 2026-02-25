@@ -14,14 +14,14 @@
 - [x] User logout
 
 ## 2. User Profile Management
-- [ ] Get user profile by ID
-- [ ] Update user profile
-- [ ] Upload profile photos (multiple)
-- [ ] Delete profile photo
-- [ ] Set primary photo
-- [ ] Complete onboarding steps (name, DOB, gender, nationality, ethnicity, height, marital status, education, profession, location, bio, interests, faith, religious practice, personality, photos)
-- [ ] Get profile completion percentage
-- [ ] Delete user account
+- [x] Get user profile by ID
+- [x] Update user profile
+- [x] Upload profile photos (multiple)
+- [x] Delete profile photo
+- [x] Set primary photo
+- [x] Complete onboarding steps (name, DOB, gender, nationality, ethnicity, height, marital status, education, profession, location, bio, interests, faith, religious practice, personality, photos)
+- [x] Get profile completion percentage
+- [x] Delete user account
 
 ## 3. User Discovery & Matching
 - [ ] Get potential matches (swipe queue) based on preferences

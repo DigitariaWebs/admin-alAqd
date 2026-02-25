@@ -3,6 +3,35 @@ import connectDB from '@/lib/db/mongodb';
 import { User } from '@/lib/db/models/User';
 import { requireAuth } from '@/lib/auth/middleware';
 
+export async function GET(request: NextRequest) {
+    try {
+        await connectDB();
+
+        const authResult = requireAuth(request);
+
+        if ('error' in authResult) {
+            return NextResponse.json(
+                { error: authResult.error },
+                { status: authResult.status }
+            );
+        }
+
+        const user = await User.findById(authResult.user.userId).select('-password');
+
+        if (!user) {
+            return NextResponse.json({ error: 'User not found' }, { status: 404 });
+        }
+
+        return NextResponse.json({
+            success: true,
+            user: serializeUser(user),
+        });
+    } catch (error) {
+        console.error('Get profile error:', error);
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    }
+}
+
 export async function PATCH(request: NextRequest) {
     try {
         await connectDB();
@@ -56,25 +85,89 @@ export async function PATCH(request: NextRequest) {
         );
 
         if (!user) {
-            return NextResponse.json(
-                { error: 'User not found' },
-                { status: 404 }
-            );
+            return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
         return NextResponse.json({
             success: true,
-            user: {
-                id: user._id.toString(),
-                name: user.name,
-                isOnboarded: user.isOnboarded,
-            },
+            user: serializeUser(user),
         });
     } catch (error) {
         console.error('Update profile error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
-            { status: 500 }
-        );
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
+}
+
+export async function DELETE(request: NextRequest) {
+    try {
+        await connectDB();
+
+        const authResult = requireAuth(request);
+
+        if ('error' in authResult) {
+            return NextResponse.json(
+                { error: authResult.error },
+                { status: authResult.status }
+            );
+        }
+
+        const user = await User.findById(authResult.user.userId);
+
+        if (!user) {
+            return NextResponse.json({ error: 'User not found' }, { status: 404 });
+        }
+
+        // Soft delete — set status to banned and anonymize PII
+        user.status = 'banned';
+        user.name = 'Deleted User';
+        user.phoneNumber = undefined;
+        user.email = undefined;
+        user.bio = undefined;
+        user.photos = [];
+        user.isOnboarded = false;
+        await user.save();
+
+        return NextResponse.json({
+            success: true,
+            message: 'Account deleted successfully',
+        });
+    } catch (error) {
+        console.error('Delete account error:', error);
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    }
+}
+
+// Shared serializer — full profile response shape
+export function serializeUser(user: any) {
+    return {
+        id: user._id.toString(),
+        phoneNumber: user.phoneNumber,
+        email: user.email,
+        name: user.name,
+        dateOfBirth: user.dateOfBirth,
+        gender: user.gender,
+        bio: user.bio,
+        profession: user.profession,
+        location: user.location,
+        height: user.height,
+        nationality: user.nationality ?? [],
+        ethnicity: user.ethnicity ?? [],
+        maritalStatus: user.maritalStatus,
+        education: user.education,
+        religiousPractice: user.religiousPractice,
+        faithTags: user.faithTags ?? [],
+        drinking: user.drinking,
+        smoking: user.smoking,
+        interests: user.interests ?? [],
+        personality: user.personality ?? [],
+        photos: user.photos ?? [],
+        role: user.role,
+        status: user.status,
+        isOnboarded: user.isOnboarded,
+        isEmailVerified: user.isEmailVerified,
+        isPhoneVerified: user.isPhoneVerified,
+        subscription: user.subscription,
+        lastActive: user.lastActive,
+        createdAt: user.createdAt,
+    };
 }
