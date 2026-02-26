@@ -117,11 +117,11 @@
 - [x] Update onboarding content
 
 ## 13. Admin - Orders & Transactions
-- [ ] List all orders with filters
-- [ ] Get order details
-- [ ] Update order status
-- [ ] Transaction history
-- [ ] Export orders report
+- [x] List all orders with filters
+- [x] Get order details
+- [x] Update order status
+- [x] Transaction history
+- [x] Export orders report
 
 ## 14. Admin - Notifications
 - [ ] List notification history

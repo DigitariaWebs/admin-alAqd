@@ -2,7 +2,23 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import connectDB from '@/lib/db/mongodb';
 import { User } from '@/lib/db/models/User';
+import { Order } from '@/lib/db/models/Order';
+import { Transaction } from '@/lib/db/models/Transaction';
 import { PLAN_MAP, PlanId } from '@/lib/subscription/plans';
+
+// Helper to generate order number
+function generateOrderNumber(): string {
+    const timestamp = Date.now().toString(36).toUpperCase();
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `ORD-${timestamp}${random}`;
+}
+
+// Helper to generate transaction number
+function generateTransactionNumber(): string {
+    const timestamp = Date.now().toString(36).toUpperCase();
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `TRX-${timestamp}${random}`;
+}
 
 const stripe = process.env.STRIPE_SECRET_KEY
     ? new Stripe(process.env.STRIPE_SECRET_KEY)
@@ -58,25 +74,79 @@ export async function POST(request: NextRequest) {
                 const plan = PLAN_MAP.get(planId);
                 if (!plan) break;
 
+                // Get user info
+                const user = await User.findById(userId).select('name email stripeCustomerId').lean();
+                if (!user) break;
+
                 const stripeSubId = session.subscription as string;
-                const stripeSub   = await stripe.subscriptions.retrieve(stripeSubId);
+                const stripeSub = await stripe.subscriptions.retrieve(stripeSubId);
 
                 const startDate = new Date(stripeSub.current_period_start * 1000);
-                const endDate   = new Date(stripeSub.current_period_end   * 1000);
+                const endDate = new Date(stripeSub.current_period_end * 1000);
 
+                // Update user subscription
                 await User.findByIdAndUpdate(userId, {
                     $set: {
                         stripeSubscriptionId: stripeSubId,
                         subscription: {
-                            plan:      plan.tier,
-                            isActive:  true,
+                            plan: plan.tier,
+                            isActive: true,
                             startDate,
                             endDate,
                             cancelledAt: undefined,
                         },
                     },
                 });
-                console.log(`✅  Stripe: subscription activated for user ${userId} — plan ${planId}`);
+
+                // Create order
+                const orderNumber = generateOrderNumber();
+                const order = await Order.create({
+                    orderNumber,
+                    userId,
+                    customerName: user.name,
+                    customerEmail: user.email,
+                    items: [{
+                        name: plan.name,
+                        description: `${plan.durationMonths} month subscription`,
+                        price: plan.price,
+                        quantity: 1,
+                        total: plan.price,
+                    }],
+                    subtotal: plan.price,
+                    tax: 0,
+                    total: plan.price,
+                    status: 'completed',
+                    paymentStatus: 'paid',
+                    payment: {
+                        method: 'card',
+                        provider: 'stripe',
+                        stripePaymentIntentId: session.payment_intent as string || undefined,
+                        stripeSessionId: session.id,
+                    },
+                    stripeCustomerId: user.stripeCustomerId,
+                    subscriptionId: stripeSubId,
+                    planId,
+                    completedAt: new Date(),
+                });
+
+                // Create transaction
+                await Transaction.create({
+                    transactionNumber: generateTransactionNumber(),
+                    orderId: order._id,
+                    userId,
+                    type: 'debit',
+                    amount: plan.price,
+                    currency: 'USD',
+                    description: `Subscription: ${plan.name}`,
+                    status: 'completed',
+                    paymentMethod: 'card',
+                    provider: 'stripe',
+                    stripePaymentIntentId: session.payment_intent as string || undefined,
+                    stripeSessionId: session.id,
+                    completedAt: new Date(),
+                });
+
+                console.log(`✅  Stripe: subscription activated for user ${userId} — plan ${planId}, order ${orderNumber}`);
                 break;
             }
 
@@ -123,8 +193,81 @@ export async function POST(request: NextRequest) {
             case 'invoice.payment_failed': {
                 const invoice = event.data.object as Stripe.Invoice;
                 const customerId = invoice.customer as string;
-                // Optionally send a notification here
                 console.warn(`⚠️  Stripe: payment failed for customer ${customerId}`);
+
+                // Find user by stripe customer id and update order status
+                const user = await User.findOne({ stripeCustomerId: customerId }).select('_id').lean();
+                if (user) {
+                    await Order.findOneAndUpdate(
+                        { userId: user._id, status: 'pending', paymentStatus: 'pending' },
+                        { $set: { status: 'failed', paymentStatus: 'failed', failedAt: new Date() } }
+                    );
+                }
+                break;
+            }
+
+            // ── Invoice payment succeeded (renewals) ─────────────────────────
+            case 'invoice.payment_succeeded': {
+                const invoice = event.data.object as Stripe.Invoice;
+                const customerId = invoice.customer as string;
+
+                const user = await User.findOne({ stripeCustomerId: customerId }).select('_id name email').lean();
+                if (!user) break;
+
+                // Get subscription info
+                const subscriptionId = invoice.subscription as string;
+                const stripeSub = await stripe.subscriptions.retrieve(subscriptionId);
+                const planId = stripeSub.metadata?.planId as PlanId | undefined;
+                const plan = planId ? PLAN_MAP.get(planId) : null;
+
+                if (!plan) break;
+
+                // Create order for renewal
+                const orderNumber = generateOrderNumber();
+                await Order.create({
+                    orderNumber,
+                    userId: user._id,
+                    customerName: user.name,
+                    customerEmail: user.email,
+                    items: [{
+                        name: plan.name,
+                        description: `${plan.durationMonths} month subscription (Renewal)`,
+                        price: plan.price,
+                        quantity: 1,
+                        total: plan.price,
+                    }],
+                    subtotal: plan.price,
+                    tax: 0,
+                    total: plan.price,
+                    status: 'completed',
+                    paymentStatus: 'paid',
+                    payment: {
+                        method: 'card',
+                        provider: 'stripe',
+                        stripePaymentIntentId: invoice.payment_intent as string,
+                    },
+                    stripeCustomerId: customerId,
+                    subscriptionId,
+                    planId,
+                    completedAt: new Date(),
+                });
+
+                // Create transaction for renewal
+                await Transaction.create({
+                    transactionNumber: generateTransactionNumber(),
+                    userId: user._id,
+                    type: 'debit',
+                    amount: plan.price,
+                    currency: 'USD',
+                    description: `Subscription Renewal: ${plan.name}`,
+                    status: 'completed',
+                    paymentMethod: 'card',
+                    provider: 'stripe',
+                    stripePaymentIntentId: invoice.payment_intent as string,
+                    completedAt: new Date(),
+                });
+
+                console.log(`✅  Stripe: renewal payment succeeded for user ${user._id} — plan ${planId}`);
                 break;
             }
 

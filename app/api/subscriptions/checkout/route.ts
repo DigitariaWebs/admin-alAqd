@@ -2,8 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import connectDB from '@/lib/db/mongodb';
 import { User } from '@/lib/db/models/User';
+import { Order } from '@/lib/db/models/Order';
+import { Transaction } from '@/lib/db/models/Transaction';
 import { requireAuth } from '@/lib/auth/middleware';
 import { PLAN_MAP, PlanId } from '@/lib/subscription/plans';
+
+// Helper to generate order number
+function generateOrderNumber(): string {
+    const timestamp = Date.now().toString(36).toUpperCase();
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `ORD-${timestamp}${random}`;
+}
+
+// Helper to generate transaction number
+function generateTransactionNumber(): string {
+    const timestamp = Date.now().toString(36).toUpperCase();
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `TRX-${timestamp}${random}`;
+}
 
 const stripe = process.env.STRIPE_SECRET_KEY
     ? new Stripe(process.env.STRIPE_SECRET_KEY)
@@ -50,14 +66,14 @@ export async function POST(request: NextRequest) {
         // ── SANDBOX MODE (no Stripe keys) ─────────────────────────────────
         if (!stripe) {
             const startDate = new Date();
-            const endDate   = new Date(startDate);
+            const endDate = new Date(startDate);
             endDate.setMonth(endDate.getMonth() + plan.durationMonths);
 
             await User.findByIdAndUpdate(authResult.user.userId, {
                 $set: {
                     subscription: {
-                        plan:      plan.tier,
-                        isActive:  true,
+                        plan: plan.tier,
+                        isActive: true,
                         startDate,
                         endDate,
                         cancelledAt: undefined,
@@ -65,9 +81,50 @@ export async function POST(request: NextRequest) {
                 },
             });
 
+            // Create order for sandbox mode
+            const orderNumber = generateOrderNumber();
+            await Order.create({
+                orderNumber,
+                userId: authResult.user.userId,
+                customerName: user.name,
+                customerEmail: user.email,
+                items: [{
+                    name: plan.name,
+                    description: `${plan.durationMonths} month subscription`,
+                    price: plan.price,
+                    quantity: 1,
+                    total: plan.price,
+                }],
+                subtotal: plan.price,
+                tax: 0,
+                total: plan.price,
+                status: 'completed',
+                paymentStatus: 'paid',
+                payment: {
+                    method: 'sandbox',
+                    provider: 'sandbox',
+                },
+                planId,
+                completedAt: new Date(),
+            });
+
+            // Create transaction for sandbox mode
+            await Transaction.create({
+                transactionNumber: generateTransactionNumber(),
+                userId: authResult.user.userId,
+                type: 'debit',
+                amount: plan.price,
+                currency: 'USD',
+                description: `Subscription: ${plan.name}`,
+                status: 'completed',
+                paymentMethod: 'sandbox',
+                provider: 'sandbox',
+                completedAt: new Date(),
+            });
+
             return NextResponse.json({
                 success: true,
-                mode:   'sandbox',
+                mode: 'sandbox',
                 message: `[DEV] Subscription "${plan.name}" activated instantly. Set STRIPE_SECRET_KEY to enable real payments.`,
                 subscription: { plan: plan.tier, isActive: true, startDate, endDate },
             });

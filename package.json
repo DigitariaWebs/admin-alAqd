@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "seed:admin": "node scripts/seed-admin.js"
+    "seed:admin": "node scripts/seed-admin.js",
+    "seed:data": "tsx scripts/seed-data.ts"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.11.2",
