@@ -83,13 +83,13 @@
 - [ ] Export guardian relationships (Admin)
 
 ## 10. Admin - Dashboard/Analytics
-- [ ] Total users, revenue, active subscriptions, growth stats
-- [ ] Weekly/monthly revenue data
-- [ ] Latest system activities
-- [ ] User growth over time
-- [ ] User engagement metrics
-- [ ] Generate custom reports
-- [ ] AI-generated insights
+- [x] Total users, revenue, active subscriptions, growth stats
+- [x] Weekly/monthly revenue data
+- [x] Latest system activities
+- [x] User growth over time
+- [x] User engagement metrics
+- [x] Generate custom reports
+- [x] AI-generated insights
 
 ## 11. Admin - Users Management
 - [ ] List users with filters (role, status, gender, nationality, age, date range)

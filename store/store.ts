@@ -1,14 +1,16 @@
 import { configureStore } from '@reduxjs/toolkit';
 import appReducer from './slices/appSlice';
 import authReducer from './slices/authSlice';
+import analyticsReducer from "./slices/analyticsSlice";
 
 export const makeStore = () => {
     return configureStore({
-        reducer: {
-            app: appReducer,
-            auth: authReducer,
-        },
-        devTools: process.env.NODE_ENV !== 'production',
+      reducer: {
+        app: appReducer,
+        auth: authReducer,
+        analytics: analyticsReducer,
+      },
+      devTools: process.env.NODE_ENV !== "production",
     });
 };
 
