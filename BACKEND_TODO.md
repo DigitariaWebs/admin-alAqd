@@ -103,18 +103,18 @@
 - [x] Update user role
 
 ## 12. Admin - Content Management
-- [ ] List all content (articles, videos, posts, pages)
-- [ ] Create new content
-- [ ] Get content details
-- [ ] Update content
-- [ ] Delete content
-- [ ] Update content status (published/draft/pending)
-- [ ] List content categories
-- [ ] Create category
-- [ ] Update category
-- [ ] Delete category
-- [ ] Get onboarding content
-- [ ] Update onboarding content
+- [x] List all content (articles, videos, posts, pages)
+- [x] Create new content
+- [x] Get content details
+- [x] Update content
+- [x] Delete content
+- [x] Update content status (published/draft/pending)
+- [x] List content categories
+- [x] Create category
+- [x] Update category
+- [x] Delete category
+- [x] Get onboarding content
+- [x] Update onboarding content
 
 ## 13. Admin - Orders & Transactions
 - [ ] List all orders with filters

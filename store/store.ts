@@ -3,6 +3,7 @@ import appReducer from './slices/appSlice';
 import authReducer from './slices/authSlice';
 import analyticsReducer from "./slices/analyticsSlice";
 import usersReducer from "./slices/usersSlice";
+import contentReducer from "./slices/contentSlice";
 
 export const makeStore = () => {
     return configureStore({
@@ -11,6 +12,7 @@ export const makeStore = () => {
         auth: authReducer,
         analytics: analyticsReducer,
         users: usersReducer,
+        content: contentReducer,
       },
       devTools: process.env.NODE_ENV !== "production",
     });

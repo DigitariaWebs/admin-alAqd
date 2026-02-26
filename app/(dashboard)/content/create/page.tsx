@@ -1,15 +1,82 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { createContent, fetchCategories } from '@/store/slices/contentSlice';
 import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Select } from '@/components/ui/Select';
-import { ArrowLeft, Save, UploadCloud } from 'lucide-react';
+import { ArrowLeft, Save, UploadCloud, Loader2 } from 'lucide-react';
 
 export default function CreateContentPage() {
+    const router = useRouter();
+    const dispatch = useAppDispatch();
+    const { items: categories, isLoading: isCategoriesLoading } = useAppSelector(state => state.content.categories);
+    
+    const [formData, setFormData] = useState({
+        title: '',
+        slug: '',
+        type: 'article',
+        content: '',
+        excerpt: '',
+        featuredImage: '',
+        author: 'Admin',
+        category: '',
+        status: 'draft',
+        seoTitle: '',
+        seoDescription: '',
+    });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        dispatch(fetchCategories());
+    }, [dispatch]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value,
+            // Auto-generate slug from title
+            ...(name === 'title' && !prev.slug ? { slug: value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') } : {})
+        }));
+    };
+
+    const handleSubmit = async (status: 'draft' | 'published') => {
+        setIsSubmitting(true);
+        try {
+            await dispatch(createContent({
+                ...formData,
+                status,
+                slug: formData.slug || formData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+            })).unwrap();
+            
+            router.push('/content');
+        } catch (error) {
+            console.error('Failed to create content:', error);
+            alert('Failed to create content. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const categoryOptions = [
+        { value: '', label: 'Select Category' },
+        ...categories.map((cat: any) => ({ value: cat._id, label: cat.name }))
+    ];
+
+    if (isCategoriesLoading && categories.length === 0) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="animate-spin text-primary" size={32} />
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -23,9 +90,16 @@ export default function CreateContentPage() {
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" size="md" className="rounded-full">Cancel</Button>
-                    <Button size="md" className="gap-2 rounded-full">
-                        <Save size={16} />
+                    <Link href="/content">
+                        <Button variant="outline" size="md" className="rounded-full">Cancel</Button>
+                    </Link>
+                    <Button 
+                        size="md" 
+                        className="gap-2 rounded-full"
+                        onClick={() => handleSubmit('draft')}
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
                         <span>Save Draft</span>
                     </Button>
                 </div>
@@ -36,15 +110,39 @@ export default function CreateContentPage() {
                 <Card className="lg:col-span-2 space-y-6 rounded-[30px] p-8">
                     <Input
                         label="Content Title"
+                        name="title"
                         placeholder="Enter a descriptive title"
+                        value={formData.title}
+                        onChange={handleChange}
                         className="text-lg font-medium"
+                    />
+
+                    <Input
+                        label="Slug"
+                        name="slug"
+                        placeholder="content-slug"
+                        value={formData.slug}
+                        onChange={handleChange}
+                        helperText="URL-friendly version of the title"
                     />
 
                     <Textarea
                         label="Content Body"
+                        name="content"
                         placeholder="Write your content here..."
                         rows={12}
+                        value={formData.content}
+                        onChange={handleChange}
                         className="font-normal"
+                    />
+
+                    <Textarea
+                        label="Excerpt"
+                        name="excerpt"
+                        placeholder="Brief summary of the content..."
+                        rows={3}
+                        value={formData.excerpt}
+                        onChange={handleChange}
                     />
                 </Card>
 
@@ -55,34 +153,77 @@ export default function CreateContentPage() {
 
                         <Select
                             label="Content Type"
+                            name="type"
+                            value={formData.type}
+                            onChange={handleChange}
                             options={[
                                 { value: 'article', label: 'Article' },
                                 { value: 'video', label: 'Video' },
                                 { value: 'post', label: 'Post' },
+                                { value: 'page', label: 'Page' },
                             ]}
                         />
 
                         <Select
                             label="Status"
+                            name="status"
+                            value={formData.status}
+                            onChange={handleChange}
                             options={[
                                 { value: 'draft', label: 'Draft' },
                                 { value: 'published', label: 'Published' },
-                                { value: 'review', label: 'Pending Review' },
+                                { value: 'pending', label: 'Pending Review' },
                             ]}
                         />
 
                         <Select
                             label="Category"
-                            options={[
-                                { value: 'general', label: 'General' },
-                                { value: 'news', label: 'News' },
-                                { value: 'tips', label: 'Tips & Advice' },
-                            ]}
+                            name="category"
+                            value={formData.category}
+                            onChange={handleChange}
+                            options={categoryOptions}
+                        />
+
+                        <Input
+                            label="Author"
+                            name="author"
+                            value={formData.author}
+                            onChange={handleChange}
                         />
 
                         <div className="pt-4 mt-4 border-t border-gray-50">
-                            <Button fullWidth size="md" className="rounded-full">Publish Now</Button>
+                            <Button 
+                                fullWidth 
+                                size="md" 
+                                className="rounded-full"
+                                onClick={() => handleSubmit('published')}
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
+                                Publish Now
+                            </Button>
                         </div>
+                    </Card>
+
+                    <Card className="rounded-[30px] p-6 space-y-4">
+                        <h3 className="font-semibold text-sm mb-4">SEO</h3>
+
+                        <Input
+                            label="SEO Title"
+                            name="seoTitle"
+                            placeholder="SEO optimized title"
+                            value={formData.seoTitle}
+                            onChange={handleChange}
+                        />
+
+                        <Textarea
+                            label="SEO Description"
+                            name="seoDescription"
+                            placeholder="Meta description..."
+                            rows={3}
+                            value={formData.seoDescription}
+                            onChange={handleChange}
+                        />
                     </Card>
 
                     <Card className="rounded-[30px] p-6">
@@ -91,6 +232,11 @@ export default function CreateContentPage() {
                             <UploadCloud size={24} className="mb-2" />
                             <span className="text-xs">Click to upload</span>
                         </div>
+                        {formData.featuredImage && (
+                            <div className="mt-2">
+                                <img src={formData.featuredImage} alt="Featured" className="w-full h-32 object-cover rounded-lg" />
+                            </div>
+                        )}
                     </Card>
                 </div>
             </div>
