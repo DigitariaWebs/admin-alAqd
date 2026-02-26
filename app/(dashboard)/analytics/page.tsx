@@ -21,12 +21,12 @@ export default function AnalyticsPage() {
 
     useEffect(() => {
         dispatch(fetchDashboard(period));
-        dispatch(fetchRevenue('monthly', 12));
+        dispatch(fetchRevenue({ period: 'monthly', months: 12 }));
         dispatch(fetchActivities({ limit: 20, type: 'all' }));
     }, [dispatch, period]);
 
-    const handlePeriodChange = (value: string) => {
-        setPeriod(value);
+    const handlePeriodChange: React.ChangeEventHandler<HTMLSelectElement> = (e) => {
+        setPeriod(e.target.value);
     };
 
     const formatCurrency = (value: number) => {
@@ -206,7 +206,7 @@ export default function AnalyticsPage() {
 
         {/* Charts Row 1 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="rounded-[30px] p-6 h-[350px]">
+          <Card className="rounded-[30px] p-6 h-87.5">
             <h3 className="text-sm font-semibold text-gray-900 mb-6">
               Revenue Over Time
             </h3>
@@ -245,8 +245,8 @@ export default function AnalyticsPage() {
                     boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                   }}
                   itemStyle={{ fontSize: "12px", color: "#111827" }}
-                  formatter={(value: number) => [
-                    formatCurrency(value),
+                  formatter={(value) => [
+                    formatCurrency(value as number),
                     "Revenue",
                   ]}
                 />
@@ -262,7 +262,7 @@ export default function AnalyticsPage() {
             </ResponsiveContainer>
           </Card>
 
-          <Card className="rounded-[30px] p-6 h-[350px]">
+          <Card className="rounded-[30px] p-6 h-87.5">
             <h3 className="text-sm font-semibold text-gray-900 mb-6">
               User Growth
             </h3>
@@ -294,8 +294,8 @@ export default function AnalyticsPage() {
                     boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                   }}
                   cursor={{ fill: "#f9fafb" }}
-                  formatter={(value: number) => [
-                    formatNumber(value),
+                  formatter={(value) => [
+                    formatNumber(value as number),
                     "New Users",
                   ]}
                 />
@@ -312,7 +312,7 @@ export default function AnalyticsPage() {
 
         {/* Charts Row 2 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card className="rounded-[30px] p-6 h-[300px]">
+          <Card className="rounded-[30px] p-6 h-87.5">
             <h3 className="text-sm font-semibold text-gray-900 mb-4">
               Gender Distribution
             </h3>
@@ -332,7 +332,7 @@ export default function AnalyticsPage() {
                     />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value: number) => formatNumber(value)} />
+                <Tooltip formatter={(value) => formatNumber(value as number)} />
               </PieChart>
             </ResponsiveContainer>
             <div className="flex justify-center gap-4 mt-2">
@@ -350,7 +350,7 @@ export default function AnalyticsPage() {
             </div>
           </Card>
 
-          <Card className="rounded-[30px] p-6 h-[300px]">
+          <Card className="rounded-[30px] p-6 h-87.5">
             <h3 className="text-sm font-semibold text-gray-900 mb-4">
               Subscription Distribution
             </h3>
@@ -370,7 +370,7 @@ export default function AnalyticsPage() {
                     />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value: number) => formatNumber(value)} />
+                <Tooltip formatter={(value) => formatNumber(value as number)} />
               </PieChart>
             </ResponsiveContainer>
             <div className="flex justify-center gap-4 mt-2">
@@ -388,11 +388,11 @@ export default function AnalyticsPage() {
             </div>
           </Card>
 
-          <Card className="rounded-[30px] p-6 h-[300px] overflow-hidden">
+          <Card className="rounded-[30px] p-6 h-87.5 overflow-hidden">
             <h3 className="text-sm font-semibold text-gray-900 mb-4">
               Latest Activities
             </h3>
-            <div className="space-y-3 overflow-y-auto h-[220px] pr-2">
+            <div className="space-y-3 overflow-y-auto h-55 pr-2">
               {activities.items.slice(0, 8).map((activity) => (
                 <div
                   key={activity.id}
@@ -405,8 +405,8 @@ export default function AnalyticsPage() {
                         : activity.type === "new_match"
                           ? "info"
                           : activity.type === "new_message"
-                            ? "default"
-                            : "secondary"
+                            ? "neutral"
+                            : "info"
                     }
                     className="text-[10px] px-2 py-0.5"
                   >

@@ -2,6 +2,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import appReducer from './slices/appSlice';
 import authReducer from './slices/authSlice';
 import analyticsReducer from "./slices/analyticsSlice";
+import usersReducer from "./slices/usersSlice";
 
 export const makeStore = () => {
     return configureStore({
@@ -9,6 +10,7 @@ export const makeStore = () => {
         app: appReducer,
         auth: authReducer,
         analytics: analyticsReducer,
+        users: usersReducer,
       },
       devTools: process.env.NODE_ENV !== "production",
     });

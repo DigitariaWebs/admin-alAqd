@@ -92,15 +92,15 @@
 - [x] AI-generated insights
 
 ## 11. Admin - Users Management
-- [ ] List users with filters (role, status, gender, nationality, age, date range)
-- [ ] Create new user
-- [ ] Get user details
-- [ ] Update user
-- [ ] Delete user
-- [ ] Update user status (active/inactive/suspended)
-- [ ] Export users to CSV/Excel
-- [ ] List available roles
-- [ ] Update user role
+- [x] List users with filters (role, status, gender, nationality, age, date range)
+- [x] Create new user
+- [x] Get user details
+- [x] Update user
+- [x] Delete user
+- [x] Update user status (active/inactive/suspended)
+- [x] Export users to CSV/Excel
+- [x] List available roles
+- [x] Update user role
 
 ## 12. Admin - Content Management
 - [ ] List all content (articles, videos, posts, pages)
