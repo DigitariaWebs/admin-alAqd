@@ -72,15 +72,15 @@
 - [x] View profile analytics
 
 ## 9. Guardians/Mahram Management (Mobile & Admin)
-- [ ] Create guardian relationship (female user invites guardian)
-- [ ] Generate access code for guardian
-- [ ] Accept guardian invitation
-- [ ] Get guardian relationship details
-- [ ] Revoke guardian access
-- [ ] Resend guardian invitation
-- [ ] List all guardian relationships (Admin)
-- [ ] Update relationship status (Admin)
-- [ ] Export guardian relationships (Admin)
+- [x] Create guardian relationship (female user invites guardian)
+- [x] Generate access code for guardian
+- [x] Accept guardian invitation
+- [x] Get guardian relationship details
+- [x] Revoke guardian access
+- [x] Resend guardian invitation
+- [x] List all guardian relationships (Admin)
+- [x] Update relationship status (Admin)
+- [x] Export guardian relationships (Admin)
 
 ## 10. Admin - Dashboard/Analytics
 - [x] Total users, revenue, active subscriptions, growth stats

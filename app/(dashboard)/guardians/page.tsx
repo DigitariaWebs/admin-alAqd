@@ -1,27 +1,198 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
 import { Table } from '@/components/ui/Table';
 import { Badge } from '@/components/ui/Badge';
-import { Search, Filter, Shield, MoreHorizontal, Link2, Link2Off, Mail } from 'lucide-react';
-import { MOCK_GUARDIAN_RELATIONSHIPS } from '@/config/guardian-data';
+import { 
+    Search, 
+    Shield, 
+    Link2, 
+    Link2Off, 
+    Mail,
+    RefreshCw,
+    Download,
+    Eye,
+    Edit,
+    Trash2,
+} from 'lucide-react';
+import { adminGuardianApi, AdminGuardian } from '@/lib/api/guardian';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 export default function GuardiansPage() {
+    const dispatch = useAppDispatch();
+    const { token } = useAppSelector((state) => state.auth);
+    
+    const [guardians, setGuardians] = useState<AdminGuardian[]>([]);
+    const [stats, setStats] = useState({
+        total: 0,
+        pending: 0,
+        active: 0,
+        revoked: 0,
+    });
+    const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-
+    const [statusFilter, setStatusFilter] = useState<string>('');
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [selectedGuardian, setSelectedGuardian] = useState<AdminGuardian | null>(null);
+    const [showModal, setShowModal] = useState(false);
+    const [modalMode, setModalMode] = useState<'view' | 'edit' | 'delete'>('view');
+    
+    const fetchGuardians = useCallback(async () => {
+        if (!token) return;
+        
+        setIsLoading(true);
+        try {
+            const response = await adminGuardianApi.list(token, {
+                page,
+                limit: 10,
+                status: statusFilter || undefined,
+                search: searchTerm || undefined,
+            });
+            
+            setGuardians(response.guardians);
+            setStats(response.stats);
+            setTotalPages(response.pagination.pages);
+        } catch (error) {
+            console.error('Error fetching guardians:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [token, page, statusFilter, searchTerm]);
+    
+    useEffect(() => {
+        fetchGuardians();
+    }, [fetchGuardians]);
+    
+    const handleStatusChange = async (guardianId: string, newStatus: 'pending' | 'active' | 'revoked') => {
+        if (!token) return;
+        
+        try {
+            await adminGuardianApi.update(token, guardianId, { status: newStatus });
+            fetchGuardians();
+            setShowModal(false);
+        } catch (error) {
+            console.error('Error updating guardian:', error);
+            alert('Failed to update guardian status');
+        }
+    };
+    
+    const handleDelete = async (guardianId: string) => {
+        if (!token) return;
+        
+        if (!confirm('Are you sure you want to delete this guardian relationship?')) return;
+        
+        try {
+            await adminGuardianApi.delete(token, guardianId);
+            fetchGuardians();
+            setShowModal(false);
+        } catch (error) {
+            console.error('Error deleting guardian:', error);
+            alert('Failed to delete guardian relationship');
+        }
+    };
+    
+    const handleExport = async (format: 'csv' | 'json') => {
+        if (!token) return;
+        
+        try {
+            const blob = await adminGuardianApi.export(token, {
+                format,
+                status: statusFilter || undefined,
+            });
+            
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `guardians-export-${new Date().toISOString().split('T')[0]}.${format}`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } catch (error) {
+            console.error('Error exporting guardians:', error);
+            alert('Failed to export guardians');
+        }
+    };
+    
+    const getStatusBadge = (status: string) => {
+        switch (status) {
+            case 'active':
+                return <Badge variant="success">Actif</Badge>;
+            case 'pending':
+                return <Badge variant="warning">En attente</Badge>;
+            case 'revoked':
+                return <Badge variant="error">Révoqué</Badge>;
+            default:
+                return <Badge>{status}</Badge>;
+        }
+    };
+    
     return (
         <div className="space-y-6">
             {/* Page Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-xl font-bold text-gray-900">Gestion des Tuteurs / Mahram</h1>
-                    <p className="text-xs text-gray-500 mt-1">Supervisez les relations Tuteur-Utilisateur pour assurer la conformité.</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                        Supervisez les relations Tuteur-Utilisateur pour assurer la conformité.
+                    </p>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Button 
+                        variant="outline" 
+                        size="md" 
+                        className="gap-2 rounded-full"
+                        onClick={() => fetchGuardians()}
+                    >
+                        <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
+                        <span>Actualiser</span>
+                    </Button>
                 </div>
             </div>
-
+            
+            {/* Stats Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <Card className="py-4 px-6 rounded-[20px]">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-xs text-gray-500">Total</p>
+                            <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                        </div>
+                        <Shield size={24} className="text-gray-400" />
+                    </div>
+                </Card>
+                <Card className="py-4 px-6 rounded-[20px]">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-xs text-gray-500">Actifs</p>
+                            <p className="text-2xl font-bold text-green-600">{stats.active}</p>
+                        </div>
+                        <Link2 size={24} className="text-green-400" />
+                    </div>
+                </Card>
+                <Card className="py-4 px-6 rounded-[20px]">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-xs text-gray-500">En attente</p>
+                            <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
+                        </div>
+                        <Mail size={24} className="text-yellow-400" />
+                    </div>
+                </Card>
+                <Card className="py-4 px-6 rounded-[20px]">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-xs text-gray-500">Révoqués</p>
+                            <p className="text-2xl font-bold text-red-600">{stats.revoked}</p>
+                        </div>
+                        <Link2Off size={24} className="text-red-400" />
+                    </div>
+                </Card>
+            </div>
+            
             {/* Filters & Actions */}
             <Card className="flex flex-col gap-4 py-4 px-6 rounded-[25px]">
                 <div className="flex flex-col sm:flex-row items-center gap-4">
@@ -32,36 +203,60 @@ export default function GuardiansPage() {
                             placeholder="Rechercher par nom, email ou code..."
                             className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-gray-400"
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value);
+                                setPage(1);
+                            }}
                         />
                     </div>
                     <div className="flex items-center gap-2 w-full sm:w-auto">
-                        <Button variant="outline" size="md" className="gap-2 rounded-full flex-1 sm:flex-none justify-center">
-                            <Filter size={14} />
-                            <span>Filtres</span>
-                        </Button>
-                        <Button variant="outline" size="md" className="rounded-full flex-1 sm:flex-none justify-center">
-                            Exporter
+                        <select
+                            className="px-4 py-2 text-sm border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                            value={statusFilter}
+                            onChange={(e) => {
+                                setStatusFilter(e.target.value);
+                                setPage(1);
+                            }}
+                        >
+                            <option value="">Tous les statuts</option>
+                            <option value="pending">En attente</option>
+                            <option value="active">Actif</option>
+                            <option value="revoked">Révoqué</option>
+                        </select>
+                        <Button 
+                            variant="outline" 
+                            size="md" 
+                            className="rounded-full flex-1 sm:flex-none justify-center gap-2"
+                            onClick={() => handleExport('csv')}
+                        >
+                            <Download size={14} />
+                            <span>Exporter</span>
                         </Button>
                     </div>
                 </div>
             </Card>
-
+            
             {/* Relationships Table */}
             <Table
-                data={MOCK_GUARDIAN_RELATIONSHIPS}
-                keyExtractor={(item) => item.id}
+                data={guardians}
+                keyExtractor={(item) => item._id}
+                isLoading={isLoading}
+                emptyMessage="Aucune relation de tutorat trouvée"
                 columns={[
                     {
                         header: 'Utilisatrice',
                         accessor: (item) => (
                             <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center font-bold text-xs ring-2 ring-white">
-                                    {item.userName.charAt(0)}
+                                    {item.femaleUser?.name?.charAt(0) || '?'}
                                 </div>
                                 <div>
-                                    <p className="font-semibold text-gray-900 text-xs">{item.userName}</p>
-                                    <p className="text-[10px] text-gray-500">{item.userEmail}</p>
+                                    <p className="font-semibold text-gray-900 text-xs">
+                                        {item.femaleUser?.name || 'Unknown'}
+                                    </p>
+                                    <p className="text-[10px] text-gray-500">
+                                        {item.femaleUser?.id?.substring(0, 8) || 'N/A'}...
+                                    </p>
                                 </div>
                             </div>
                         )
@@ -71,11 +266,15 @@ export default function GuardiansPage() {
                         accessor: (item) => (
                             <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs ring-2 ring-white">
-                                    {(item.guardianName || 'T').charAt(0)}
+                                    {(item.maleUser?.name || item.guardianName || 'T').charAt(0)}
                                 </div>
                                 <div>
-                                    <p className="font-semibold text-gray-900 text-xs">{item.guardianName || 'Invité (Sans Nom)'}</p>
-                                    <p className="text-[10px] text-gray-500">{item.guardianEmail || 'Partage de Code'}</p>
+                                    <p className="font-semibold text-gray-900 text-xs">
+                                        {item.maleUser?.name || item.guardianName || 'Invité (Sans Nom)'}
+                                    </p>
+                                    <p className="text-[10px] text-gray-500">
+                                        {item.maleUser?.id ? `${item.maleUser.id.substring(0, 8)}...` : item.guardianPhone || 'Code Partagé'}
+                                    </p>
                                 </div>
                             </div>
                         )
@@ -90,23 +289,18 @@ export default function GuardiansPage() {
                     },
                     {
                         header: 'Statut',
-                        accessor: (item) => (
-                            <Badge
-                                variant={
-                                    item.status === 'Actif' ? 'success' :
-                                        item.status === 'En attente' ? 'warning' :
-                                            'error'
-                                }
-                            >
-                                {item.status}
-                            </Badge>
-                        )
+                        accessor: (item) => getStatusBadge(item.status)
                     },
                     {
                         header: 'Depuis le',
                         accessor: (item) => (
                             <span className="text-xs text-gray-500">
-                                {new Date(item.linkedAt || item.requestedAt).toLocaleDateString('fr-FR')}
+                                {item.linkedAt 
+                                    ? new Date(item.linkedAt).toLocaleDateString('fr-FR')
+                                    : item.requestedAt 
+                                        ? new Date(item.requestedAt).toLocaleDateString('fr-FR')
+                                        : 'N/A'
+                                }
                             </span>
                         )
                     },
@@ -115,35 +309,160 @@ export default function GuardiansPage() {
                         className: 'text-right',
                         accessor: (item) => (
                             <div className="flex items-center justify-end gap-2">
-                                {item.status === 'En attente' && (
-                                    <button
-                                        className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
-                                        title="Relancer l'invitation"
-                                    >
-                                        <Mail size={14} />
-                                    </button>
-                                )}
-                                {item.status === 'Actif' ? (
-                                    <button
-                                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
-                                        title="Révoquer le lien"
-                                        onClick={() => alert(`Révoquer le lien pour ${item.userName}?`)}
-                                    >
-                                        <Link2Off size={14} />
-                                    </button>
-                                ) : (
-                                    <button
-                                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors cursor-not-allowed"
-                                        disabled
-                                    >
-                                        <Link2Off size={14} className="opacity-50" />
-                                    </button>
-                                )}
+                                <button
+                                    className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                                    title="Voir les détails"
+                                    onClick={() => {
+                                        setSelectedGuardian(item);
+                                        setModalMode('view');
+                                        setShowModal(true);
+                                    }}
+                                >
+                                    <Eye size={14} />
+                                </button>
+                                <button
+                                    className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-full transition-colors"
+                                    title="Modifier le statut"
+                                    onClick={() => {
+                                        setSelectedGuardian(item);
+                                        setModalMode('edit');
+                                        setShowModal(true);
+                                    }}
+                                >
+                                    <Edit size={14} />
+                                </button>
+                                <button
+                                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                                    title="Supprimer"
+                                    onClick={() => handleDelete(item._id)}
+                                >
+                                    <Trash2 size={14} />
+                                </button>
                             </div>
                         )
                     }
                 ]}
             />
+            
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={page === 1}
+                        onClick={() => setPage(p => p - 1)}
+                    >
+                        Précédent
+                    </Button>
+                    <span className="text-sm text-gray-500">
+                        Page {page} sur {totalPages}
+                    </span>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={page === totalPages}
+                        onClick={() => setPage(p => p + 1)}
+                    >
+                        Suivant
+                    </Button>
+                </div>
+            )}
+            
+            {/* Modal */}
+            {showModal && selectedGuardian && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+                        <div className="p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-lg font-bold text-gray-900">
+                                    {modalMode === 'view' ? 'Détails du Tutorat' : 'Modifier le Statut'}
+                                </h2>
+                                <button
+                                    onClick={() => setShowModal(false)}
+                                    className="text-gray-400 hover:text-gray-600"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                            
+                            {modalMode === 'view' ? (
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="text-xs text-gray-500">Utilisatrice</label>
+                                        <p className="font-medium">{selectedGuardian.femaleUser?.name || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs text-gray-500">Tuteur</label>
+                                        <p className="font-medium">
+                                            {selectedGuardian.maleUser?.name || selectedGuardian.guardianName || 'N/A'}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs text-gray-500">Téléphone du Tuteur</label>
+                                        <p className="font-medium">{selectedGuardian.guardianPhone || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs text-gray-500">Code d'Accès</label>
+                                        <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono">
+                                            {selectedGuardian.accessCode}
+                                        </code>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs text-gray-500">Statut</label>
+                                        <div className="mt-1">{getStatusBadge(selectedGuardian.status)}</div>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs text-gray-500">Demandé le</label>
+                                        <p className="font-medium">
+                                            {selectedGuardian.requestedAt 
+                                                ? new Date(selectedGuardian.requestedAt).toLocaleString('fr-FR')
+                                                : 'N/A'}
+                                        </p>
+                                    </div>
+                                    {selectedGuardian.linkedAt && (
+                                        <div>
+                                            <label className="text-xs text-gray-500">Liée le</label>
+                                            <p className="font-medium">
+                                                {new Date(selectedGuardian.linkedAt).toLocaleString('fr-FR')}
+                                            </p>
+                                        </div>
+                                    )}
+                                    {selectedGuardian.revokedAt && (
+                                        <div>
+                                            <label className="text-xs text-gray-500">Révoqué le</label>
+                                            <p className="font-medium">
+                                                {new Date(selectedGuardian.revokedAt).toLocaleString('fr-FR')}
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    <p className="text-sm text-gray-600">
+                                        Modifier le statut de la relation de tutorat pour {selectedGuardian.femaleUser?.name}:
+                                    </p>
+                                    <div className="space-y-2">
+                                        {(['pending', 'active', 'revoked'] as const).map((status) => (
+                                            <button
+                                                key={status}
+                                                className={`w-full p-3 rounded-lg border-2 text-left transition-colors ${
+                                                    selectedGuardian.status === status
+                                                        ? 'border-primary bg-primary/5'
+                                                        : 'border-gray-200 hover:border-gray-300'
+                                                }`}
+                                                onClick={() => handleStatusChange(selectedGuardian._id, status)}
+                                            >
+                                                <span className="font-medium capitalize">{status}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

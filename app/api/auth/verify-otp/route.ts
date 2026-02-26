@@ -82,6 +82,12 @@ export async function POST(request: NextRequest) {
             // Update existing user
             user.isPhoneVerified = true;
             user.lastActive = new Date();
+            // If the user has a real name (not the placeholder) and isn't
+            // already marked as onboarded, fix the flag so they aren't
+            // sent back through the onboarding flow on every login.
+            if (!user.isOnboarded && user.name && user.name !== 'User') {
+                user.isOnboarded = true;
+            }
             await user.save();
         }
 
