@@ -156,7 +156,7 @@ export async function POST(request: NextRequest) {
                 const userId    = stripeSub.metadata?.userId;
                 if (!userId) break;
 
-                const endDate    = new Date(stripeSub.current_period_end * 1000);
+                const endDate    = new Date((stripeSub as any).current_period_end * 1000);
                 const isCancelled = stripeSub.cancel_at_period_end;
 
                 await User.findByIdAndUpdate(userId, {
