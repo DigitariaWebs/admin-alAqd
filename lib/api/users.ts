@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+const API_BASE_URL = '/api';
 
 function getAuthHeaders(): Record<string, string> {
     const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
