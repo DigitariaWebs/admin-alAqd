@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongodb';
 import { Order } from '@/lib/db/models/Order';
-import { Transaction } from '@/lib/db/models/Transaction';
 import { requireRole } from '@/lib/auth/middleware';
 
 // ─── PATCH /api/admin/orders/[id]/status ───────────────────────────────────────
@@ -35,16 +34,17 @@ export async function PATCH(
             );
         }
 
-        const order = await Order.findById(id);
-
-        if (!order) {
+        // First find the order
+        const existingOrder = await Order.findById(id).exec();
+        
+        if (!existingOrder) {
             return NextResponse.json({ error: 'Order not found' }, { status: 404 });
         }
 
         // Build update data
         const updateData: Record<string, unknown> = {
             status,
-            paymentStatus: status === 'completed' ? 'paid' : status === 'failed' ? 'failed' : status === 'refunded' ? 'refunded' : order.paymentStatus,
+            paymentStatus: status === 'completed' ? 'paid' : status === 'failed' ? 'failed' : status === 'refunded' ? 'refunded' : existingOrder.paymentStatus,
         };
 
         // Set timestamp based on status
@@ -56,20 +56,24 @@ export async function PATCH(
             updateData.refundedAt = new Date();
         }
 
-        const updatedOrder = await Order.findByIdAndUpdate(
-            id,
-            { $set: updateData },
-            { new: true }
-        ).lean();
+        // Update the order
+        await Order.updateOne({ _id: id }, { $set: updateData });
+
+        // Fetch the updated order
+        const updatedOrder = await Order.findById(id).exec();
+
+        if (!updatedOrder) {
+            return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+        }
 
         return NextResponse.json({
             success: true,
             order: {
-                id: updatedOrder?._id.toString(),
-                orderNumber: updatedOrder?.orderNumber,
-                status: updatedOrder?.status,
-                paymentStatus: updatedOrder?.paymentStatus,
-                updatedAt: updatedOrder?.updatedAt,
+                id: updatedOrder._id.toString(),
+                orderNumber: updatedOrder.orderNumber,
+                status: updatedOrder.status,
+                paymentStatus: updatedOrder.paymentStatus,
+                updatedAt: updatedOrder.updatedAt,
             },
         });
     } catch (error) {

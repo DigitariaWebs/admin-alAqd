@@ -4,7 +4,7 @@ import connectDB from '@/lib/db/mongodb';
 import { User } from '@/lib/db/models/User';
 import { Order } from '@/lib/db/models/Order';
 import { Transaction } from '@/lib/db/models/Transaction';
-import { PLAN_MAP, PlanId } from '@/lib/subscription/plans';
+import { PLAN_MAP, PlanId, SubscriptionPlan } from '@/lib/subscription/plans';
 
 // Helper to generate order number
 function generateOrderNumber(): string {
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
                 const planId = session.metadata?.planId as PlanId | undefined;
                 if (!userId || !planId) break;
 
-                const plan = PLAN_MAP.get(planId);
+                const plan: SubscriptionPlan | undefined = PLAN_MAP.get(planId);
                 if (!plan) break;
 
                 // Get user info
@@ -81,8 +81,8 @@ export async function POST(request: NextRequest) {
                 const stripeSubId = session.subscription as string;
                 const stripeSub = await stripe.subscriptions.retrieve(stripeSubId);
 
-                const startDate = new Date(stripeSub.current_period_start * 1000);
-                const endDate = new Date(stripeSub.current_period_end * 1000);
+                const startDate = new Date((stripeSub as any).current_period_start * 1000);
+                const endDate = new Date((stripeSub as any).current_period_end * 1000);
 
                 // Update user subscription
                 await User.findByIdAndUpdate(userId, {
@@ -108,13 +108,13 @@ export async function POST(request: NextRequest) {
                     items: [{
                         name: plan.name,
                         description: `${plan.durationMonths} month subscription`,
-                        price: plan.price,
+                        price: plan.priceAmount,
                         quantity: 1,
-                        total: plan.price,
+                        total: plan.priceAmount,
                     }],
-                    subtotal: plan.price,
+                    subtotal: plan.priceAmount,
                     tax: 0,
-                    total: plan.price,
+                    total: plan.priceAmount,
                     status: 'completed',
                     paymentStatus: 'paid',
                     payment: {
@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
                     orderId: order._id,
                     userId,
                     type: 'debit',
-                    amount: plan.price,
+                    amount: plan.priceAmount,
                     currency: 'USD',
                     description: `Subscription: ${plan.name}`,
                     status: 'completed',
@@ -156,7 +156,7 @@ export async function POST(request: NextRequest) {
                 const userId    = stripeSub.metadata?.userId;
                 if (!userId) break;
 
-                const endDate    = new Date(stripeSub.current_period_end * 1000);
+                const endDate    = new Date((stripeSub as any).current_period_end * 1000);
                 const isCancelled = stripeSub.cancel_at_period_end;
 
                 await User.findByIdAndUpdate(userId, {
@@ -168,7 +168,7 @@ export async function POST(request: NextRequest) {
                 break;
             }
 
-            // ── Subscription deleted / expired ────────────────────────────
+            // ── Subscription deleted / expired ───────────────────────────
             case 'customer.subscription.deleted': {
                 const stripeSub = event.data.object as Stripe.Subscription;
                 const userId    = stripeSub.metadata?.userId;
@@ -217,8 +217,8 @@ export async function POST(request: NextRequest) {
                 // Get subscription info
                 const subscriptionId = invoice.subscription as string;
                 const stripeSub = await stripe.subscriptions.retrieve(subscriptionId);
-                const planId = stripeSub.metadata?.planId as PlanId | undefined;
-                const plan = planId ? PLAN_MAP.get(planId) : null;
+                const planId = (stripeSub as any).metadata?.planId as PlanId | undefined;
+                const plan: SubscriptionPlan | undefined = planId ? PLAN_MAP.get(planId) : undefined;
 
                 if (!plan) break;
 
@@ -232,19 +232,19 @@ export async function POST(request: NextRequest) {
                     items: [{
                         name: plan.name,
                         description: `${plan.durationMonths} month subscription (Renewal)`,
-                        price: plan.price,
+                        price: plan.priceAmount,
                         quantity: 1,
-                        total: plan.price,
+                        total: plan.priceAmount,
                     }],
-                    subtotal: plan.price,
+                    subtotal: plan.priceAmount,
                     tax: 0,
-                    total: plan.price,
+                    total: plan.priceAmount,
                     status: 'completed',
                     paymentStatus: 'paid',
                     payment: {
                         method: 'card',
                         provider: 'stripe',
-                        stripePaymentIntentId: invoice.payment_intent as string,
+                        stripePaymentIntentId: (invoice as any).payment_intent as string,
                     },
                     stripeCustomerId: customerId,
                     subscriptionId,
@@ -257,13 +257,13 @@ export async function POST(request: NextRequest) {
                     transactionNumber: generateTransactionNumber(),
                     userId: user._id,
                     type: 'debit',
-                    amount: plan.price,
+                    amount: plan.priceAmount,
                     currency: 'USD',
                     description: `Subscription Renewal: ${plan.name}`,
                     status: 'completed',
                     paymentMethod: 'card',
                     provider: 'stripe',
-                    stripePaymentIntentId: invoice.payment_intent as string,
+                    stripePaymentIntentId: (invoice as any).payment_intent as string,
                     completedAt: new Date(),
                 });
 

@@ -111,22 +111,25 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json({
             success: true,
-            orders: orders.map(order => ({
-                id: order._id.toString(),
-                orderNumber: order.orderNumber,
-                customerName: order.customerName,
-                customerEmail: order.customerEmail,
-                items: order.items,
-                subtotal: order.subtotal,
-                tax: order.tax,
-                total: order.total,
-                status: order.status,
-                paymentStatus: order.paymentStatus,
-                payment: order.payment,
-                planId: order.planId,
-                createdAt: order.createdAt,
-                updatedAt: order.updatedAt,
-            })),
+            orders: orders.map((order) => {
+                const o = order as unknown as { _id: { toString(): string } };
+                return {
+                    id: o._id.toString(),
+                    orderNumber: order.orderNumber,
+                    customerName: order.customerName,
+                    customerEmail: order.customerEmail,
+                    items: order.items,
+                    subtotal: order.subtotal,
+                    tax: order.tax,
+                    total: order.total,
+                    status: order.status,
+                    paymentStatus: order.paymentStatus,
+                    payment: order.payment,
+                    planId: order.planId,
+                    createdAt: order.createdAt,
+                    updatedAt: order.updatedAt,
+                };
+            }),
             pagination: {
                 page,
                 limit,
