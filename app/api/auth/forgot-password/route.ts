@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
         await user.save();
 
         // TODO: Send email with reset link
-        // const resetUrl = `${process.env.NEXT_PUBLIC_API_URL}/reset-password?token=${resetToken}`;
+        // const resetUrl = `${process.env.APP_BASE_URL}/reset-password?token=${resetToken}`;
         // await sendEmail({ to: email, subject: 'Password Reset', resetUrl });
         
         console.log(`Password reset token for ${email}: ${resetToken}`);
