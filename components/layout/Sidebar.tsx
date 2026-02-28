@@ -16,7 +16,8 @@ import {
     LogOut,
     ChevronRight,
     Sparkles,
-    Shield
+    Shield,
+    Database
 } from 'lucide-react';
 import { Assets } from '@/config/assets';
 
@@ -31,6 +32,7 @@ const MENU_ITEMS = [
     { name: 'Notifications', icon: Bell, path: '/notifications' },
     { name: 'Paramètres', icon: Settings, path: '/settings' },
     { name: 'Support & Logs', icon: LifeBuoy, path: '/support' },
+    { name: 'Configuration', icon: Database, path: '/config' },
 ];
 
 export const Sidebar = () => {

@@ -166,7 +166,7 @@ export default function OrdersPage() {
             case 'refunded':
                 return 'error';
             default:
-                return 'default';
+                return 'neutral';
         }
     };
 

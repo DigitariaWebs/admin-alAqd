@@ -155,7 +155,7 @@ export default function TransactionHistoryPage() {
             case 'cancelled':
                 return 'error';
             default:
-                return 'default';
+                return 'neutral';
         }
     };
 

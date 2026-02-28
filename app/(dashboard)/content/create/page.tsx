@@ -20,7 +20,7 @@ export default function CreateContentPage() {
     const [formData, setFormData] = useState({
         title: '',
         slug: '',
-        type: 'article',
+        type: 'article' as const,
         content: '',
         excerpt: '',
         featuredImage: '',
@@ -228,13 +228,61 @@ export default function CreateContentPage() {
 
                     <Card className="rounded-[30px] p-6">
                         <h3 className="font-semibold text-sm mb-4">Featured Image</h3>
-                        <div className="border-2 border-dashed border-gray-200 rounded-[20px] h-32 flex flex-col items-center justify-center text-gray-400 hover:border-primary hover:bg-primary-50 hover:text-primary transition-all cursor-pointer">
+                        <div 
+                            className="border-2 border-dashed border-gray-200 rounded-[20px] h-32 flex flex-col items-center justify-center text-gray-400 hover:border-primary hover:bg-primary-50 hover:text-primary transition-all cursor-pointer relative"
+                            onClick={() => document.getElementById('featured-image-input')?.click()}
+                        >
+                            <input 
+                                type="file" 
+                                id="featured-image-input"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    
+                                    // Create FormData and upload
+                                    const formData = new FormData();
+                                    formData.append('file', file);
+                                    formData.append('type', 'image');
+                                    formData.append('folder', 'al-aqd/content');
+                                    
+                                    // Get auth token
+                                    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+                                    
+                                    try {
+                                        const response = await fetch('/api/admin/upload', {
+                                            method: 'POST',
+                                            headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+                                            body: formData,
+                                        });
+                                        
+                                        const data = await response.json();
+                                        if (data.success) {
+                                            setFormData(prev => ({ ...prev, featuredImage: data.url }));
+                                        } else {
+                                            console.error('Upload failed:', data.error);
+                                            alert(data.error || 'Failed to upload image');
+                                        }
+                                    } catch (err) {
+                                        console.error('Upload error:', err);
+                                        alert('Failed to upload image');
+                                    }
+                                }}
+                            />
                             <UploadCloud size={24} className="mb-2" />
                             <span className="text-xs">Click to upload</span>
                         </div>
                         {formData.featuredImage && (
-                            <div className="mt-2">
+                            <div className="mt-2 relative">
                                 <img src={formData.featuredImage} alt="Featured" className="w-full h-32 object-cover rounded-lg" />
+                                <button 
+                                    type="button"
+                                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                    onClick={() => setFormData(prev => ({ ...prev, featuredImage: '' }))}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                </button>
                             </div>
                         )}
                     </Card>

@@ -241,7 +241,6 @@ export default function GuardiansPage() {
                 data={guardians}
                 keyExtractor={(item) => item._id}
                 isLoading={isLoading}
-                emptyMessage="Aucune relation de tutorat trouvée"
                 columns={[
                     {
                         header: 'Utilisatrice',

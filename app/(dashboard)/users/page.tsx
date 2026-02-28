@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { fetchUsers, fetchUserDetail, createUser, deleteUser, updateUserStatus, setFilters, setPage, clearSelectedUser, fetchRoles } from '@/store/slices/usersSlice';
+import { fetchUsers, fetchUserDetail, createUser, deleteUser, updateUserStatus, updateUserRole, setFilters, setPage, clearSelectedUser, fetchRoles } from '@/store/slices/usersSlice';
 import { usersApi } from '@/lib/api/users';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';

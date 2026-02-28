@@ -125,7 +125,7 @@ export default function OrderDetailsPage() {
             case 'refunded':
                 return 'error';
             default:
-                return 'default';
+                return 'neutral';
         }
     };
 

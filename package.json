@@ -20,8 +20,10 @@
     "mongoose": "^8.10.0",
     "motion": "^12.29.2",
     "next": "16.1.6",
+    "postcss": "^8.5.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-hot-toast": "^2.6.0",
     "react-redux": "^9.2.0",
     "recharts": "^3.7.0",
     "stripe": "^20.3.1"
@@ -33,11 +35,12 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.27",
     "dotenv": "^16.6.1",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "eslint-config-prettier": "^10.1.8",
-    "tailwindcss": "^4",
+    "tailwindcss": "^4.2.1",
     "tsx": "^4.19.2",
     "typescript": "^5"
   }

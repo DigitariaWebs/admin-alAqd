@@ -23,7 +23,7 @@ export async function GET(
 
         const { id } = await params;
 
-        const order = await Order.findById(id).lean();
+        const order = await Order.findById(id);
 
         if (!order) {
             return NextResponse.json({ error: 'Order not found' }, { status: 404 });

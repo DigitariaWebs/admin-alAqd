@@ -98,24 +98,27 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json({
             success: true,
-            transactions: transactions.map(tx => ({
-                id: tx._id.toString(),
-                transactionNumber: tx.transactionNumber,
-                orderId: tx.orderId ? (typeof tx.orderId === 'object' ? { id: (tx.orderId as any)._id?.toString(), orderNumber: (tx.orderId as any).orderNumber } : tx.orderId.toString()) : undefined,
-                userId: tx.userId ? (typeof tx.userId === 'object' ? (tx.userId as any)._id?.toString() : tx.userId.toString()) : undefined,
-                userName: tx.userId && typeof tx.userId === 'object' ? (tx.userId as any).name : undefined,
-                type: tx.type,
-                amount: tx.amount,
-                currency: tx.currency,
-                description: tx.description,
-                status: tx.status,
-                paymentMethod: tx.paymentMethod,
-                last4: tx.last4,
-                provider: tx.provider,
-                createdAt: tx.createdAt,
-                completedAt: tx.completedAt,
-                failedAt: tx.failedAt,
-            })),
+            transactions: transactions.map((tx) => {
+                const t = tx as unknown as { _id: { toString(): string } };
+                return {
+                    id: t._id.toString(),
+                    transactionNumber: tx.transactionNumber,
+                    orderId: tx.orderId ? (typeof tx.orderId === 'object' ? { id: (tx.orderId as any)._id?.toString(), orderNumber: (tx.orderId as any).orderNumber } : tx.orderId.toString()) : undefined,
+                    userId: tx.userId ? (typeof tx.userId === 'object' ? (tx.userId as any)._id?.toString() : tx.userId.toString()) : undefined,
+                    userName: tx.userId && typeof tx.userId === 'object' ? (tx.userId as any).name : undefined,
+                    type: tx.type,
+                    amount: tx.amount,
+                    currency: tx.currency,
+                    description: tx.description,
+                    status: tx.status,
+                    paymentMethod: tx.paymentMethod,
+                    last4: tx.last4,
+                    provider: tx.provider,
+                    createdAt: tx.createdAt,
+                    completedAt: tx.completedAt,
+                    failedAt: tx.failedAt,
+                };
+            }),
             pagination: {
                 page,
                 limit,
