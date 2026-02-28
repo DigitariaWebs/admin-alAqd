@@ -48,7 +48,7 @@ export const Sidebar = () => {
 
     return (
         // eslint-disable-next-line tailwindcss/no-contradicting-classname
-        <aside className="w-64 bg-white border-r border-gray-100 flex flex-col h-screen sticky top-0 overflow-y-auto md:flex">
+        <aside className="w-64 bg-white border-r border-gray-100 flex flex-col h-screen sticky top-0 overflow-y-auto md:flex flex-shrink-0">
             {/* Logo Area */}
             <div className="h-16 flex items-center px-6 border-b border-gray-50">
                 <div className="flex items-center gap-2">
