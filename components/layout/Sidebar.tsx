@@ -7,7 +7,6 @@ import { useAppDispatch } from '@/store/hooks';
 import {
     LayoutDashboard,
     Users,
-    FileText,
     ShoppingCart,
     BarChart2,
     Bell,
@@ -25,7 +24,6 @@ const MENU_ITEMS = [
     { name: 'Tableau de bord', icon: LayoutDashboard, path: '/' },
     { name: 'Utilisateurs', icon: Users, path: '/users' },
     { name: 'Tuteurs / Mahram', icon: Shield, path: '/guardians' },
-    { name: 'Gestion de contenu', icon: FileText, path: '/content' },
     { name: 'Données d\'inscription', icon: Sparkles, path: '/content/onboarding' },
     { name: 'Commandes', icon: ShoppingCart, path: '/orders' },
     { name: 'Analytique', icon: BarChart2, path: '/analytics' },

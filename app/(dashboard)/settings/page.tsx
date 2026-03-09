@@ -442,7 +442,7 @@ export default function SettingsPage() {
                                     <Database size={16} /> External Services
                                 </h3>
 
-                                {integrations.map((integration) => (
+                                {integrations.filter(i => !/(stripe|s3|aws)/i.test(i.name)).map((integration) => (
                                     <Card key={integration.name} className="p-4 rounded-[20px] border border-gray-100">
                                         <div className="flex justify-between items-start mb-4">
                                             <div>
