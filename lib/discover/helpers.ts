@@ -124,6 +124,122 @@ export function buildAgeRangeFilter(
   };
 }
 
+type CountryLookup = { code: string; name: string; aliases: string[] };
+
+const COUNTRY_LOOKUP: CountryLookup[] = [
+  { code: "DZ", name: "Algeria", aliases: ["Algerian"] },
+  { code: "MA", name: "Morocco", aliases: ["Moroccan"] },
+  { code: "FR", name: "France", aliases: ["French"] },
+  { code: "TN", name: "Tunisia", aliases: ["Tunisian"] },
+  { code: "US", name: "United States", aliases: ["American", "USA"] },
+  { code: "AF", name: "Afghanistan", aliases: ["Afghan"] },
+  { code: "AL", name: "Albania", aliases: ["Albanian"] },
+  { code: "BE", name: "Belgium", aliases: ["Belgian"] },
+  { code: "BR", name: "Brazil", aliases: ["Brazilian"] },
+  { code: "GB", name: "United Kingdom", aliases: ["British", "UK", "Great Britain"] },
+  { code: "CA", name: "Canada", aliases: ["Canadian"] },
+  { code: "CN", name: "China", aliases: ["Chinese"] },
+  { code: "EG", name: "Egypt", aliases: ["Egyptian"] },
+  { code: "DE", name: "Germany", aliases: ["German"] },
+  { code: "IN", name: "India", aliases: ["Indian"] },
+  { code: "ID", name: "Indonesia", aliases: ["Indonesian"] },
+  { code: "IR", name: "Iran", aliases: ["Iranian"] },
+  { code: "IQ", name: "Iraq", aliases: ["Iraqi"] },
+  { code: "IT", name: "Italy", aliases: ["Italian"] },
+  { code: "JO", name: "Jordan", aliases: ["Jordanian"] },
+  { code: "KW", name: "Kuwait", aliases: ["Kuwaiti"] },
+  { code: "LB", name: "Lebanon", aliases: ["Lebanese"] },
+  { code: "LY", name: "Libya", aliases: ["Libyan"] },
+  { code: "MY", name: "Malaysia", aliases: ["Malaysian"] },
+  { code: "MX", name: "Mexico", aliases: ["Mexican"] },
+  { code: "NL", name: "Netherlands", aliases: ["Dutch"] },
+  { code: "NG", name: "Nigeria", aliases: ["Nigerian"] },
+  { code: "OM", name: "Oman", aliases: ["Omani"] },
+  { code: "PK", name: "Pakistan", aliases: ["Pakistani"] },
+  { code: "PS", name: "Palestine", aliases: ["Palestinian"] },
+  { code: "QA", name: "Qatar", aliases: ["Qatari"] },
+  { code: "RU", name: "Russia", aliases: ["Russian"] },
+  { code: "SA", name: "Saudi Arabia", aliases: ["Saudi"] },
+  { code: "SN", name: "Senegal", aliases: ["Senegalese"] },
+  { code: "ES", name: "Spain", aliases: ["Spanish"] },
+  { code: "SD", name: "Sudan", aliases: ["Sudanese"] },
+  { code: "SE", name: "Sweden", aliases: ["Swedish"] },
+  { code: "CH", name: "Switzerland", aliases: ["Swiss"] },
+  { code: "SY", name: "Syria", aliases: ["Syrian"] },
+  { code: "TR", name: "Turkey", aliases: ["Turkish"] },
+  { code: "AE", name: "United Arab Emirates", aliases: ["Emirati", "UAE"] },
+  { code: "YE", name: "Yemen", aliases: ["Yemeni"] },
+];
+
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function resolveCountryTokens(input: string): string[] {
+  const normalized = input.trim().toLowerCase();
+  if (!normalized) return [];
+
+  const matched =
+    COUNTRY_LOOKUP.find((c) => c.code.toLowerCase() === normalized) ||
+    COUNTRY_LOOKUP.find((c) => c.name.toLowerCase() === normalized) ||
+    COUNTRY_LOOKUP.find((c) =>
+      c.aliases.some((alias) => alias.toLowerCase() === normalized),
+    );
+
+  if (!matched) {
+    return [normalized];
+  }
+
+  return Array.from(
+    new Set([
+      matched.code.toLowerCase(),
+      matched.name.toLowerCase(),
+      ...matched.aliases.map((alias) => alias.toLowerCase()),
+    ]),
+  );
+}
+
+/**
+ * Build a MongoDB filter that limits discover results to profiles matching
+ * the selected country in either location text or nationality values.
+ */
+export function buildCountryFilter(countryInput?: string) {
+  if (!countryInput?.trim()) {
+    return null;
+  }
+
+  const tokens = resolveCountryTokens(countryInput);
+  if (tokens.length === 0) {
+    return null;
+  }
+
+  const regexes = tokens
+    .filter((token) => token.length > 2)
+    .map((token) => new RegExp(`(^|\\W)${escapeRegex(token)}($|\\W)`, "i"));
+
+  const codeTokens = tokens
+    .filter((token) => token.length === 2)
+    .map((token) => token.toUpperCase());
+
+  const nameTokens = tokens
+    .filter((token) => token.length > 2)
+    .map((token) => token.replace(/\b\w/g, (char) => char.toUpperCase()));
+
+  const nationalityIn = Array.from(new Set([...codeTokens, ...nameTokens]));
+
+  const orConditions: Record<string, unknown>[] = [];
+
+  if (regexes.length > 0) {
+    orConditions.push(...regexes.map((regex) => ({ location: regex })));
+  }
+
+  if (nationalityIn.length > 0) {
+    orConditions.push({ nationality: { $in: nationalityIn } });
+  }
+
+  return orConditions.length > 0 ? { $or: orConditions } : null;
+}
+
 /**
  * Serialize a lean user document into a ProfileCard shape for the mobile app.
  * Includes all fields needed by the discovery screen UI.

@@ -4,7 +4,11 @@ import { User } from '@/lib/db/models/User';
 import { Swipe } from '@/lib/db/models/Swipe';
 import { Block } from '@/lib/db/models/Block';
 import { requireAuth } from '@/lib/auth/middleware';
-import { buildAgeRangeFilter, serializeProfileCard } from '@/lib/discover/helpers';
+import {
+    buildAgeRangeFilter,
+    buildCountryFilter,
+    serializeProfileCard,
+} from '@/lib/discover/helpers';
 
 const DISCOVER_SELECT =
   "name dateOfBirth gender location bio profession photos interests religiousPractice " +
@@ -23,6 +27,7 @@ export async function GET(request: NextRequest) {
         const { searchParams } = new URL(request.url);
         const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
         const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '10')));
+        const countryFilter = searchParams.get('country')?.trim();
 
         const currentUser = await User.findById(authResult.user.userId).select(
             'gender preferences interests religiousPractice'
@@ -71,6 +76,11 @@ export async function GET(request: NextRequest) {
         }
         if (prefs?.education?.length) {
             query.education = { $in: prefs.education };
+        }
+
+        const countryClause = buildCountryFilter(countryFilter);
+        if (countryClause) {
+            query.$and = [...((query.$and as Record<string, unknown>[] | undefined) ?? []), countryClause];
         }
 
         const skip = (page - 1) * limit;

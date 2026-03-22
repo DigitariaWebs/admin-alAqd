@@ -3,7 +3,11 @@ import connectDB from '@/lib/db/mongodb';
 import { User } from '@/lib/db/models/User';
 import { Swipe } from '@/lib/db/models/Swipe';
 import { requireAuth } from '@/lib/auth/middleware';
-import { buildAgeRangeFilter, serializeProfileCard } from '@/lib/discover/helpers';
+import {
+    buildAgeRangeFilter,
+    buildCountryFilter,
+    serializeProfileCard,
+} from '@/lib/discover/helpers';
 
 const DISCOVER_SELECT =
   "name dateOfBirth gender location bio profession photos interests religiousPractice " +
@@ -28,6 +32,7 @@ export async function POST(request: NextRequest) {
 
         const body = await request.json().catch(() => ({}));
         const limit = Math.min(50, Math.max(1, parseInt(body?.limit ?? '10')));
+        const countryFilter = typeof body?.country === 'string' ? body.country.trim() : undefined;
 
         const currentUser = await User.findById(authResult.user.userId).select(
             'gender preferences interests religiousPractice'
@@ -65,6 +70,11 @@ export async function POST(request: NextRequest) {
         }
         if (prefs?.education?.length) {
             query.education = { $in: prefs.education };
+        }
+
+        const countryClause = buildCountryFilter(countryFilter);
+        if (countryClause) {
+            query.$and = [...((query.$and as Record<string, unknown>[] | undefined) ?? []), countryClause];
         }
 
         const [profiles, total] = await Promise.all([
