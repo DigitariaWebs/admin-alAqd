@@ -8,7 +8,8 @@ export async function POST(request: NextRequest) {
         await connectDB();
         
         const body = await request.json();
-        const { email, password } = body;
+        const email = body?.email?.trim?.().toLowerCase?.() ?? "";
+        const password = body?.password;
         
         if (!email || !password) {
             return NextResponse.json(
@@ -18,7 +19,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Find user by email
-        const user = await User.findOne({ email: email.toLowerCase() });
+        const user = await User.findOne({ email });
         
         if (!user) {
             return NextResponse.json(

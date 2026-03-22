@@ -32,13 +32,13 @@ export default function LoginPage() {
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
+        const normalizedEmail = email.trim().toLowerCase();
         
         try {
-            await dispatch(login({ email, password })).unwrap();
-            router.push('/');
-        } catch (err) {
-            // Error is handled by the reducer
-            console.error('Login failed:', err);
+          await dispatch(login({ email: normalizedEmail, password })).unwrap();
+          router.push("/");
+        } catch {
+        // Error is handled by the reducer
         }
     };
 
