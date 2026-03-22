@@ -1,6 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongodb';
 import { User } from '@/lib/db/models/User';
+import { Match } from '@/lib/db/models/Match';
+import { Message } from '@/lib/db/models/Message';
+import { Swipe } from '@/lib/db/models/Swipe';
+import { Reaction } from '@/lib/db/models/Reaction';
+import { Block } from '@/lib/db/models/Block';
+import { Favorite } from '@/lib/db/models/Favorite';
+import { Report } from '@/lib/db/models/Report';
+import { Guardian } from '@/lib/db/models/Guardian';
+import { RefreshToken } from '@/lib/db/models/RefreshToken';
+import { Notification } from '@/lib/db/models/Notification';
+import { Order } from '@/lib/db/models/Order';
+import { Transaction } from '@/lib/db/models/Transaction';
+import { Ticket } from '@/lib/db/models/Ticket';
+import { OTP } from '@/lib/db/models/OTP';
+import { deleteFile } from '@/lib/cloudinary';
 import { requireAuth } from '@/lib/auth/middleware';
 
 export async function GET(request: NextRequest) {
@@ -129,21 +144,63 @@ export async function DELETE(request: NextRequest) {
             );
         }
 
-        const user = await User.findById(authResult.user.userId);
+        const user = await User.findById(authResult.user.userId).select('photos phoneNumber');
 
         if (!user) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
-        // Soft delete — set status to banned and anonymize PII
-        user.status = 'banned';
-        user.name = 'Deleted User';
-        user.phoneNumber = undefined;
-        user.email = undefined;
-        user.bio = undefined;
-        user.photos = [];
-        user.isOnboarded = false;
-        await user.save();
+        const userId = user._id;
+        const userIdString = user._id.toString();
+        const matchIds = (await Match.find({ $or: [{ user1: userId }, { user2: userId }] }).select('_id'))
+            .map((match) => match._id);
+
+        // Best-effort media cleanup. Account deletion should not fail on remote media issues.
+        const cloudinaryPublicIds = (user.photos ?? [])
+            .map((photoUrl) => extractCloudinaryPublicId(photoUrl))
+            .filter((publicId): publicId is string => Boolean(publicId));
+
+        await Promise.all(
+            cloudinaryPublicIds.map(async (publicId) => {
+                try {
+                    await deleteFile(publicId);
+                } catch (mediaError) {
+                    console.warn('Failed to delete Cloudinary asset during account deletion:', {
+                        publicId,
+                        mediaError,
+                    });
+                }
+            })
+        );
+
+        await Promise.all([
+            Swipe.deleteMany({ $or: [{ fromUser: userId }, { toUser: userId }] }),
+            Reaction.deleteMany({ $or: [{ fromUser: userId }, { toUser: userId }] }),
+            Block.deleteMany({ $or: [{ blockerId: userId }, { blockedId: userId }] }),
+            Favorite.deleteMany({ $or: [{ fromUser: userId }, { toUser: userId }] }),
+            Report.deleteMany({ $or: [{ reporterId: userId }, { reportedId: userId }] }),
+            Guardian.deleteMany({ $or: [{ femaleUserId: userId }, { maleUserId: userId }] }),
+            RefreshToken.deleteMany({ userId }),
+            Order.deleteMany({ userId }),
+            Transaction.deleteMany({ userId }),
+            Ticket.deleteMany({ userId: userIdString }),
+            Notification.updateMany(
+                { targetUserIds: userIdString },
+                { $pull: { targetUserIds: userIdString } }
+            ),
+            ...(matchIds.length > 0
+                ? [Message.deleteMany({ conversationId: { $in: matchIds } })]
+                : []),
+            Message.deleteMany({ $or: [{ senderId: userId }, { receiverId: userId }] }),
+        ]);
+
+        await Match.deleteMany({ $or: [{ user1: userId }, { user2: userId }] });
+
+        if (user.phoneNumber) {
+            await OTP.deleteMany({ phoneNumber: user.phoneNumber });
+        }
+
+        await User.deleteOne({ _id: userId });
 
         return NextResponse.json({
             success: true,
@@ -152,6 +209,33 @@ export async function DELETE(request: NextRequest) {
     } catch (error) {
         console.error('Delete account error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    }
+}
+
+function extractCloudinaryPublicId(url: string): string | null {
+    if (!url || !url.includes('/upload/')) {
+        return null;
+    }
+
+    try {
+        const parsedUrl = new URL(url);
+        const uploadSegment = '/upload/';
+        const uploadIndex = parsedUrl.pathname.indexOf(uploadSegment);
+
+        if (uploadIndex === -1) {
+            return null;
+        }
+
+        let afterUpload = parsedUrl.pathname.slice(uploadIndex + uploadSegment.length);
+        // Strip optional transformation params and version segment (e.g. /w_300,h_300/v123456/...).
+        afterUpload = afterUpload.replace(/^(?:[^/]+\/)*v\d+\//, '');
+
+        const dotIndex = afterUpload.lastIndexOf('.');
+        const publicId = dotIndex > 0 ? afterUpload.slice(0, dotIndex) : afterUpload;
+
+        return publicId || null;
+    } catch {
+        return null;
     }
 }
 
