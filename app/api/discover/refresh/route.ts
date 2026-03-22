@@ -6,9 +6,9 @@ import { requireAuth } from '@/lib/auth/middleware';
 import { buildAgeRangeFilter, serializeProfileCard } from '@/lib/discover/helpers';
 
 const DISCOVER_SELECT =
-    'name dateOfBirth gender location bio profession photos interests religiousPractice ' +
-    'ethnicity height maritalStatus isPhoneVerified isEmailVerified subscription lastActive ' +
-    'faithTags personality';
+  "name dateOfBirth gender location bio profession photos interests religiousPractice " +
+  "ethnicity height maritalStatus isPhoneVerified isEmailVerified subscription lastActive " +
+  "faithTags personality photoBlurEnabled";
 
 /**
  * POST /api/discover/refresh
@@ -78,7 +78,12 @@ export async function POST(request: NextRequest) {
         ]);
 
         const profileCards = profiles.map((user) =>
-            serializeProfileCard(user, currentUser.interests ?? [], currentUser.religiousPractice)
+            serializeProfileCard(
+                user,
+                currentUser.interests ?? [],
+                currentUser.religiousPractice,
+                authResult.user.userId
+            )
         );
 
         return NextResponse.json({

@@ -9,8 +9,8 @@ import { requireAuth } from '@/lib/auth/middleware';
 import { serializeLikeCard } from '@/lib/discover/helpers';
 
 const USER_SELECT =
-    'name dateOfBirth profession location photos isPhoneVerified isEmailVerified ' +
-    'subscription lastActive religiousPractice';
+  "name dateOfBirth profession location gender photos photoBlurEnabled isPhoneVerified isEmailVerified " +
+  "subscription lastActive religiousPractice";
 
 /**
  * GET /api/likes/sent
@@ -71,7 +71,8 @@ export async function GET(request: NextRequest) {
                 swipe,
                 user,
                 mutualUserIds.has(swipe.toUser.toString()),
-                favSet.has(swipe.toUser.toString())
+                favSet.has(swipe.toUser.toString()),
+                authResult.user.userId
             );
         });
 

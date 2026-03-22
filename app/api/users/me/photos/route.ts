@@ -4,6 +4,7 @@ import { User } from '@/lib/db/models/User';
 import { requireAuth } from '@/lib/auth/middleware';
 
 const MAX_PHOTOS = 6;
+const MIN_PHOTOS = 1;
 
 // POST /api/users/me/photos — add one or more photo URIs
 export async function POST(request: NextRequest) {
@@ -88,6 +89,13 @@ export async function DELETE(request: NextRequest) {
         }
 
         const photos = user.photos ?? [];
+
+        if (photos.length <= MIN_PHOTOS) {
+            return NextResponse.json(
+                { error: `You must keep at least ${MIN_PHOTOS} photos` },
+                { status: 400 }
+            );
+        }
 
         if (index >= photos.length) {
             return NextResponse.json(

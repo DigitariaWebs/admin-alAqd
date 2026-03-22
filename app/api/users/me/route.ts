@@ -48,10 +48,26 @@ export async function PATCH(request: NextRequest) {
         const body = await request.json();
 
         const {
-            name, dateOfBirth, gender, profession, education,
-            nationality, location, ethnicity, height, maritalStatus,
-            religiousPractice, faithTags, drinking, smoking,
-            interests, personality, photos, bio, isOnboarded,
+          name,
+          dateOfBirth,
+          gender,
+          profession,
+          education,
+          nationality,
+          location,
+          ethnicity,
+          height,
+          maritalStatus,
+          religiousPractice,
+          faithTags,
+          drinking,
+          smoking,
+          interests,
+          personality,
+          photos,
+          bio,
+          isOnboarded,
+          photoBlurEnabled,
         } = body;
 
         const updateData: Record<string, unknown> = {};
@@ -73,6 +89,8 @@ export async function PATCH(request: NextRequest) {
         if (interests !== undefined) updateData.interests = interests;
         if (personality !== undefined) updateData.personality = personality;
         if (photos !== undefined) updateData.photos = photos;
+        if (photoBlurEnabled !== undefined)
+          updateData.photoBlurEnabled = !!photoBlurEnabled;
         if (bio !== undefined) updateData.bio = bio;
         if (isOnboarded !== undefined) updateData.isOnboarded = isOnboarded;
 
@@ -140,34 +158,35 @@ export async function DELETE(request: NextRequest) {
 // Shared serializer — full profile response shape
 export function serializeUser(user: any) {
     return {
-        id: user._id.toString(),
-        phoneNumber: user.phoneNumber,
-        email: user.email,
-        name: user.name,
-        dateOfBirth: user.dateOfBirth,
-        gender: user.gender,
-        bio: user.bio,
-        profession: user.profession,
-        location: user.location,
-        height: user.height,
-        nationality: user.nationality ?? [],
-        ethnicity: user.ethnicity ?? [],
-        maritalStatus: user.maritalStatus,
-        education: user.education,
-        religiousPractice: user.religiousPractice,
-        faithTags: user.faithTags ?? [],
-        drinking: user.drinking,
-        smoking: user.smoking,
-        interests: user.interests ?? [],
-        personality: user.personality ?? [],
-        photos: user.photos ?? [],
-        role: user.role,
-        status: user.status,
-        isOnboarded: user.isOnboarded,
-        isEmailVerified: user.isEmailVerified,
-        isPhoneVerified: user.isPhoneVerified,
-        subscription: user.subscription,
-        lastActive: user.lastActive,
-        createdAt: user.createdAt,
+      id: user._id.toString(),
+      phoneNumber: user.phoneNumber,
+      email: user.email,
+      name: user.name,
+      dateOfBirth: user.dateOfBirth,
+      gender: user.gender,
+      bio: user.bio,
+      profession: user.profession,
+      location: user.location,
+      height: user.height,
+      nationality: user.nationality ?? [],
+      ethnicity: user.ethnicity ?? [],
+      maritalStatus: user.maritalStatus,
+      education: user.education,
+      religiousPractice: user.religiousPractice,
+      faithTags: user.faithTags ?? [],
+      drinking: user.drinking,
+      smoking: user.smoking,
+      interests: user.interests ?? [],
+      personality: user.personality ?? [],
+      photos: user.photos ?? [],
+      photoBlurEnabled: user.photoBlurEnabled !== false,
+      role: user.role,
+      status: user.status,
+      isOnboarded: user.isOnboarded,
+      isEmailVerified: user.isEmailVerified,
+      isPhoneVerified: user.isPhoneVerified,
+      subscription: user.subscription,
+      lastActive: user.lastActive,
+      createdAt: user.createdAt,
     };
 }

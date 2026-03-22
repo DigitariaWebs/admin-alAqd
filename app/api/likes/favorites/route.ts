@@ -8,8 +8,8 @@ import { requireAuth } from '@/lib/auth/middleware';
 import { serializeFavoriteCard } from '@/lib/discover/helpers';
 
 const USER_SELECT =
-    'name dateOfBirth profession location photos isPhoneVerified isEmailVerified ' +
-    'subscription lastActive religiousPractice';
+  "name dateOfBirth profession location gender photos photoBlurEnabled isPhoneVerified isEmailVerified " +
+  "subscription lastActive religiousPractice";
 
 /**
  * GET /api/likes/favorites
@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
             .filter((f) => userMap.has(f.toUser.toString()))
             .map((fav) => {
                 const user = userMap.get(fav.toUser.toString())!;
-                const card = serializeFavoriteCard(fav, user);
+                const card = serializeFavoriteCard(fav, user, authResult.user.userId);
                 return { ...card, isMutual: mutualIds.has(fav.toUser.toString()) };
             });
 

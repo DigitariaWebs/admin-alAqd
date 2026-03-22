@@ -3,6 +3,7 @@ import connectDB from '@/lib/db/mongodb';
 import { Guardian, generateUniqueCode } from '@/lib/db/models/Guardian';
 import { User } from '@/lib/db/models/User';
 import { requireAuth, requireRole } from '@/lib/auth/middleware';
+import { getPhotosForViewer } from '@/lib/privacy/photos';
 
 // ─── Helper Functions ───────────────────────────────────────────────────────
 
@@ -24,26 +25,40 @@ function serializeGuardian(guardian: any) {
 }
 
 async function getFemaleUserDetails(femaleUserId: any) {
-    const femaleUser = await User.findById(femaleUserId).select('name photos gender');
-    if (!femaleUser) return null;
-    return {
-        id: femaleUser._id,
-        name: femaleUser.name,
-        photos: femaleUser.photos || [],
-        gender: femaleUser.gender,
-    };
+  const femaleUser = await User.findById(femaleUserId).select(
+    "name photos gender photoBlurEnabled",
+  );
+  if (!femaleUser) return null;
+  return {
+    id: femaleUser._id,
+    name: femaleUser.name,
+    photos: getPhotosForViewer({
+      photos: femaleUser.photos || [],
+      targetGender: femaleUser.gender,
+      blurEnabled: femaleUser.photoBlurEnabled,
+      isOwner: false,
+    }),
+    gender: femaleUser.gender,
+  };
 }
 
 async function getMaleUserDetails(maleUserId: any) {
-    if (!maleUserId) return null;
-    const maleUser = await User.findById(maleUserId).select('name photos gender');
-    if (!maleUser) return null;
-    return {
-        id: maleUser._id,
-        name: maleUser.name,
-        photos: maleUser.photos || [],
-        gender: maleUser.gender,
-    };
+  if (!maleUserId) return null;
+  const maleUser = await User.findById(maleUserId).select(
+    "name photos gender photoBlurEnabled",
+  );
+  if (!maleUser) return null;
+  return {
+    id: maleUser._id,
+    name: maleUser.name,
+    photos: getPhotosForViewer({
+      photos: maleUser.photos || [],
+      targetGender: maleUser.gender,
+      blurEnabled: maleUser.photoBlurEnabled,
+      isOwner: false,
+    }),
+    gender: maleUser.gender,
+  };
 }
 
 // ─── POST /api/guardians ──────────────────────────────────────────────────

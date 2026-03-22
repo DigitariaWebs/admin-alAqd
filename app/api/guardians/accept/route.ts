@@ -3,6 +3,7 @@ import connectDB from '@/lib/db/mongodb';
 import { Guardian } from '@/lib/db/models/Guardian';
 import { User } from '@/lib/db/models/User';
 import { requireAuth } from '@/lib/auth/middleware';
+import { getPhotosForViewer } from '@/lib/privacy/photos';
 
 // ─── POSTlib/auth/middleware /api/guardians/accept ───────────────────────────────────────────────
 
@@ -87,26 +88,35 @@ export async function POST(request: NextRequest) {
         await guardian.save();
 
         // Get female user details
-        const femaleUser = guardian.femaleUserId 
-            ? await User.findById(guardian.femaleUserId).select('name photos gender')
-            : null;
+        const femaleUser = guardian.femaleUserId
+          ? await User.findById(guardian.femaleUserId).select(
+              "name photos gender photoBlurEnabled",
+            )
+          : null;
 
         return NextResponse.json({
-            success: true,
-            message: 'Guardian relationship accepted successfully',
-            guardian: {
-                _id: guardian._id,
-                guardianName: guardian.guardianName,
-                guardianPhone: guardian.guardianPhone,
-                status: guardian.status,
-                linkedAt: guardian.linkedAt?.toISOString(),
-            },
-            femaleUser: femaleUser ? {
+          success: true,
+          message: "Guardian relationship accepted successfully",
+          guardian: {
+            _id: guardian._id,
+            guardianName: guardian.guardianName,
+            guardianPhone: guardian.guardianPhone,
+            status: guardian.status,
+            linkedAt: guardian.linkedAt?.toISOString(),
+          },
+          femaleUser: femaleUser
+            ? {
                 id: femaleUser._id,
                 name: femaleUser.name,
-                photos: femaleUser.photos || [],
+                photos: getPhotosForViewer({
+                  photos: femaleUser.photos || [],
+                  targetGender: femaleUser.gender,
+                  blurEnabled: femaleUser.photoBlurEnabled,
+                  isOwner: false,
+                }),
                 gender: femaleUser.gender,
-            } : null,
+              }
+            : null,
         });
     } catch (error) {
         console.error('Accept guardian error:', error);

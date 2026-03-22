@@ -50,10 +50,10 @@ export async function GET(request: NextRequest) {
         );
 
         const otherUsers = await User.find({ _id: { $in: otherUserIds } })
-            .select(
-                'name photos dateOfBirth location isPhoneVerified isEmailVerified subscription lastActive'
-            )
-            .lean();
+          .select(
+            "name gender photos photoBlurEnabled dateOfBirth location isPhoneVerified isEmailVerified subscription lastActive",
+          )
+          .lean();
 
         const userMap = new Map(otherUsers.map((u) => [u._id.toString(), u]));
 

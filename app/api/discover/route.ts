@@ -7,9 +7,9 @@ import { requireAuth } from '@/lib/auth/middleware';
 import { buildAgeRangeFilter, serializeProfileCard } from '@/lib/discover/helpers';
 
 const DISCOVER_SELECT =
-    'name dateOfBirth gender location bio profession photos interests religiousPractice ' +
-    'ethnicity height maritalStatus isPhoneVerified isEmailVerified subscription lastActive ' +
-    'faithTags personality';
+  "name dateOfBirth gender location bio profession photos interests religiousPractice " +
+  "ethnicity height maritalStatus isPhoneVerified isEmailVerified subscription lastActive " +
+  "faithTags personality photoBlurEnabled";
 
 export async function GET(request: NextRequest) {
     try {
@@ -86,7 +86,12 @@ export async function GET(request: NextRequest) {
         ]);
 
         const profileCards = profiles.map((user) =>
-            serializeProfileCard(user, currentUser.interests ?? [], currentUser.religiousPractice)
+            serializeProfileCard(
+                user,
+                currentUser.interests ?? [],
+                currentUser.religiousPractice,
+                authResult.user.userId
+            )
         );
 
         return NextResponse.json({

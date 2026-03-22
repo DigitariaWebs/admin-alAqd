@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongodb';
 import { Guardian } from '@/lib/db/models/Guardian';
 import { User } from '@/lib/db/models/User';
+import { getPhotosForViewer } from '@/lib/privacy/photos';
 
 // ─── GET /api/guardians/check-code ───────────────────────────────────────────
 
@@ -37,21 +38,30 @@ export async function GET(request: NextRequest) {
         }
 
         // Get female user details
-        const femaleUser = await User.findById(guardian.femaleUserId).select('name photos gender');
+        const femaleUser = await User.findById(guardian.femaleUserId).select(
+          "name photos gender photoBlurEnabled",
+        );
 
         return NextResponse.json({
-            valid: true,
-            guardian: {
-                _id: guardian._id,
-                guardianName: guardian.guardianName,
-                guardianPhone: guardian.guardianPhone,
-            },
-            femaleUser: femaleUser ? {
+          valid: true,
+          guardian: {
+            _id: guardian._id,
+            guardianName: guardian.guardianName,
+            guardianPhone: guardian.guardianPhone,
+          },
+          femaleUser: femaleUser
+            ? {
                 id: femaleUser._id,
                 name: femaleUser.name,
-                photos: femaleUser.photos || [],
+                photos: getPhotosForViewer({
+                  photos: femaleUser.photos || [],
+                  targetGender: femaleUser.gender,
+                  blurEnabled: femaleUser.photoBlurEnabled,
+                  isOwner: false,
+                }),
                 gender: femaleUser.gender,
-            } : null,
+              }
+            : null,
         });
     } catch (error) {
         console.error('Check access code error:', error);

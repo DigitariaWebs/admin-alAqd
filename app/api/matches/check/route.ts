@@ -47,10 +47,10 @@ export async function GET(request: NextRequest) {
         }
 
         const otherUser = await User.findById(targetUserId)
-            .select(
-                'name photos dateOfBirth location isPhoneVerified isEmailVerified subscription lastActive'
-            )
-            .lean();
+          .select(
+            "name gender photos photoBlurEnabled dateOfBirth location isPhoneVerified isEmailVerified subscription lastActive",
+          )
+          .lean();
 
         if (!otherUser) {
             return NextResponse.json({ success: true, isMatched: false });

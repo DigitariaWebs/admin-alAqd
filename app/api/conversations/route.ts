@@ -8,7 +8,7 @@ import { requireAuth } from '@/lib/auth/middleware';
 import { serializeConversation } from '@/lib/discover/helpers';
 
 const PARTICIPANT_SELECT =
-    'name dateOfBirth photos isPhoneVerified isEmailVerified subscription lastActive';
+  "name dateOfBirth gender photos photoBlurEnabled isPhoneVerified isEmailVerified subscription lastActive";
 
 /**
  * GET /api/conversations
@@ -87,7 +87,8 @@ export async function GET(request: NextRequest) {
                     match,
                     participant,
                     lastMessageMap.get(match._id.toString()) ?? null,
-                    unreadMap.get(match._id.toString()) ?? 0
+                    unreadMap.get(match._id.toString()) ?? 0,
+                    authResult.user.userId
                 );
             })
             .filter(Boolean);

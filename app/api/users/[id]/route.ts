@@ -3,6 +3,7 @@ import connectDB from '@/lib/db/mongodb';
 import { User } from '@/lib/db/models/User';
 import { requireAuth } from '@/lib/auth/middleware';
 import { serializeUser } from '@/app/api/users/me/route';
+import { getPhotosForViewer } from '@/lib/privacy/photos';
 
 export async function GET(
     request: NextRequest,
@@ -37,6 +38,13 @@ export async function GET(
         }
 
         // Other users get public profile only
+        const visiblePhotos = getPhotosForViewer({
+          photos: user.photos ?? [],
+          targetGender: user.gender,
+          blurEnabled: user.photoBlurEnabled,
+          isOwner: false,
+        });
+
         return NextResponse.json({
             success: true,
             user: {
@@ -56,7 +64,7 @@ export async function GET(
                 faithTags: user.faithTags ?? [],
                 interests: user.interests ?? [],
                 personality: user.personality ?? [],
-                photos: user.photos ?? [],
+                photos: visiblePhotos,
                 isOnboarded: user.isOnboarded,
                 lastActive: user.lastActive,
             },
