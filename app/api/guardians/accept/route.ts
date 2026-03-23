@@ -65,23 +65,8 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Check if user is already linked to another female
-        const existingLink = await Guardian.findOne({
-            maleUserId: userId,
-            status: 'active',
-        });
-
-        if (existingLink) {
-            return NextResponse.json(
-                { error: 'You are already linked as a guardian to another user' },
-                { status: 400 }
-            );
-        }
-
         // Link the male user to the guardian relationship
-        if (guardian.maleUserId) {
-            guardian.maleUserId = userId as any;
-        }
+        guardian.maleUserId = userId as any;
         guardian.status = 'active';
         guardian.linkedAt = new Date();
 

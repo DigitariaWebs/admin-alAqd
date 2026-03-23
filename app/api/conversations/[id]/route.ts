@@ -35,6 +35,10 @@ export async function DELETE(request: NextRequest, { params }: Params) {
         );
 
         if (!match) {
+            const exists = await Match.findOne({ _id: id, isActive: true }).select('_id').lean();
+            if (exists) {
+                return NextResponse.json({ error: 'Guardians cannot delete supervised conversations' }, { status: 403 });
+            }
             return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
         }
 
