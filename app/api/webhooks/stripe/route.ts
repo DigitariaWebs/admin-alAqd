@@ -206,7 +206,7 @@ export async function POST(request: NextRequest) {
                 break;
             }
 
-            // ── Invoice payment succeeded (renewals) ─────────────────────────
+            // ── Invoice payment succeeded (first payment via Payment Sheet + renewals) ──
             case 'invoice.payment_succeeded': {
                 const invoice = event.data.object as Stripe.Invoice;
                 const customerId = invoice.customer as string;
@@ -222,7 +222,31 @@ export async function POST(request: NextRequest) {
 
                 if (!plan) break;
 
-                // Create order for renewal
+                const startDate = new Date((stripeSub as any).current_period_start * 1000);
+                const endDate = new Date((stripeSub as any).current_period_end * 1000);
+
+                // Check if this is the first payment (subscription activation) or a renewal
+                const isFirstPayment = !user.stripeSubscriptionId || user.stripeSubscriptionId !== subscriptionId;
+
+                if (isFirstPayment) {
+                    // First payment — activate subscription
+                    await User.findByIdAndUpdate(user._id, {
+                        $set: {
+                            stripeSubscriptionId: subscriptionId,
+                            subscription: {
+                                plan: plan.tier,
+                                isActive: true,
+                                startDate,
+                                endDate,
+                                cancelledAt: undefined,
+                            },
+                        },
+                    });
+                }
+
+                const isRenewal = !isFirstPayment;
+
+                // Create order
                 const orderNumber = generateOrderNumber();
                 await Order.create({
                     orderNumber,
@@ -231,7 +255,7 @@ export async function POST(request: NextRequest) {
                     customerEmail: user.email,
                     items: [{
                         name: plan.name,
-                        description: `${plan.durationMonths} month subscription (Renewal)`,
+                        description: `${plan.durationMonths} month subscription${isRenewal ? ' (Renewal)' : ''}`,
                         price: plan.priceAmount,
                         quantity: 1,
                         total: plan.priceAmount,
@@ -252,14 +276,14 @@ export async function POST(request: NextRequest) {
                     completedAt: new Date(),
                 });
 
-                // Create transaction for renewal
+                // Create transaction
                 await Transaction.create({
                     transactionNumber: generateTransactionNumber(),
                     userId: user._id,
                     type: 'debit',
                     amount: plan.priceAmount,
                     currency: 'USD',
-                    description: `Subscription Renewal: ${plan.name}`,
+                    description: `Subscription${isRenewal ? ' Renewal' : ''}: ${plan.name}`,
                     status: 'completed',
                     paymentMethod: 'card',
                     provider: 'stripe',
@@ -267,7 +291,7 @@ export async function POST(request: NextRequest) {
                     completedAt: new Date(),
                 });
 
-                console.log(`✅  Stripe: renewal payment succeeded for user ${user._id} — plan ${planId}`);
+                console.log(`✅  Stripe: ${isRenewal ? 'renewal' : 'first'} payment succeeded for user ${user._id} — plan ${planId}`);
                 break;
             }
 
