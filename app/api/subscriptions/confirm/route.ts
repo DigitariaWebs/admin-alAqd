@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import connectDB from '@/lib/db/mongodb';
 import { User } from '@/lib/db/models/User';
+import { Order } from '@/lib/db/models/Order';
+import { Transaction } from '@/lib/db/models/Transaction';
 import { requireAuth } from '@/lib/auth/middleware';
 import { PLAN_MAP, PlanId } from '@/lib/subscription/plans';
 
@@ -11,9 +13,22 @@ const stripe = process.env.STRIPE_SECRET_KEY
     })
     : null;
 
+function generateOrderNumber(): string {
+    const timestamp = Date.now().toString(36).toUpperCase();
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `ORD-${timestamp}${random}`;
+}
+
+function generateTransactionNumber(): string {
+    const timestamp = Date.now().toString(36).toUpperCase();
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `TRX-${timestamp}${random}`;
+}
+
 /**
  * POST /api/subscriptions/confirm
  * Verifies a subscription's payment status with Stripe and activates it in the DB.
+ * Also creates an Order and Transaction record.
  *
  * Body: { subscriptionId: string }
  */
@@ -59,6 +74,25 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Unknown plan' }, { status: 400 });
         }
 
+        const user = await User.findById(authResult.user.userId)
+            .select('name email stripeCustomerId stripeSubscriptionId')
+            .lean();
+
+        if (!user) {
+            return NextResponse.json({ error: 'User not found' }, { status: 404 });
+        }
+
+        // Avoid duplicate activation
+        if (user.stripeSubscriptionId === subscriptionId) {
+            return NextResponse.json({
+                success: true,
+                subscription: {
+                    plan: plan.tier,
+                    isActive: true,
+                },
+            });
+        }
+
         const startDate = new Date((subscription as any).current_period_start * 1000);
         const endDate = new Date((subscription as any).current_period_end * 1000);
 
@@ -75,6 +109,52 @@ export async function POST(request: NextRequest) {
                 },
             },
         });
+
+        // Create Order record
+        const orderNumber = generateOrderNumber();
+        const order = await Order.create({
+            orderNumber,
+            userId: authResult.user.userId,
+            customerName: user.name,
+            customerEmail: user.email,
+            items: [{
+                name: plan.name,
+                description: `${plan.durationMonths} month Gold subscription`,
+                price: plan.priceAmount,
+                quantity: 1,
+                total: plan.priceAmount,
+            }],
+            subtotal: plan.priceAmount,
+            tax: 0,
+            total: plan.priceAmount,
+            status: 'completed',
+            paymentStatus: 'paid',
+            payment: {
+                method: 'card',
+                provider: 'stripe',
+            },
+            stripeCustomerId: user.stripeCustomerId,
+            subscriptionId,
+            planId,
+            completedAt: new Date(),
+        });
+
+        // Create Transaction record
+        await Transaction.create({
+            transactionNumber: generateTransactionNumber(),
+            orderId: order._id,
+            userId: authResult.user.userId,
+            type: 'debit',
+            amount: plan.priceAmount,
+            currency: 'EUR',
+            description: `Subscription: ${plan.name}`,
+            status: 'completed',
+            paymentMethod: 'card',
+            provider: 'stripe',
+            completedAt: new Date(),
+        });
+
+        console.log(`✅ Subscription confirmed for user ${authResult.user.userId} — plan ${planId}, order ${orderNumber}`);
 
         return NextResponse.json({
             success: true,

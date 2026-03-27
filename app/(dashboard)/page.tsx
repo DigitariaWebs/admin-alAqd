@@ -37,6 +37,7 @@ const ACTIVITY_TYPE_LABELS: Record<string, string> = {
     new_match: 'Nouveau match',
     new_message: 'Nouveau message',
     swipe_action: 'Action de swipe',
+    subscription_purchase: 'Nouvel abonnement',
 };
 
 const ACTIVITY_TYPE_COLORS: Record<string, string> = {
@@ -44,6 +45,7 @@ const ACTIVITY_TYPE_COLORS: Record<string, string> = {
     new_match: 'bg-pink-100 text-pink-600',
     new_message: 'bg-green-100 text-green-600',
     swipe_action: 'bg-amber-100 text-amber-600',
+    subscription_purchase: 'bg-yellow-100 text-yellow-600',
 };
 
 export default function DashboardPage() {

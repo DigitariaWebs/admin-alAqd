@@ -4,6 +4,7 @@ import { User } from '@/lib/db/models/User';
 import { Match } from '@/lib/db/models/Match';
 import { Message } from '@/lib/db/models/Message';
 import { Swipe } from '@/lib/db/models/Swipe';
+import { Order } from '@/lib/db/models/Order';
 import { requireRole } from '@/lib/auth/middleware';
 
 // ─── GET /api/analytics/activities ────────────────────────────────────────────────
@@ -116,6 +117,29 @@ export async function GET(request: NextRequest) {
                     description: `${swiperName} ${action} a profile`,
                     timestamp: swipe.createdAt,
                     metadata: { action: swipe.action }
+                });
+            }
+        }
+
+        if (!type || type === 'subscription' || type === 'all') {
+            // Recent subscription purchases
+            const recentOrders = await Order.find({
+                status: 'completed',
+                paymentStatus: 'paid',
+                planId: { $exists: true, $ne: null },
+            })
+                .sort({ completedAt: -1 })
+                .limit(Math.floor(recentLimit / 5))
+                .select('customerName planId total completedAt orderNumber')
+                .lean();
+
+            for (const order of recentOrders) {
+                activities.push({
+                    id: `subscription-${order._id}`,
+                    type: 'subscription_purchase',
+                    description: `${order.customerName} subscribed to ${order.planId} (${(order.total / 100).toFixed(2)}€)`,
+                    timestamp: order.completedAt || order.createdAt,
+                    metadata: { orderNumber: order.orderNumber, planId: order.planId, amount: order.total },
                 });
             }
         }

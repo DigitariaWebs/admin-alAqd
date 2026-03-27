@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongodb';
-import { User } from '@/lib/db/models/User';
+import { Order } from '@/lib/db/models/Order';
 import { requireRole } from '@/lib/auth/middleware';
 
 // ─── GET /api/analytics/revenue ────────────────────────────────────────────────
 
 /**
  * GET /api/analytics/revenue
- * Returns weekly/monthly revenue data
+ * Returns weekly/monthly revenue data based on actual completed orders.
  */
 export async function GET(request: NextRequest) {
     try {
@@ -19,71 +19,60 @@ export async function GET(request: NextRequest) {
         }
 
         const { searchParams } = new URL(request.url);
-        const period = searchParams.get('period') || 'monthly'; // weekly, monthly, yearly
+        const period = searchParams.get('period') || 'monthly';
         const months = parseInt(searchParams.get('months') || '12');
 
         const now = new Date();
         const revenueData: Array<{ period: string; revenue: number; subscriptions: number }> = [];
 
         if (period === 'weekly') {
-            // Get weekly data for the past 12 weeks
             for (let i = 11; i >= 0; i--) {
                 const weekStart = new Date(now);
                 weekStart.setDate(now.getDate() - (i * 7) - now.getDay());
+                weekStart.setHours(0, 0, 0, 0);
                 const weekEnd = new Date(weekStart);
                 weekEnd.setDate(weekStart.getDate() + 7);
 
                 const stats = await getRevenueForPeriod(weekStart, weekEnd);
                 revenueData.push({
-                    period: `W${Math.ceil((now.getTime() - weekStart.getTime()) / (7 * 24 * 60 * 60 * 1000))}`,
-                    revenue: stats.revenue,
-                    subscriptions: stats.subscriptions
+                    period: weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                    ...stats,
                 });
             }
         } else if (period === 'yearly') {
-            // Get yearly data for the past 5 years
             for (let i = 4; i >= 0; i--) {
                 const yearStart = new Date(now.getFullYear() - i, 0, 1);
-                const yearEnd = new Date(now.getFullYear() - i, 11, 31);
+                const yearEnd = new Date(now.getFullYear() - i + 1, 0, 1);
 
                 const stats = await getRevenueForPeriod(yearStart, yearEnd);
                 revenueData.push({
                     period: `${yearStart.getFullYear()}`,
-                    revenue: stats.revenue,
-                    subscriptions: stats.subscriptions
+                    ...stats,
                 });
             }
         } else {
-            // Default: monthly data
             for (let i = months - 1; i >= 0; i--) {
                 const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
-                const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+                const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
 
                 const stats = await getRevenueForPeriod(monthStart, monthEnd);
                 revenueData.push({
                     period: monthStart.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
-                    revenue: stats.revenue,
-                    subscriptions: stats.subscriptions
+                    ...stats,
                 });
             }
         }
 
-        // Calculate totals and averages
+        // Totals
         const totalRevenue = revenueData.reduce((sum, d) => sum + d.revenue, 0);
         const totalSubscriptions = revenueData.reduce((sum, d) => sum + d.subscriptions, 0);
         const averageRevenue = totalRevenue / revenueData.length || 0;
 
-        // Growth calculation
-        const previousPeriodRevenue = period === 'weekly' 
-            ? revenueData.slice(0, Math.floor(revenueData.length / 2)).reduce((sum, d) => sum + d.revenue, 0)
-            : revenueData.slice(0, -1).reduce((sum, d) => sum + d.revenue, 0);
-        
-        const currentPeriodRevenue = period === 'weekly'
-            ? revenueData.slice(Math.floor(revenueData.length / 2)).reduce((sum, d) => sum + d.revenue, 0)
-            : revenueData.slice(-1).reduce((sum, d) => sum + d.revenue, 0);
-
-        const growthPercentage = previousPeriodRevenue > 0
-            ? Math.round(((currentPeriodRevenue - previousPeriodRevenue) / previousPeriodRevenue) * 100)
+        // Growth
+        const currentPeriod = revenueData[revenueData.length - 1]?.revenue || 0;
+        const previousPeriod = revenueData[revenueData.length - 2]?.revenue || 0;
+        const growthPercentage = previousPeriod > 0
+            ? Math.round(((currentPeriod - previousPeriod) / previousPeriod) * 100)
             : 0;
 
         // Revenue by plan
@@ -93,68 +82,66 @@ export async function GET(request: NextRequest) {
             success: true,
             revenueData,
             summary: {
-                totalRevenue: Math.round(totalRevenue * 100) / 100,
-                averageRevenue: Math.round(averageRevenue * 100) / 100,
+                totalRevenue: Math.round(totalRevenue) / 100,
+                averageRevenue: Math.round(averageRevenue) / 100,
                 totalSubscriptions,
-                growthPercentage
+                growthPercentage,
             },
             revenueByPlan,
-            period
+            period,
         });
-
     } catch (error) {
         console.error('Revenue analytics error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }
 
-async function getRevenueForPeriod(startDate: Date, endDate: Date): Promise<{ revenue: number; subscriptions: number }> {
-    const users = await User.find({
-        'subscription.isActive': true,
-        'subscription.plan': { $in: ['premium', 'gold'] }
-    }).select('subscription').lean();
+async function getRevenueForPeriod(startDate: Date, endDate: Date) {
+    const result = await Order.aggregate([
+        {
+            $match: {
+                status: 'completed',
+                paymentStatus: 'paid',
+                completedAt: { $gte: startDate, $lt: endDate },
+            },
+        },
+        {
+            $group: {
+                _id: null,
+                revenue: { $sum: '$total' },
+                count: { $sum: 1 },
+            },
+        },
+    ]);
 
-    const planPrices: Record<string, number> = {
-        premium: 9.99,
-        gold: 19.99
-    };
-
-    let monthlyRevenue = 0;
-    for (const user of users) {
-        if (user.subscription?.plan && planPrices[user.subscription.plan]) {
-            monthlyRevenue += planPrices[user.subscription.plan];
-        }
-    }
-
-    const monthsInPeriod = (endDate.getTime() - startDate.getTime()) / (30 * 24 * 60 * 60 * 1000);
-    
     return {
-        revenue: Math.round(monthlyRevenue * Math.max(0.5, monthsInPeriod) * 100) / 100,
-        subscriptions: users.length
+        revenue: result[0]?.revenue || 0,
+        subscriptions: result[0]?.count || 0,
     };
 }
 
-async function getRevenueByPlan(): Promise<Array<{ plan: string; count: number; revenue: number }>> {
-    const plans = ['free', 'premium', 'gold'];
-    const result: Array<{ plan: string; count: number; revenue: number }> = [];
+async function getRevenueByPlan() {
+    const result = await Order.aggregate([
+        {
+            $match: {
+                status: 'completed',
+                paymentStatus: 'paid',
+                planId: { $exists: true, $ne: null },
+            },
+        },
+        {
+            $group: {
+                _id: '$planId',
+                count: { $sum: 1 },
+                revenue: { $sum: '$total' },
+            },
+        },
+        { $sort: { revenue: -1 } },
+    ]);
 
-    const planPrices: Record<string, number> = {
-        free: 0,
-        premium: 9.99,
-        gold: 19.99
-    };
-
-    for (const plan of plans) {
-        const count = await User.countDocuments({
-            'subscription.plan': plan
-        });
-
-        result.push({
-            plan,
-            count,
-            revenue: Math.round(count * (planPrices[plan] || 0) * 100) / 100
-        });
-    }
-
-    return result;
+    return result.map((r) => ({
+        plan: r._id,
+        count: r.count,
+        revenue: r.revenue,
+    }));
 }
