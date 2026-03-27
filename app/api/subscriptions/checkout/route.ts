@@ -132,13 +132,6 @@ export async function POST(request: NextRequest) {
 
         // ── STRIPE MODE ───────────────────────────────────────────────────
 
-        if (!plan.stripePriceId) {
-            return NextResponse.json(
-                { error: `Stripe Price ID not configured for plan "${planId}". Set STRIPE_${planId.toUpperCase()}_PRICE_ID in your .env.` },
-                { status: 500 }
-            );
-        }
-
         // Get or create Stripe customer
         let customerId = user.stripeCustomerId;
         if (!customerId) {
@@ -154,11 +147,29 @@ export async function POST(request: NextRequest) {
             });
         }
 
-        // Create Stripe Checkout Session
+        // Map plan duration to Stripe recurring interval
+        const interval: 'month' = 'month';
+        const intervalCount = plan.durationMonths;
+
+        // Create Stripe Checkout Session with inline price_data (no pre-created products needed)
         const session = await stripe.checkout.sessions.create({
             customer:   customerId,
             mode:       'subscription',
-            line_items: [{ price: plan.stripePriceId, quantity: 1 }],
+            line_items: [{
+                price_data: {
+                    currency: plan.currency,
+                    product_data: {
+                        name: `Al-Aqd Gold — ${plan.name}`,
+                        description: `${plan.durationMonths} month Gold subscription`,
+                    },
+                    unit_amount: plan.priceAmount,
+                    recurring: {
+                        interval,
+                        interval_count: intervalCount,
+                    },
+                },
+                quantity: 1,
+            }],
             success_url: `${APP_BASE_URL}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url:  `${APP_BASE_URL}/subscription/cancel`,
             metadata: {

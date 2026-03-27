@@ -23,7 +23,6 @@ export interface SubscriptionPlan {
     currency: string;
     savingPercent?: number;
     highlight?: boolean;
-    stripePriceId: string;
 }
 
 export const PLANS: SubscriptionPlan[] = [
@@ -35,7 +34,6 @@ export const PLANS: SubscriptionPlan[] = [
         priceAmount: 2999,
         pricePerMonth: 2999,
         currency: 'eur',
-        stripePriceId: process.env.STRIPE_GOLD_1M_PRICE_ID || '',
     },
     {
         id: 'gold_3m',
@@ -46,7 +44,6 @@ export const PLANS: SubscriptionPlan[] = [
         pricePerMonth: 1999,
         currency: 'eur',
         savingPercent: 33,
-        stripePriceId: process.env.STRIPE_GOLD_3M_PRICE_ID || '',
     },
     {
         id: 'gold_12m',
@@ -58,7 +55,6 @@ export const PLANS: SubscriptionPlan[] = [
         currency: 'eur',
         savingPercent: 58,
         highlight: true,
-        stripePriceId: process.env.STRIPE_GOLD_12M_PRICE_ID || '',
     },
 ];
 
