@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
         success: true,
         message: "OTP sent successfully",
         // Remove in production - only for development
-        ...(process.env.NODE_ENV === "development" && { dev_otp: otpCode }),
+        ...(process.env.ENABLE_DEV_OTP === "true" && { dev_otp: otpCode }),
       });
     } catch (error) {
         console.error('Phone login error:', error);
