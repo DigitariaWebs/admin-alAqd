@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Table } from '@/components/ui/Table';
 import { Badge } from '@/components/ui/Badge';
+import { Modal } from '@/components/ui/Modal';
 import { ArrowLeft, Plus, Trash2, Edit, Tag } from 'lucide-react';
 import { useParams } from 'next/navigation';
 
@@ -48,6 +49,8 @@ export default function AttributeDetailPage({ params }: { params: Promise<{ cate
     const [showAddForm, setShowAddForm] = useState(false);
     const [newItem, setNewItem] = useState('');
     const [newGroup, setNewGroup] = useState('');
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
     const handleAdd = () => {
         if (!newItem) return;
@@ -57,11 +60,17 @@ export default function AttributeDetailPage({ params }: { params: Promise<{ cate
         setShowAddForm(false);
     };
 
-    const handleDelete = (id: string) => {
-        if (confirm('Are you sure you want to delete this option?')) {
-            setData(data.filter((i) => i.id !== id));
-        }
-    }
+    const handleDeleteClick = (id: string) => {
+        setDeleteTargetId(id);
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDelete = () => {
+        if (!deleteTargetId) return;
+        setData(data.filter((i) => i.id !== deleteTargetId));
+        setIsDeleteModalOpen(false);
+        setDeleteTargetId(null);
+    };
 
     const getTitle = () => {
         switch (category) {
@@ -153,7 +162,7 @@ export default function AttributeDetailPage({ params }: { params: Promise<{ cate
                                         </button>
                                         <button
                                             className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
-                                            onClick={() => handleDelete(item.id)}
+                                            onClick={() => handleDeleteClick(item.id)}
                                         >
                                             <Trash2 size={14} />
                                         </button>
@@ -164,6 +173,28 @@ export default function AttributeDetailPage({ params }: { params: Promise<{ cate
                     />
                 </div>
             </div>
+
+            {/* Delete Confirmation Modal */}
+            <Modal
+                isOpen={isDeleteModalOpen}
+                onClose={() => { setIsDeleteModalOpen(false); setDeleteTargetId(null); }}
+                title="Confirmer la suppression"
+                maxWidth="sm"
+            >
+                <div className="space-y-4">
+                    <p className="text-gray-600">
+                        Êtes-vous sûr de vouloir supprimer cette option ? Cette action est irréversible.
+                    </p>
+                    <div className="flex gap-3 justify-end">
+                        <Button variant="outline" onClick={() => { setIsDeleteModalOpen(false); setDeleteTargetId(null); }} className="rounded-full">
+                            Annuler
+                        </Button>
+                        <Button variant="danger" onClick={confirmDelete} className="rounded-full">
+                            Supprimer
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 }

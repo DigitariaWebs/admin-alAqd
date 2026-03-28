@@ -5,11 +5,12 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Table } from '@/components/ui/Table';
 import { Badge } from '@/components/ui/Badge';
-import { 
-    Search, 
-    Shield, 
-    Link2, 
-    Link2Off, 
+import { Modal } from '@/components/ui/Modal';
+import {
+    Search,
+    Shield,
+    Link2,
+    Link2Off,
     Mail,
     RefreshCw,
     Download,
@@ -39,6 +40,9 @@ export default function GuardiansPage() {
     const [selectedGuardian, setSelectedGuardian] = useState<AdminGuardian | null>(null);
     const [showModal, setShowModal] = useState(false);
     const [modalMode, setModalMode] = useState<'view' | 'edit' | 'delete'>('view');
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     
     const fetchGuardians = useCallback(async () => {
         if (!token) return;
@@ -68,41 +72,47 @@ export default function GuardiansPage() {
     
     const handleStatusChange = async (guardianId: string, newStatus: 'pending' | 'active' | 'revoked') => {
         if (!token) return;
-        
+
         try {
             await adminGuardianApi.update(token, guardianId, { status: newStatus });
             fetchGuardians();
             setShowModal(false);
         } catch (error) {
             console.error('Error updating guardian:', error);
-            alert('Failed to update guardian status');
+            setErrorMessage('Échec de la mise à jour du statut du tuteur');
         }
     };
-    
-    const handleDelete = async (guardianId: string) => {
-        if (!token) return;
-        
-        if (!confirm('Are you sure you want to delete this guardian relationship?')) return;
-        
+
+    const handleDeleteClick = (guardianId: string) => {
+        setDeleteTargetId(guardianId);
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!token || !deleteTargetId) return;
+
         try {
-            await adminGuardianApi.delete(token, guardianId);
+            await adminGuardianApi.delete(token, deleteTargetId);
             fetchGuardians();
             setShowModal(false);
         } catch (error) {
             console.error('Error deleting guardian:', error);
-            alert('Failed to delete guardian relationship');
+            setErrorMessage('Échec de la suppression de la relation de tutorat');
+        } finally {
+            setIsDeleteModalOpen(false);
+            setDeleteTargetId(null);
         }
     };
-    
+
     const handleExport = async (format: 'csv' | 'json') => {
         if (!token) return;
-        
+
         try {
             const blob = await adminGuardianApi.export(token, {
                 format,
                 status: statusFilter || undefined,
             });
-            
+
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -113,7 +123,7 @@ export default function GuardiansPage() {
             document.body.removeChild(a);
         } catch (error) {
             console.error('Error exporting guardians:', error);
-            alert('Failed to export guardians');
+            setErrorMessage('Échec de l\'exportation des tuteurs');
         }
     };
     
@@ -132,6 +142,14 @@ export default function GuardiansPage() {
     
     return (
         <div className="space-y-6">
+            {/* Error Banner */}
+            {errorMessage && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl text-sm flex items-center justify-between">
+                    {errorMessage}
+                    <button onClick={() => setErrorMessage(null)} className="text-red-500 hover:text-red-700 font-bold ml-4">✕</button>
+                </div>
+            )}
+
             {/* Page Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
@@ -333,7 +351,7 @@ export default function GuardiansPage() {
                                 <button
                                     className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
                                     title="Supprimer"
-                                    onClick={() => handleDelete(item._id)}
+                                    onClick={() => handleDeleteClick(item._id)}
                                 >
                                     <Trash2 size={14} />
                                 </button>
@@ -368,100 +386,126 @@ export default function GuardiansPage() {
                 </div>
             )}
             
-            {/* Modal */}
-            {showModal && selectedGuardian && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-                        <div className="p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-lg font-bold text-gray-900">
-                                    {modalMode === 'view' ? 'Détails du Tutorat' : 'Modifier le Statut'}
-                                </h2>
-                                <button
-                                    onClick={() => setShowModal(false)}
-                                    className="text-gray-400 hover:text-gray-600"
-                                >
-                                    ✕
-                                </button>
-                            </div>
-                            
-                            {modalMode === 'view' ? (
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="text-xs text-gray-500">Utilisatrice</label>
-                                        <p className="font-medium">{selectedGuardian.femaleUser?.name || 'N/A'}</p>
-                                    </div>
-                                    <div>
-                                        <label className="text-xs text-gray-500">Tuteur</label>
-                                        <p className="font-medium">
-                                            {selectedGuardian.maleUser?.name || selectedGuardian.guardianName || 'N/A'}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <label className="text-xs text-gray-500">Téléphone du Tuteur</label>
-                                        <p className="font-medium">{selectedGuardian.guardianPhone || 'N/A'}</p>
-                                    </div>
-                                    <div>
-                                        <label className="text-xs text-gray-500">Code d'Accès</label>
-                                        <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono">
-                                            {selectedGuardian.accessCode}
-                                        </code>
-                                    </div>
-                                    <div>
-                                        <label className="text-xs text-gray-500">Statut</label>
-                                        <div className="mt-1">{getStatusBadge(selectedGuardian.status)}</div>
-                                    </div>
-                                    <div>
-                                        <label className="text-xs text-gray-500">Demandé le</label>
-                                        <p className="font-medium">
-                                            {selectedGuardian.requestedAt 
-                                                ? new Date(selectedGuardian.requestedAt).toLocaleString('fr-FR')
-                                                : 'N/A'}
-                                        </p>
-                                    </div>
-                                    {selectedGuardian.linkedAt && (
-                                        <div>
-                                            <label className="text-xs text-gray-500">Liée le</label>
-                                            <p className="font-medium">
-                                                {new Date(selectedGuardian.linkedAt).toLocaleString('fr-FR')}
-                                            </p>
-                                        </div>
-                                    )}
-                                    {selectedGuardian.revokedAt && (
-                                        <div>
-                                            <label className="text-xs text-gray-500">Révoqué le</label>
-                                            <p className="font-medium">
-                                                {new Date(selectedGuardian.revokedAt).toLocaleString('fr-FR')}
-                                            </p>
-                                        </div>
-                                    )}
+            {/* View/Edit Modal */}
+            <Modal
+                isOpen={showModal}
+                onClose={() => setShowModal(false)}
+                title={modalMode === 'view' ? 'Détails du Tutorat' : 'Modifier le Statut'}
+                maxWidth="md"
+            >
+                {selectedGuardian && (
+                    modalMode === 'view' ? (
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                                <div>
+                                    <p className="text-gray-500">Utilisatrice</p>
+                                    <p className="font-medium">{selectedGuardian.femaleUser?.name || 'N/A'}</p>
                                 </div>
-                            ) : (
-                                <div className="space-y-4">
-                                    <p className="text-sm text-gray-600">
-                                        Modifier le statut de la relation de tutorat pour {selectedGuardian.femaleUser?.name}:
+                                <div>
+                                    <p className="text-gray-500">Tuteur</p>
+                                    <p className="font-medium">
+                                        {selectedGuardian.maleUser?.name || selectedGuardian.guardianName || 'N/A'}
                                     </p>
-                                    <div className="space-y-2">
-                                        {(['pending', 'active', 'revoked'] as const).map((status) => (
-                                            <button
-                                                key={status}
-                                                className={`w-full p-3 rounded-lg border-2 text-left transition-colors ${
-                                                    selectedGuardian.status === status
-                                                        ? 'border-primary bg-primary/5'
-                                                        : 'border-gray-200 hover:border-gray-300'
-                                                }`}
-                                                onClick={() => handleStatusChange(selectedGuardian._id, status)}
-                                            >
-                                                <span className="font-medium capitalize">{status}</span>
-                                            </button>
-                                        ))}
-                                    </div>
                                 </div>
-                            )}
+                                <div>
+                                    <p className="text-gray-500">Téléphone du Tuteur</p>
+                                    <p className="font-medium">{selectedGuardian.guardianPhone || 'N/A'}</p>
+                                </div>
+                                <div>
+                                    <p className="text-gray-500">Code d'Accès</p>
+                                    <code className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">
+                                        {selectedGuardian.accessCode}
+                                    </code>
+                                </div>
+                                <div>
+                                    <p className="text-gray-500">Statut</p>
+                                    <div className="mt-1">{getStatusBadge(selectedGuardian.status)}</div>
+                                </div>
+                                <div>
+                                    <p className="text-gray-500">Demandé le</p>
+                                    <p className="font-medium">
+                                        {selectedGuardian.requestedAt
+                                            ? new Date(selectedGuardian.requestedAt).toLocaleString('fr-FR')
+                                            : 'N/A'}
+                                    </p>
+                                </div>
+                                {selectedGuardian.linkedAt && (
+                                    <div>
+                                        <p className="text-gray-500">Liée le</p>
+                                        <p className="font-medium">
+                                            {new Date(selectedGuardian.linkedAt).toLocaleString('fr-FR')}
+                                        </p>
+                                    </div>
+                                )}
+                                {selectedGuardian.revokedAt && (
+                                    <div>
+                                        <p className="text-gray-500">Révoqué le</p>
+                                        <p className="font-medium">
+                                            {new Date(selectedGuardian.revokedAt).toLocaleString('fr-FR')}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="flex gap-3 justify-between pt-4 border-t">
+                                <Button
+                                    variant="danger"
+                                    size="sm"
+                                    className="rounded-full"
+                                    onClick={() => {
+                                        setShowModal(false);
+                                        handleDeleteClick(selectedGuardian._id);
+                                    }}
+                                >
+                                    <Trash2 size={14} className="mr-1" /> Supprimer
+                                </Button>
+                            </div>
                         </div>
+                    ) : (
+                        <div className="space-y-4">
+                            <p className="text-sm text-gray-600">
+                                Modifier le statut de la relation de tutorat pour {selectedGuardian.femaleUser?.name}:
+                            </p>
+                            <div className="space-y-2">
+                                {(['pending', 'active', 'revoked'] as const).map((status) => (
+                                    <button
+                                        key={status}
+                                        className={`w-full p-3 rounded-lg border-2 text-left transition-colors ${
+                                            selectedGuardian.status === status
+                                                ? 'border-primary bg-primary/5'
+                                                : 'border-gray-200 hover:border-gray-300'
+                                        }`}
+                                        onClick={() => handleStatusChange(selectedGuardian._id, status)}
+                                    >
+                                        <span className="font-medium capitalize">{status}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )
+                )}
+            </Modal>
+
+            {/* Delete Confirmation Modal */}
+            <Modal
+                isOpen={isDeleteModalOpen}
+                onClose={() => { setIsDeleteModalOpen(false); setDeleteTargetId(null); }}
+                title="Confirmer la suppression"
+                maxWidth="sm"
+            >
+                <div className="space-y-4">
+                    <p className="text-gray-600">
+                        Êtes-vous sûr de vouloir supprimer cette relation de tutorat ? Cette action est irréversible.
+                    </p>
+                    <div className="flex gap-3 justify-end">
+                        <Button variant="outline" onClick={() => { setIsDeleteModalOpen(false); setDeleteTargetId(null); }} className="rounded-full">
+                            Annuler
+                        </Button>
+                        <Button variant="danger" onClick={confirmDelete} className="rounded-full">
+                            Supprimer
+                        </Button>
                     </div>
                 </div>
-            )}
+            </Modal>
         </div>
     );
 }

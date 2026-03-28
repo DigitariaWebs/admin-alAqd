@@ -170,12 +170,12 @@ export default function OrdersPage() {
         }
     };
 
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+    const formatCurrency = (amountCents: number) => {
+        return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(amountCents / 100);
     };
 
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
+        return new Date(dateString).toLocaleDateString('fr-FR', {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
@@ -188,8 +188,8 @@ export default function OrdersPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-xl font-bold text-gray-900">Orders & Transactions</h1>
-                    <p className="text-xs text-gray-500 mt-1">Track and manage financial transactions.</p>
+                    <h1 className="text-xl font-bold text-gray-900">Commandes & Transactions</h1>
+                    <p className="text-xs text-gray-500 mt-1">Suivez et gérez les transactions financières.</p>
                 </div>
                 <div className="flex gap-2">
                     <Button
@@ -217,23 +217,23 @@ export default function OrdersPage() {
             {stats && (
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                     <div className="bg-white rounded-[20px] p-4 border border-gray-100">
-                        <p className="text-xs text-gray-500">Total Orders</p>
+                        <p className="text-xs text-gray-500">Total Commandes</p>
                         <p className="text-xl font-bold text-gray-900">{stats.totalOrders}</p>
                     </div>
                     <div className="bg-white rounded-[20px] p-4 border border-gray-100">
-                        <p className="text-xs text-gray-500">Total Revenue</p>
+                        <p className="text-xs text-gray-500">Revenu Total</p>
                         <p className="text-xl font-bold text-primary">{formatCurrency(stats.totalRevenue)}</p>
                     </div>
                     <div className="bg-white rounded-[20px] p-4 border border-gray-100">
-                        <p className="text-xs text-gray-500">Completed</p>
+                        <p className="text-xs text-gray-500">Complétées</p>
                         <p className="text-xl font-bold text-green-600">{stats.completed}</p>
                     </div>
                     <div className="bg-white rounded-[20px] p-4 border border-gray-100">
-                        <p className="text-xs text-gray-500">Pending</p>
+                        <p className="text-xs text-gray-500">En attente</p>
                         <p className="text-xl font-bold text-yellow-600">{stats.pending}</p>
                     </div>
                     <div className="bg-white rounded-[20px] p-4 border border-gray-100">
-                        <p className="text-xs text-gray-500">Failed</p>
+                        <p className="text-xs text-gray-500">Échouées</p>
                         <p className="text-xl font-bold text-red-600">{stats.failed}</p>
                     </div>
                 </div>
@@ -244,14 +244,14 @@ export default function OrdersPage() {
                 <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
                     <div className="flex-1">
                         <Input
-                            placeholder="Search by order number, customer name, or email..."
+                            placeholder="Rechercher par numéro de commande, nom ou email..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
                     </div>
                     <div className="flex gap-2">
                         <Button type="submit" variant="primary" size="md" className="rounded-full">
-                            Search
+                            Rechercher
                         </Button>
                         <Button
                             type="button"
@@ -261,7 +261,7 @@ export default function OrdersPage() {
                             onClick={() => setShowFilters(!showFilters)}
                         >
                             <Filter size={16} />
-                            Filters
+                            Filtres
                             {hasActiveFilters && (
                                 <span className="w-2 h-2 bg-primary rounded-full" />
                             )}
@@ -275,7 +275,7 @@ export default function OrdersPage() {
                                 onClick={clearFilters}
                             >
                                 <X size={16} />
-                                Clear
+                                Effacer
                             </Button>
                         )}
                     </div>
@@ -284,38 +284,38 @@ export default function OrdersPage() {
                 {showFilters && (
                     <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-1 md:grid-cols-4 gap-4">
                         <Select
-                            label="Order Status"
+                            label="Statut Commande"
                             value={status}
                             onChange={(e) => setStatus(e.target.value)}
                             options={[
-                                { value: '', label: 'All Statuses' },
-                                { value: 'pending', label: 'Pending' },
-                                { value: 'completed', label: 'Completed' },
-                                { value: 'failed', label: 'Failed' },
-                                { value: 'cancelled', label: 'Cancelled' },
-                                { value: 'refunded', label: 'Refunded' },
+                                { value: '', label: 'Tous les statuts' },
+                                { value: 'pending', label: 'En attente' },
+                                { value: 'completed', label: 'Complétée' },
+                                { value: 'failed', label: 'Échouée' },
+                                { value: 'cancelled', label: 'Annulée' },
+                                { value: 'refunded', label: 'Remboursée' },
                             ]}
                         />
                         <Select
-                            label="Payment Status"
+                            label="Statut Paiement"
                             value={paymentStatus}
                             onChange={(e) => setPaymentStatus(e.target.value)}
                             options={[
-                                { value: '', label: 'All Payments' },
-                                { value: 'pending', label: 'Pending' },
-                                { value: 'paid', label: 'Paid' },
-                                { value: 'failed', label: 'Failed' },
-                                { value: 'refunded', label: 'Refunded' },
+                                { value: '', label: 'Tous les paiements' },
+                                { value: 'pending', label: 'En attente' },
+                                { value: 'paid', label: 'Payé' },
+                                { value: 'failed', label: 'Échoué' },
+                                { value: 'refunded', label: 'Remboursé' },
                             ]}
                         />
                         <Input
-                            label="Start Date"
+                            label="Date Début"
                             type="date"
                             value={startDate}
                             onChange={(e) => setStartDate(e.target.value)}
                         />
                         <Input
-                            label="End Date"
+                            label="Date Fin"
                             type="date"
                             value={endDate}
                             onChange={(e) => setEndDate(e.target.value)}
@@ -331,7 +331,7 @@ export default function OrdersPage() {
                 </div>
             ) : orders.length === 0 ? (
                 <div className="text-center py-12">
-                    <p className="text-gray-500">No orders found.</p>
+                    <p className="text-gray-500">Aucune commande trouvée.</p>
                 </div>
             ) : (
                 <Table
@@ -339,14 +339,14 @@ export default function OrdersPage() {
                     keyExtractor={(order) => order.id}
                     columns={[
                         {
-                            header: 'Order ID',
+                            header: 'N° Commande',
                             accessor: (order) => (
                                 <span className="font-mono text-xs text-gray-500">{order.orderNumber}</span>
                             ),
                         },
-                        { header: 'Customer', accessor: 'customerName' },
+                        { header: 'Client', accessor: 'customerName' },
                         {
-                            header: 'Items',
+                            header: 'Article',
                             accessor: (order) => (
                                 <span className="text-sm">{order.items[0]?.name || '-'}</span>
                             ),
@@ -356,19 +356,19 @@ export default function OrdersPage() {
                             accessor: (order) => formatDate(order.createdAt),
                         },
                         {
-                            header: 'Amount',
+                            header: 'Montant',
                             accessor: (order) => (
                                 <span className="font-bold text-gray-900">{formatCurrency(order.total)}</span>
                             ),
                         },
                         {
-                            header: 'Status',
+                            header: 'Statut',
                             accessor: (order) => (
                                 <Badge variant={getStatusVariant(order.status)}>{order.status}</Badge>
                             ),
                         },
                         {
-                            header: 'Payment',
+                            header: 'Paiement',
                             accessor: (order) => (
                                 <Badge variant={getStatusVariant(order.paymentStatus)}>{order.paymentStatus}</Badge>
                             ),
@@ -381,7 +381,7 @@ export default function OrdersPage() {
                                     <Link href={`/orders/${order.id}`}>
                                         <button className="flex items-center gap-1 px-3 py-1 bg-gray-50 hover:bg-gray-100 rounded-full text-xs font-medium text-gray-600 transition-colors">
                                             <Eye size={12} />
-                                            View
+                                            Voir
                                         </button>
                                     </Link>
                                 </div>
@@ -395,8 +395,8 @@ export default function OrdersPage() {
             {pagination.totalPages > 1 && (
                 <div className="flex items-center justify-between">
                     <p className="text-sm text-gray-500">
-                        Showing {(pagination.page - 1) * pagination.limit + 1} to{' '}
-                        {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} orders
+                        Affichage de {(pagination.page - 1) * pagination.limit + 1} à{' '}
+                        {Math.min(pagination.page * pagination.limit, pagination.total)} sur {pagination.total} commandes
                     </p>
                     <div className="flex gap-2">
                         <Button
@@ -406,7 +406,7 @@ export default function OrdersPage() {
                             disabled={pagination.page === 1}
                             onClick={() => handlePageChange(pagination.page - 1)}
                         >
-                            Previous
+                            Précédent
                         </Button>
                         <Button
                             variant="outline"
@@ -415,7 +415,7 @@ export default function OrdersPage() {
                             disabled={pagination.page >= pagination.totalPages}
                             onClick={() => handlePageChange(pagination.page + 1)}
                         >
-                            Next
+                            Suivant
                         </Button>
                     </div>
                 </div>

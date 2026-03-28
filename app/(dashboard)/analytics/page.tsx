@@ -10,7 +10,7 @@ import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
     BarChart, Bar, PieChart, Pie, Cell
 } from 'recharts';
-import { Users, DollarSign, Heart, Activity, TrendingUp, TrendingDown, Loader2 } from 'lucide-react';
+import { Users, Euro, Heart, Activity, TrendingUp, TrendingDown, Loader2 } from 'lucide-react';
 
 const COLORS = ['#52101b', '#D4A574', '#A3A3A3'];
 
@@ -30,16 +30,16 @@ export default function AnalyticsPage() {
     };
 
     const formatCurrency = (value: number) => {
-        return new Intl.NumberFormat('en-US', {
+        return new Intl.NumberFormat('fr-FR', {
             style: 'currency',
-            currency: 'USD',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
+            currency: 'EUR',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
         }).format(value);
     };
 
     const formatNumber = (value: number) => {
-        return new Intl.NumberFormat('en-US').format(value);
+        return new Intl.NumberFormat('fr-FR').format(value);
     };
 
     const revenueData = revenue.data.map(item => ({
@@ -49,13 +49,13 @@ export default function AnalyticsPage() {
     }));
 
     const userGrowthData = dashboard.dailyGrowth.slice(-30).map(item => ({
-        name: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        name: new Date(item.date).toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' }),
         users: item.users
     }));
 
     const genderData = dashboard.overview ? [
-        { name: 'Male', value: dashboard.overview.genderDistribution.male },
-        { name: 'Female', value: dashboard.overview.genderDistribution.female }
+        { name: 'Hommes', value: dashboard.overview.genderDistribution.male },
+        { name: 'Femmes', value: dashboard.overview.genderDistribution.female }
     ] : [];
 
     const subscriptionData = revenue.revenueByPlan.map(item => ({
@@ -86,9 +86,9 @@ export default function AnalyticsPage() {
               value={period}
               onChange={handlePeriodChange}
               options={[
-                { value: "7d", label: "Last 7 Days" },
-                { value: "30d", label: "Last 30 Days" },
-                { value: "90d", label: "Last 3 Months" },
+                { value: "7d", label: "7 derniers jours" },
+                { value: "30d", label: "30 derniers jours" },
+                { value: "90d", label: "3 derniers mois" },
               ]}
               className="mb-0"
             />
@@ -100,7 +100,7 @@ export default function AnalyticsPage() {
           <Card className="rounded-[25px] p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-gray-500">Total Users</p>
+                <p className="text-xs text-gray-500">Utilisateurs Totaux</p>
                 <p className="text-xl font-bold text-gray-900 mt-1">
                   {dashboard.overview
                     ? formatNumber(dashboard.overview.totalUsers)
@@ -119,7 +119,7 @@ export default function AnalyticsPage() {
                       {dashboard.overview.growth.users >= 0 ? "+" : ""}
                       {dashboard.overview.growth.users}%
                     </span>
-                    <span className="text-xs text-gray-400">this period</span>
+                    <span className="text-xs text-gray-400">cette période</span>
                   </div>
                 )}
               </div>
@@ -132,7 +132,7 @@ export default function AnalyticsPage() {
           <Card className="rounded-[25px] p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-gray-500">Revenue</p>
+                <p className="text-xs text-gray-500">Revenu</p>
                 <p className="text-xl font-bold text-gray-900 mt-1">
                   {dashboard.overview
                     ? formatCurrency(dashboard.overview.revenue)
@@ -151,12 +151,12 @@ export default function AnalyticsPage() {
                       {dashboard.overview.growth.revenue >= 0 ? "+" : ""}
                       {dashboard.overview.growth.revenue}%
                     </span>
-                    <span className="text-xs text-gray-400">this period</span>
+                    <span className="text-xs text-gray-400">cette période</span>
                   </div>
                 )}
               </div>
               <div className="p-3 bg-green-50 rounded-full">
-                <DollarSign className="text-green-600" size={20} />
+                <Euro className="text-green-600" size={20} />
               </div>
             </div>
           </Card>
@@ -164,7 +164,7 @@ export default function AnalyticsPage() {
           <Card className="rounded-[25px] p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-gray-500">Active Users</p>
+                <p className="text-xs text-gray-500">Utilisateurs Actifs</p>
                 <p className="text-xl font-bold text-gray-900 mt-1">
                   {dashboard.overview
                     ? formatNumber(dashboard.overview.activeUsers)
@@ -172,7 +172,7 @@ export default function AnalyticsPage() {
                 </p>
                 <p className="text-xs text-gray-400 mt-1">
                   {dashboard.overview
-                    ? `${dashboard.overview.engagementRate}% engagement`
+                    ? `${dashboard.overview.engagementRate}% d'engagement`
                     : "-"}
                 </p>
               </div>
@@ -185,7 +185,7 @@ export default function AnalyticsPage() {
           <Card className="rounded-[25px] p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-gray-500">Premium Users</p>
+                <p className="text-xs text-gray-500">Utilisateurs Premium</p>
                 <p className="text-xl font-bold text-gray-900 mt-1">
                   {dashboard.overview
                     ? formatNumber(dashboard.overview.premiumUsers)
@@ -193,7 +193,7 @@ export default function AnalyticsPage() {
                 </p>
                 <p className="text-xs text-gray-400 mt-1">
                   {dashboard.overview && dashboard.overview.totalUsers > 0
-                    ? `${Math.round((dashboard.overview.premiumUsers / dashboard.overview.totalUsers) * 100)}% of total`
+                    ? `${Math.round((dashboard.overview.premiumUsers / dashboard.overview.totalUsers) * 100)}% du total`
                     : "-"}
                 </p>
               </div>
@@ -208,7 +208,7 @@ export default function AnalyticsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="rounded-[30px] p-6 h-87.5">
             <h3 className="text-sm font-semibold text-gray-900 mb-6">
-              Revenue Over Time
+              Revenus
             </h3>
             <ResponsiveContainer width="100%" height="85%">
               <AreaChart data={revenueData}>
@@ -236,7 +236,7 @@ export default function AnalyticsPage() {
                   tickLine={false}
                   fontSize={10}
                   stroke="#9ca3af"
-                  tickFormatter={(value) => `$${value}`}
+                  tickFormatter={(value) => `${value}€`}
                 />
                 <Tooltip
                   contentStyle={{
@@ -247,7 +247,7 @@ export default function AnalyticsPage() {
                   itemStyle={{ fontSize: "12px", color: "#111827" }}
                   formatter={(value) => [
                     formatCurrency(value as number),
-                    "Revenue",
+                    "Revenu",
                   ]}
                 />
                 <Area
@@ -264,7 +264,7 @@ export default function AnalyticsPage() {
 
           <Card className="rounded-[30px] p-6 h-87.5">
             <h3 className="text-sm font-semibold text-gray-900 mb-6">
-              User Growth
+              Croissance Utilisateurs
             </h3>
             <ResponsiveContainer width="100%" height="85%">
               <BarChart data={userGrowthData}>
@@ -296,7 +296,7 @@ export default function AnalyticsPage() {
                   cursor={{ fill: "#f9fafb" }}
                   formatter={(value) => [
                     formatNumber(value as number),
-                    "New Users",
+                    "Nouveaux utilisateurs",
                   ]}
                 />
                 <Bar
@@ -314,7 +314,7 @@ export default function AnalyticsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Card className="rounded-[30px] p-6 h-87.5">
             <h3 className="text-sm font-semibold text-gray-900 mb-4">
-              Gender Distribution
+              Répartition par Genre
             </h3>
             <ResponsiveContainer width="100%" height="85%">
               <PieChart>
@@ -352,7 +352,7 @@ export default function AnalyticsPage() {
 
           <Card className="rounded-[30px] p-6 h-87.5">
             <h3 className="text-sm font-semibold text-gray-900 mb-4">
-              Subscription Distribution
+              Répartition Abonnements
             </h3>
             <ResponsiveContainer width="100%" height="85%">
               <PieChart>
@@ -390,7 +390,7 @@ export default function AnalyticsPage() {
 
           <Card className="rounded-[30px] p-6 h-87.5 overflow-hidden">
             <h3 className="text-sm font-semibold text-gray-900 mb-4">
-              Latest Activities
+              Activités Récentes
             </h3>
             <div className="space-y-3 overflow-y-auto h-55 pr-2">
               {activities.items.slice(0, 8).map((activity) => (
@@ -424,7 +424,7 @@ export default function AnalyticsPage() {
               ))}
               {activities.items.length === 0 && (
                 <p className="text-xs text-gray-400 text-center py-4">
-                  No recent activities
+                  Aucune activité récente
                 </p>
               )}
             </div>
@@ -434,35 +434,27 @@ export default function AnalyticsPage() {
         {/* Summary Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card className="rounded-[25px] p-4">
-            <p className="text-xs text-gray-500">Total Matches</p>
+            <p className="text-xs text-gray-500">Matches</p>
             <p className="text-lg font-bold text-gray-900 mt-1">
-              {dashboard.overview
-                ? formatNumber(dashboard.overview.totalMatches)
-                : "-"}
+              {dashboard.overview ? formatNumber(dashboard.overview.totalMatches) : "-"}
             </p>
           </Card>
           <Card className="rounded-[25px] p-4">
-            <p className="text-xs text-gray-500">Total Messages</p>
+            <p className="text-xs text-gray-500">Messages</p>
             <p className="text-lg font-bold text-gray-900 mt-1">
-              {dashboard.overview
-                ? formatNumber(dashboard.overview.totalMessages)
-                : "-"}
+              {dashboard.overview ? formatNumber(dashboard.overview.totalMessages) : "-"}
             </p>
           </Card>
           <Card className="rounded-[25px] p-4">
-            <p className="text-xs text-gray-500">Total Swipes</p>
+            <p className="text-xs text-gray-500">Swipes</p>
             <p className="text-lg font-bold text-gray-900 mt-1">
-              {dashboard.overview
-                ? formatNumber(dashboard.overview.totalSwipes)
-                : "-"}
+              {dashboard.overview ? formatNumber(dashboard.overview.totalSwipes) : "-"}
             </p>
           </Card>
           <Card className="rounded-[25px] p-4">
-            <p className="text-xs text-gray-500">New This Period</p>
+            <p className="text-xs text-gray-500">Nouveaux cette période</p>
             <p className="text-lg font-bold text-gray-900 mt-1">
-              {dashboard.overview
-                ? formatNumber(dashboard.overview.newUsers)
-                : "-"}
+              {dashboard.overview ? formatNumber(dashboard.overview.newUsers) : "-"}
             </p>
           </Card>
         </div>

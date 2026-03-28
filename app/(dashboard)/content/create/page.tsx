@@ -31,6 +31,7 @@ export default function CreateContentPage() {
         seoDescription: '',
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     useEffect(() => {
         dispatch(fetchCategories());
@@ -58,7 +59,7 @@ export default function CreateContentPage() {
             router.push('/content');
         } catch (error) {
             console.error('Failed to create content:', error);
-            alert('Failed to create content. Please try again.');
+            setErrorMessage('Échec de la création du contenu. Veuillez réessayer.');
         } finally {
             setIsSubmitting(false);
         }
@@ -79,6 +80,12 @@ export default function CreateContentPage() {
 
     return (
         <div className="space-y-6">
+            {errorMessage && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl text-sm flex items-center justify-between">
+                    {errorMessage}
+                    <button onClick={() => setErrorMessage(null)} className="text-red-500 hover:text-red-700 font-bold ml-4">✕</button>
+                </div>
+            )}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <Link href="/content" className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500">
@@ -262,11 +269,11 @@ export default function CreateContentPage() {
                                             setFormData(prev => ({ ...prev, featuredImage: data.url }));
                                         } else {
                                             console.error('Upload failed:', data.error);
-                                            alert(data.error || 'Failed to upload image');
+                                            setErrorMessage(data.error || 'Échec du téléchargement de l\'image');
                                         }
                                     } catch (err) {
                                         console.error('Upload error:', err);
-                                        alert('Failed to upload image');
+                                        setErrorMessage('Échec du téléchargement de l\'image');
                                     }
                                 }}
                             />

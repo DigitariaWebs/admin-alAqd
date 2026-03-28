@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Select';
-import { ArrowLeft, Printer, FileText, CreditCard, User, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, CreditCard, Loader2, AlertCircle } from 'lucide-react';
 
 interface OrderItem {
     name: string;
@@ -47,6 +47,15 @@ interface Order {
     refundedAt?: string;
 }
 
+const STATUS_LABELS: Record<string, string> = {
+    pending: 'En attente',
+    completed: 'Complétée',
+    failed: 'Échouée',
+    cancelled: 'Annulée',
+    refunded: 'Remboursée',
+    paid: 'Payé',
+};
+
 export default function OrderDetailsPage() {
     const params = useParams();
     const orderId = params.id as string;
@@ -76,10 +85,10 @@ export default function OrderDetailsPage() {
                 setOrder(data.order);
                 setNewStatus(data.order.status);
             } else {
-                setError(data.error || 'Failed to load order');
+                setError(data.error || 'Impossible de charger la commande');
             }
-        } catch (err) {
-            setError('Failed to load order');
+        } catch {
+            setError('Impossible de charger la commande');
         } finally {
             setLoading(false);
         }
@@ -104,10 +113,10 @@ export default function OrderDetailsPage() {
             if (data.success) {
                 setOrder({ ...order, status: data.order.status, paymentStatus: data.order.paymentStatus });
             } else {
-                setError(data.error || 'Failed to update status');
+                setError(data.error || 'Échec de la mise à jour');
             }
-        } catch (err) {
-            setError('Failed to update status');
+        } catch {
+            setError('Échec de la mise à jour');
         } finally {
             setUpdating(false);
         }
@@ -129,13 +138,13 @@ export default function OrderDetailsPage() {
         }
     };
 
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+    const formatCurrency = (amountCents: number) => {
+        return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(amountCents / 100);
     };
 
     const formatDate = (dateString?: string) => {
         if (!dateString) return '-';
-        return new Date(dateString).toLocaleString('en-US', {
+        return new Date(dateString).toLocaleDateString('fr-FR', {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
@@ -159,7 +168,7 @@ export default function OrderDetailsPage() {
                 <p className="text-gray-900 font-medium">{error}</p>
                 <Link href="/orders">
                     <Button variant="outline" className="mt-4 rounded-full">
-                        Back to Orders
+                        Retour aux commandes
                     </Button>
                 </Link>
             </div>
@@ -170,148 +179,94 @@ export default function OrderDetailsPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <Link href="/orders" className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500">
-                        <ArrowLeft size={18} />
-                    </Link>
-                    <div>
-                        <h1 className="text-xl font-bold text-gray-900 flex items-center gap-3">
-                            Order #{order.orderNumber}
-                            <Badge variant={getStatusVariant(order.status)} size="sm">{order.status}</Badge>
-                        </h1>
-                        <p className="text-xs text-gray-500">{formatDate(order.createdAt)}</p>
-                    </div>
-                </div>
-                <div className="flex gap-2">
-                    <Button variant="outline" size="md" className="rounded-full gap-2">
-                        <Printer size={16} />
-                        Print Invoice
-                    </Button>
+            {/* Header */}
+            <div className="flex items-center gap-4">
+                <Link href="/orders" className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500">
+                    <ArrowLeft size={18} />
+                </Link>
+                <div>
+                    <h1 className="text-xl font-bold text-gray-900 flex items-center gap-3">
+                        Commande #{order.orderNumber}
+                        <Badge variant={getStatusVariant(order.status)} size="sm">
+                            {STATUS_LABELS[order.status] || order.status}
+                        </Badge>
+                    </h1>
+                    <p className="text-xs text-gray-500">{formatDate(order.createdAt)}</p>
                 </div>
             </div>
 
-            {/* Error Message */}
+            {/* Error */}
             {error && (
-                <div className="bg-red-50 border border-red-200 rounded-[20px] p-4 flex items-center gap-3">
-                    <AlertCircle className="w-5 h-5 text-red-500" />
-                    <p className="text-sm text-red-600">{error}</p>
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl text-sm flex items-center gap-2">
+                    <AlertCircle size={16} />
+                    {error}
                 </div>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Order Items */}
-                <div className="lg:col-span-2 space-y-6">
-                    <Card className="rounded-[30px] overflow-hidden p-0">
-                        <div className="px-6 py-4 border-b border-gray-50 bg-gray-50/30">
-                            <h3 className="font-semibold text-sm text-gray-900">Order Items</h3>
+            {/* Single card layout */}
+            <Card>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Left — Client + Articles + Total */}
+                    <div className="lg:col-span-2">
+                        {/* Client */}
+                        <div className="flex items-center gap-3 pb-4 mb-4 border-b border-gray-100">
+                            <div className="w-10 h-10 rounded-full bg-primary-50 text-primary flex items-center justify-center font-bold text-sm">
+                                {order.customerName?.charAt(0).toUpperCase() || '?'}
+                            </div>
+                            <div>
+                                <p className="text-sm font-semibold text-gray-900">{order.customerName}</p>
+                                <p className="text-xs text-gray-500">{order.customerEmail || '-'}</p>
+                            </div>
                         </div>
-                        <div className="p-6">
-                            <table className="w-full text-sm">
-                                <thead>
-                                    <tr className="text-left text-gray-400 text-xs uppercase tracking-wider">
-                                        <th className="pb-4 font-medium">Item</th>
-                                        <th className="pb-4 font-medium text-center">Qty</th>
-                                        <th className="pb-4 font-medium text-right">Price</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-50">
-                                    {order.items.map((item, index) => (
-                                        <tr key={index}>
-                                            <td className="py-4 text-gray-900 font-medium">
-                                                {item.name}
-                                                {item.description && (
-                                                    <p className="text-xs text-gray-500 mt-1">{item.description}</p>
-                                                )}
-                                            </td>
-                                            <td className="py-4 text-center text-gray-600">{item.quantity}</td>
-                                            <td className="py-4 text-right text-gray-900">{formatCurrency(item.total)}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                                <tfoot>
-                                    <tr>
-                                        <td colSpan={2} className="pt-6 text-right text-gray-500 text-xs">Subtotal</td>
-                                        <td className="pt-6 text-right font-medium text-gray-900">{formatCurrency(order.subtotal)}</td>
-                                    </tr>
-                                    <tr>
-                                        <td colSpan={2} className="pt-2 text-right text-gray-500 text-xs">Tax</td>
-                                        <td className="pt-2 text-right font-medium text-gray-900">{formatCurrency(order.tax)}</td>
-                                    </tr>
-                                    <tr>
-                                        <td colSpan={2} className="pt-4 text-right text-gray-900 font-bold text-lg">Total</td>
-                                        <td className="pt-4 text-right font-bold text-primary text-lg">{formatCurrency(order.total)}</td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </div>
-                    </Card>
-                </div>
 
-                {/* Info Sidebar */}
-                <div className="space-y-6">
-                    {/* Update Status */}
-                    <Card className="rounded-[30px] p-6">
-                        <h3 className="font-semibold text-sm text-gray-900 mb-4 flex items-center gap-2">
-                            <FileText size={16} className="text-gray-400" />
-                            Order Status
-                        </h3>
-                        <div className="space-y-4">
-                            <Select
-                                label="Change Status"
-                                value={newStatus}
-                                onChange={(e) => setNewStatus(e.target.value)}
-                                options={[
-                                    { value: 'pending', label: 'Pending' },
-                                    { value: 'completed', label: 'Completed' },
-                                    { value: 'failed', label: 'Failed' },
-                                    { value: 'cancelled', label: 'Cancelled' },
-                                    { value: 'refunded', label: 'Refunded' },
-                                ]}
-                            />
-                            <Button
-                                className="w-full rounded-full"
-                                onClick={handleStatusUpdate}
-                                disabled={updating || newStatus === order.status}
-                            >
-                                {updating ? (
-                                    <>
-                                        <Loader2 size={16} className="animate-spin mr-2" />
-                                        Updating...
-                                    </>
-                                ) : (
-                                    'Update Status'
-                                )}
-                            </Button>
-                        </div>
-                    </Card>
-
-                    {/* Customer Details */}
-                    <Card className="rounded-[30px] p-6">
-                        <h3 className="font-semibold text-sm text-gray-900 mb-4 flex items-center gap-2">
-                            <User size={16} className="text-gray-400" />
-                            Customer Details
-                        </h3>
-                        <div className="space-y-1">
-                            <p className="font-medium text-sm text-gray-900">{order.customerName}</p>
-                            <p className="text-xs text-blue-500">{order.customerEmail || 'No email'}</p>
-                            <p className="text-xs text-gray-400 mt-2">User ID: {order.userId}</p>
-                            {order.stripeCustomerId && (
-                                <p className="text-xs text-gray-400">Stripe Customer: {order.stripeCustomerId}</p>
-                            )}
-                        </div>
-                    </Card>
-
-                    {/* Payment Information */}
-                    <Card className="rounded-[30px] p-6">
-                        <h3 className="font-semibold text-sm text-gray-900 mb-4 flex items-center gap-2">
-                            <CreditCard size={16} className="text-gray-400" />
-                            Payment Information
-                        </h3>
+                        <h3 className="text-xs font-semibold text-gray-400 uppercase mb-4">Articles</h3>
                         <div className="space-y-3">
-                            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-[20px]">
+                            {order.items.map((item, index) => (
+                                <div key={index} className="flex items-center justify-between py-3 border-b border-gray-50 last:border-0">
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-900">{item.name}</p>
+                                        {item.description && (
+                                            <p className="text-xs text-gray-500 mt-0.5">{item.description}</p>
+                                        )}
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-sm font-semibold text-gray-900">{formatCurrency(item.total)}</p>
+                                        {item.quantity > 1 && (
+                                            <p className="text-xs text-gray-400">x{item.quantity}</p>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-500">Sous-total</span>
+                                <span className="text-gray-900">{formatCurrency(order.subtotal)}</span>
+                            </div>
+                            {order.tax > 0 && (
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-500">Taxe</span>
+                                    <span className="text-gray-900">{formatCurrency(order.tax)}</span>
+                                </div>
+                            )}
+                            <div className="flex justify-between text-base font-bold pt-2 border-t border-gray-100">
+                                <span className="text-gray-900">Total</span>
+                                <span className="text-primary">{formatCurrency(order.total)}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right — Info */}
+                    <div className="lg:border-l lg:border-gray-100 lg:pl-6 space-y-6">
+                        {/* Paiement */}
+                        <div>
+                            <h3 className="text-xs font-semibold text-gray-400 uppercase mb-2 flex items-center gap-2">
+                                <CreditCard size={14} /> Paiement
+                            </h3>
+                            <div className="flex items-center gap-3 p-2.5 bg-gray-50 rounded-xl mb-3">
                                 <div className="w-10 h-6 bg-gray-200 rounded flex items-center justify-center text-[8px] font-bold text-gray-500 uppercase">
-                                    Card
+                                    Carte
                                 </div>
                                 <div>
                                     <p className="text-xs font-semibold text-gray-900">
@@ -320,53 +275,81 @@ export default function OrderDetailsPage() {
                                     <p className="text-[10px] text-gray-500">via {order.payment.provider}</p>
                                 </div>
                             </div>
+                            <div className="flex justify-between text-xs">
+                                <span className="text-gray-500">Statut</span>
+                                <Badge variant={getStatusVariant(order.paymentStatus)} size="sm">
+                                    {STATUS_LABELS[order.paymentStatus] || order.paymentStatus}
+                                </Badge>
+                            </div>
+                            {order.planId && (
+                                <div className="flex justify-between text-xs mt-2">
+                                    <span className="text-gray-500">Plan</span>
+                                    <span className="text-gray-900 font-medium">{order.planId}</span>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Historique */}
+                        <div className="border-t border-gray-100 pt-4">
+                            <h3 className="text-xs font-semibold text-gray-400 uppercase mb-2">Historique</h3>
                             <div className="space-y-2">
                                 <div className="flex justify-between text-xs">
-                                    <span className="text-gray-500">Payment Status</span>
-                                    <Badge variant={getStatusVariant(order.paymentStatus)} size="sm">
-                                        {order.paymentStatus}
-                                    </Badge>
+                                    <span className="text-gray-500">Créée</span>
+                                    <span className="text-gray-900">{formatDate(order.createdAt)}</span>
                                 </div>
-                                {order.payment.stripePaymentIntentId && (
+                                {order.completedAt && (
                                     <div className="flex justify-between text-xs">
-                                        <span className="text-gray-500">Payment ID</span>
-                                        <span className="font-mono text-gray-400">{order.payment.stripePaymentIntentId.slice(0, 20)}...</span>
+                                        <span className="text-gray-500">Complétée</span>
+                                        <span className="text-green-600">{formatDate(order.completedAt)}</span>
+                                    </div>
+                                )}
+                                {order.failedAt && (
+                                    <div className="flex justify-between text-xs">
+                                        <span className="text-gray-500">Échouée</span>
+                                        <span className="text-red-600">{formatDate(order.failedAt)}</span>
+                                    </div>
+                                )}
+                                {order.refundedAt && (
+                                    <div className="flex justify-between text-xs">
+                                        <span className="text-gray-500">Remboursée</span>
+                                        <span className="text-orange-600">{formatDate(order.refundedAt)}</span>
                                     </div>
                                 )}
                             </div>
                         </div>
-                    </Card>
 
-                    {/* Timestamps */}
-                    <Card className="rounded-[30px] p-6">
-                        <h3 className="font-semibold text-sm text-gray-900 mb-4">Timestamps</h3>
-                        <div className="space-y-2 text-xs">
-                            <div className="flex justify-between">
-                                <span className="text-gray-500">Created</span>
-                                <span className="text-gray-900">{formatDate(order.createdAt)}</span>
+                        {/* Statut */}
+                        <div className="border-t border-gray-100 pt-4">
+                            <h3 className="text-xs font-semibold text-gray-400 uppercase mb-2">Modifier le statut</h3>
+                            <div className="space-y-3">
+                                <Select
+                                    value={newStatus}
+                                    onChange={(e) => setNewStatus(e.target.value)}
+                                    options={[
+                                        { value: 'pending', label: 'En attente' },
+                                        { value: 'completed', label: 'Complétée' },
+                                        { value: 'failed', label: 'Échouée' },
+                                        { value: 'cancelled', label: 'Annulée' },
+                                        { value: 'refunded', label: 'Remboursée' },
+                                    ]}
+                                />
+                                <Button
+                                    className="w-full rounded-full"
+                                    size="sm"
+                                    onClick={handleStatusUpdate}
+                                    disabled={updating || newStatus === order.status}
+                                >
+                                    {updating ? (
+                                        <><Loader2 size={14} className="animate-spin mr-2" /> Mise à jour...</>
+                                    ) : (
+                                        'Enregistrer'
+                                    )}
+                                </Button>
                             </div>
-                            {order.completedAt && (
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500">Completed</span>
-                                    <span className="text-green-600">{formatDate(order.completedAt)}</span>
-                                </div>
-                            )}
-                            {order.failedAt && (
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500">Failed</span>
-                                    <span className="text-red-600">{formatDate(order.failedAt)}</span>
-                                </div>
-                            )}
-                            {order.refundedAt && (
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500">Refunded</span>
-                                    <span className="text-orange-600">{formatDate(order.refundedAt)}</span>
-                                </div>
-                            )}
                         </div>
-                    </Card>
+                    </div>
                 </div>
-            </div>
+            </Card>
         </div>
     );
 }

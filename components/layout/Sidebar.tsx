@@ -14,7 +14,6 @@ import {
     LifeBuoy,
     LogOut,
     ChevronRight,
-    Sparkles,
     Shield,
     Database
 } from 'lucide-react';
@@ -24,7 +23,6 @@ const MENU_ITEMS = [
     { name: 'Tableau de bord', icon: LayoutDashboard, path: '/' },
     { name: 'Utilisateurs', icon: Users, path: '/users' },
     { name: 'Tuteurs / Mahram', icon: Shield, path: '/guardians' },
-    { name: 'Données d\'inscription', icon: Sparkles, path: '/content/onboarding' },
     { name: 'Commandes', icon: ShoppingCart, path: '/orders' },
     { name: 'Analytique', icon: BarChart2, path: '/analytics' },
     { name: 'Notifications', icon: Bell, path: '/notifications' },
@@ -46,7 +44,7 @@ export const Sidebar = () => {
 
     return (
         // eslint-disable-next-line tailwindcss/no-contradicting-classname
-        <aside className="w-64 bg-white border-r border-gray-100 flex flex-col h-screen sticky top-0 overflow-y-auto md:flex flex-shrink-0">
+        <aside className="w-64 bg-white border-r border-gray-100 flex flex-col h-screen sticky top-0 overflow-y-auto md:flex shrink-0">
             {/* Logo Area */}
             <div className="h-16 flex items-center px-6 border-b border-gray-50">
                 <div className="flex items-center gap-2">
@@ -61,9 +59,7 @@ export const Sidebar = () => {
             {/* Navigation */}
             <nav className="flex-1 overflow-y-auto py-6 px-3 space-y-1">
                 {MENU_ITEMS.map((item) => {
-                    // Prevent double highlighting for nested paths
-                    const isNestedParams = item.path === '/content' && pathname.startsWith('/content/onboarding');
-                    const isActive = !isNestedParams && (pathname === item.path || (item.path !== '/' && pathname.startsWith(item.path)));
+                    const isActive = pathname === item.path || (item.path !== '/' && pathname.startsWith(item.path));
 
                     const Icon = item.icon;
 

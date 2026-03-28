@@ -8,6 +8,7 @@ import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import  Table  from '@/components/ui/Table';
 import { Badge } from '@/components/ui/Badge';
+import { Modal } from '@/components/ui/Modal';
 import { Send, Clock, Trash2, BarChart3, Calendar } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -63,6 +64,8 @@ export default function NotificationsPage() {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [stats, setStats] = useState<StatsData | null>(null);
     const [showStats, setShowStats] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         title: '',
         body: '',
@@ -123,24 +126,32 @@ export default function NotificationsPage() {
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this notification?')) return;
+    const handleDeleteClick = (id: string) => {
+        setDeleteTargetId(id);
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteTargetId) return;
 
         try {
             const token = getToken();
-            const res = await fetch(`/api/admin/notifications/${id}`, {
+            const res = await fetch(`/api/admin/notifications/${deleteTargetId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
             const data = await res.json();
             if (data.success) {
-                toast.success('Notification deleted');
+                toast.success('Notification supprimée');
                 fetchNotifications();
                 fetchStats();
             }
         } catch (error) {
-            toast.error('Error deleting notification');
+            toast.error('Erreur lors de la suppression');
+        } finally {
+            setIsDeleteModalOpen(false);
+            setDeleteTargetId(null);
         }
     };
 
@@ -243,7 +254,7 @@ export default function NotificationsPage() {
                 <div className="flex gap-2">
                     {n.status === 'scheduled' && (
                         <button
-                            onClick={() => handleDelete(n.id)}
+                            onClick={() => handleDeleteClick(n.id)}
                             className="text-red-500 hover:text-red-700"
                         >
                             <Trash2 size={16} />
@@ -425,6 +436,28 @@ export default function NotificationsPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Delete Confirmation Modal */}
+            <Modal
+                isOpen={isDeleteModalOpen}
+                onClose={() => { setIsDeleteModalOpen(false); setDeleteTargetId(null); }}
+                title="Confirmer la suppression"
+                maxWidth="sm"
+            >
+                <div className="space-y-4">
+                    <p className="text-gray-600">
+                        Êtes-vous sûr de vouloir supprimer cette notification ? Cette action est irréversible.
+                    </p>
+                    <div className="flex gap-3 justify-end">
+                        <Button variant="outline" onClick={() => { setIsDeleteModalOpen(false); setDeleteTargetId(null); }} className="rounded-full">
+                            Annuler
+                        </Button>
+                        <Button variant="danger" onClick={confirmDelete} className="rounded-full">
+                            Supprimer
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
         </>
     );
 }

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Table } from '@/components/ui/Table';
 import { Badge } from '@/components/ui/Badge';
 import { Select } from '@/components/ui/Select';
+import { Modal } from '@/components/ui/Modal';
 import { Plus, Edit, Trash2, FileText, Image, Video, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -20,6 +21,8 @@ export default function ContentPage() {
         search: '',
     });
     const [currentPage, setCurrentPage] = useState(1);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
     useEffect(() => {
         dispatch(fetchContent({
@@ -31,11 +34,17 @@ export default function ContentPage() {
         }));
     }, [dispatch, currentPage, filters.type, filters.status, filters.search]);
 
-    const handleDelete = async (id: string) => {
-        if (window.confirm('Are you sure you want to delete this content?')) {
-            await dispatch(deleteContent(id));
-            dispatch(fetchContent({ page: currentPage, limit: 20 }));
-        }
+    const handleDeleteClick = (id: string) => {
+        setDeleteTargetId(id);
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteTargetId) return;
+        await dispatch(deleteContent(deleteTargetId));
+        dispatch(fetchContent({ page: currentPage, limit: 20 }));
+        setIsDeleteModalOpen(false);
+        setDeleteTargetId(null);
     };
 
     const handleStatusChange = async (id: string, status: 'draft' | 'published' | 'pending') => {
@@ -124,7 +133,7 @@ export default function ContentPage() {
                         ]}
                     />
                 </div>
-                <div className="flex-1 min-w-[200px]">
+                <div className="flex-1 min-w-50">
                     <input
                         type="text"
                         placeholder="Search content..."
@@ -184,7 +193,7 @@ export default function ContentPage() {
                                     </button>
                                 </Link>
                                 <button 
-                                    onClick={() => handleDelete(item.id)}
+                                    onClick={() => handleDeleteClick(item.id)}
                                     className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
                                 >
                                     <Trash2 size={14} />
@@ -219,6 +228,28 @@ export default function ContentPage() {
                     </Button>
                 </div>
             )}
+
+            {/* Delete Confirmation Modal */}
+            <Modal
+                isOpen={isDeleteModalOpen}
+                onClose={() => { setIsDeleteModalOpen(false); setDeleteTargetId(null); }}
+                title="Confirmer la suppression"
+                maxWidth="sm"
+            >
+                <div className="space-y-4">
+                    <p className="text-gray-600">
+                        Êtes-vous sûr de vouloir supprimer ce contenu ? Cette action est irréversible.
+                    </p>
+                    <div className="flex gap-3 justify-end">
+                        <Button variant="outline" onClick={() => { setIsDeleteModalOpen(false); setDeleteTargetId(null); }} className="rounded-full">
+                            Annuler
+                        </Button>
+                        <Button variant="danger" onClick={confirmDelete} className="rounded-full">
+                            Supprimer
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 }
