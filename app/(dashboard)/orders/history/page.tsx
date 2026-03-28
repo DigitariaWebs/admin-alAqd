@@ -159,12 +159,12 @@ export default function TransactionHistoryPage() {
         }
     };
 
-    const formatCurrency = (amount: number, currency = 'USD') => {
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
+    const formatCurrency = (amount: number, currency = 'EUR') => {
+        return new Intl.NumberFormat('fr-FR', { style: 'currency', currency }).format(amount);
     };
 
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
+        return new Date(dateString).toLocaleDateString('fr-FR', {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
@@ -177,8 +177,8 @@ export default function TransactionHistoryPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-xl font-bold text-gray-900">Transaction History</h1>
-                    <p className="text-xs text-gray-500 mt-1">Global financial ledger of the platform.</p>
+                    <h1 className="text-xl font-bold text-gray-900">Historique des transactions</h1>
+                    <p className="text-xs text-gray-500 mt-1">Grand livre financier global de la plateforme.</p>
                 </div>
                 <Button
                     variant="outline"
@@ -187,7 +187,7 @@ export default function TransactionHistoryPage() {
                     onClick={handleExport}
                 >
                     <Download size={16} />
-                    <span>Export Ledger</span>
+                    <span>Exporter le registre</span>
                 </Button>
             </div>
 
@@ -195,23 +195,23 @@ export default function TransactionHistoryPage() {
             {stats && (
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                     <div className="bg-white rounded-[20px] p-4 border border-gray-100">
-                        <p className="text-xs text-gray-500">Total Transactions</p>
+                        <p className="text-xs text-gray-500">Total transactions</p>
                         <p className="text-xl font-bold text-gray-900">{stats.totalTransactions}</p>
                     </div>
                     <div className="bg-white rounded-[20px] p-4 border border-gray-100">
-                        <p className="text-xs text-gray-500">Total Credits</p>
+                        <p className="text-xs text-gray-500">Total crédits</p>
                         <p className="text-xl font-bold text-green-600">{formatCurrency(stats.totalCredits)}</p>
                     </div>
                     <div className="bg-white rounded-[20px] p-4 border border-gray-100">
-                        <p className="text-xs text-gray-500">Total Debits</p>
+                        <p className="text-xs text-gray-500">Total débits</p>
                         <p className="text-xl font-bold text-red-600">{formatCurrency(stats.totalDebits)}</p>
                     </div>
                     <div className="bg-white rounded-[20px] p-4 border border-gray-100">
-                        <p className="text-xs text-gray-500">Completed</p>
+                        <p className="text-xs text-gray-500">Terminées</p>
                         <p className="text-xl font-bold text-green-600">{stats.completed}</p>
                     </div>
                     <div className="bg-white rounded-[20px] p-4 border border-gray-100">
-                        <p className="text-xs text-gray-500">Pending</p>
+                        <p className="text-xs text-gray-500">En attente</p>
                         <p className="text-xl font-bold text-yellow-600">{stats.pending}</p>
                     </div>
                 </div>
@@ -222,14 +222,14 @@ export default function TransactionHistoryPage() {
                 <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
                     <div className="flex-1">
                         <Input
-                            placeholder="Search by transaction number or description..."
+                            placeholder="Rechercher par numéro de transaction ou description..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
                     </div>
                     <div className="flex gap-2">
                         <Button type="submit" variant="primary" size="md" className="rounded-full">
-                            Search
+                            Rechercher
                         </Button>
                         <Button
                             type="button"
@@ -239,7 +239,7 @@ export default function TransactionHistoryPage() {
                             onClick={() => setShowFilters(!showFilters)}
                         >
                             <Filter size={16} />
-                            Filters
+                            Filtres
                             {hasActiveFilters && (
                                 <span className="w-2 h-2 bg-primary rounded-full" />
                             )}
@@ -253,7 +253,7 @@ export default function TransactionHistoryPage() {
                                 onClick={clearFilters}
                             >
                                 <X size={16} />
-                                Clear
+                                Effacer
                             </Button>
                         )}
                     </div>
@@ -262,35 +262,35 @@ export default function TransactionHistoryPage() {
                 {showFilters && (
                     <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-1 md:grid-cols-4 gap-4">
                         <Select
-                            label="Transaction Type"
+                            label="Type de transaction"
                             value={type}
                             onChange={(e) => setType(e.target.value)}
                             options={[
-                                { value: '', label: 'All Types' },
-                                { value: 'credit', label: 'Credit' },
-                                { value: 'debit', label: 'Debit' },
+                                { value: '', label: 'Tous les types' },
+                                { value: 'credit', label: 'Crédit' },
+                                { value: 'debit', label: 'Débit' },
                             ]}
                         />
                         <Select
-                            label="Status"
+                            label="Statut"
                             value={status}
                             onChange={(e) => setStatus(e.target.value)}
                             options={[
-                                { value: '', label: 'All Statuses' },
-                                { value: 'pending', label: 'Pending' },
-                                { value: 'completed', label: 'Completed' },
-                                { value: 'failed', label: 'Failed' },
-                                { value: 'cancelled', label: 'Cancelled' },
+                                { value: '', label: 'Tous les statuts' },
+                                { value: 'pending', label: 'En attente' },
+                                { value: 'completed', label: 'Terminée' },
+                                { value: 'failed', label: 'Échouée' },
+                                { value: 'cancelled', label: 'Annulée' },
                             ]}
                         />
                         <Input
-                            label="Start Date"
+                            label="Date de début"
                             type="date"
                             value={startDate}
                             onChange={(e) => setStartDate(e.target.value)}
                         />
                         <Input
-                            label="End Date"
+                            label="Date de fin"
                             type="date"
                             value={endDate}
                             onChange={(e) => setEndDate(e.target.value)}
@@ -306,7 +306,7 @@ export default function TransactionHistoryPage() {
                 </div>
             ) : transactions.length === 0 ? (
                 <div className="text-center py-12">
-                    <p className="text-gray-500">No transactions found.</p>
+                    <p className="text-gray-500">Aucune transaction trouvée.</p>
                 </div>
             ) : (
                 <Table
@@ -314,7 +314,7 @@ export default function TransactionHistoryPage() {
                     keyExtractor={(t) => t.id}
                     columns={[
                         {
-                            header: 'Reference',
+                            header: 'Référence',
                             accessor: (t) => (
                                 <span className="font-mono text-xs text-gray-500">{t.transactionNumber}</span>
                             ),
@@ -336,7 +336,7 @@ export default function TransactionHistoryPage() {
                             accessor: (t) => formatDate(t.createdAt),
                         },
                         {
-                            header: 'Amount',
+                            header: 'Montant',
                             accessor: (t) => (
                                 <span className={`font-bold ${t.type === 'credit' ? 'text-green-600' : 'text-gray-900'}`}>
                                     {t.type === 'credit' ? '+' : '-'}{formatCurrency(t.amount, t.currency)}
@@ -344,13 +344,13 @@ export default function TransactionHistoryPage() {
                             ),
                         },
                         {
-                            header: 'Status',
+                            header: 'Statut',
                             accessor: (t) => (
                                 <Badge variant={getStatusVariant(t.status)}>{t.status}</Badge>
                             ),
                         },
                         {
-                            header: 'User',
+                            header: 'Utilisateur',
                             accessor: (t) => t.userName || '-',
                         },
                     ]}
@@ -361,8 +361,8 @@ export default function TransactionHistoryPage() {
             {pagination.totalPages > 1 && (
                 <div className="flex items-center justify-between">
                     <p className="text-sm text-gray-500">
-                        Showing {(pagination.page - 1) * pagination.limit + 1} to{' '}
-                        {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} transactions
+                        Affichage de {(pagination.page - 1) * pagination.limit + 1} à{' '}
+                        {Math.min(pagination.page * pagination.limit, pagination.total)} sur {pagination.total} transactions
                     </p>
                     <div className="flex gap-2">
                         <Button
@@ -372,7 +372,7 @@ export default function TransactionHistoryPage() {
                             disabled={pagination.page === 1}
                             onClick={() => handlePageChange(pagination.page - 1)}
                         >
-                            Previous
+                            Précédent
                         </Button>
                         <Button
                             variant="outline"
@@ -381,7 +381,7 @@ export default function TransactionHistoryPage() {
                             disabled={pagination.page >= pagination.totalPages}
                             onClick={() => handlePageChange(pagination.page + 1)}
                         >
-                            Next
+                            Suivant
                         </Button>
                     </div>
                 </div>

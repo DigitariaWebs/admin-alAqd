@@ -27,7 +27,7 @@ const MENU_ITEMS = [
     { name: 'Analytique', icon: BarChart2, path: '/analytics' },
     { name: 'Notifications', icon: Bell, path: '/notifications' },
     { name: 'Paramètres', icon: Settings, path: '/settings' },
-    { name: 'Support & Logs', icon: LifeBuoy, path: '/support' },
+    { name: 'Support & Journaux', icon: LifeBuoy, path: '/support' },
     { name: 'Configuration', icon: Database, path: '/config' },
 ];
 

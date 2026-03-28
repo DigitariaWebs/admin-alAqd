@@ -11,10 +11,10 @@ import { Input } from '@/components/ui/Input';
 import { FileText, Download, Loader2, Filter, RefreshCw, BarChart2, Users, DollarSign, Activity } from 'lucide-react';
 
 const REPORT_TYPES = [
-    { value: 'summary',    label: 'Summary Report',    description: 'Overview of key metrics',            icon: BarChart2  },
-    { value: 'financial',  label: 'Financial Report',  description: 'Revenue and subscription data',       icon: DollarSign },
-    { value: 'users',      label: 'User Report',       description: 'User demographics and details',       icon: Users      },
-    { value: 'engagement', label: 'Engagement Report', description: 'User engagement metrics',             icon: Activity   },
+    { value: 'summary',    label: 'Rapport Résumé',    description: 'Aperçu des métriques clés',            icon: BarChart2  },
+    { value: 'financial',  label: 'Rapport Financier',  description: 'Données de revenus et abonnements',       icon: DollarSign },
+    { value: 'users',      label: 'Rapport Utilisateurs',       description: 'Démographie et détails des utilisateurs',       icon: Users      },
+    { value: 'engagement', label: 'Rapport Engagement', description: 'Métriques d\'engagement',             icon: Activity   },
 ];
 
 /** Trigger a browser file download for the CSV endpoint */
@@ -88,14 +88,14 @@ export default function ReportsPage() {
                         <Filter size={16} className="text-primary" />
                     </div>
                     <div>
-                        <h3 className="font-semibold text-gray-900 text-sm">Generate Custom Report</h3>
-                        <p className="text-[11px] text-gray-500 mt-0.5">Select parameters and generate a detailed report</p>
+                        <h3 className="font-semibold text-gray-900 text-sm">Générer un rapport personnalisé</h3>
+                        <p className="text-[11px] text-gray-500 mt-0.5">Sélectionnez les paramètres et générez un rapport détaillé</p>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <div>
-                        <label className="text-xs font-medium text-gray-600 mb-1.5 block">Report Type</label>
+                        <label className="text-xs font-medium text-gray-600 mb-1.5 block">Type de rapport</label>
                         <Select
                             value={selectedType}
                             onChange={(e) => setSelectedType(e.target.value)}
@@ -103,7 +103,7 @@ export default function ReportsPage() {
                         />
                     </div>
                     <div>
-                        <label className="text-xs font-medium text-gray-600 mb-1.5 block">Start Date</label>
+                        <label className="text-xs font-medium text-gray-600 mb-1.5 block">Date début</label>
                         <Input
                             type="date"
                             value={startDate}
@@ -111,7 +111,7 @@ export default function ReportsPage() {
                         />
                     </div>
                     <div>
-                        <label className="text-xs font-medium text-gray-600 mb-1.5 block">End Date</label>
+                        <label className="text-xs font-medium text-gray-600 mb-1.5 block">Date fin</label>
                         <Input
                             type="date"
                             value={endDate}
@@ -126,7 +126,7 @@ export default function ReportsPage() {
                             ? <Loader2 className="animate-spin" size={14} />
                             : <FileText size={14} />
                         }
-                        {report.isGenerating ? 'Generating…' : 'Generate Report'}
+                        {report.isGenerating ? 'Génération...' : 'Générer le rapport'}
                     </Button>
 
                     <Button
@@ -139,7 +139,7 @@ export default function ReportsPage() {
                             ? <Loader2 className="animate-spin" size={14} />
                             : <Download size={14} />
                         }
-                        Download CSV
+                        Télécharger CSV
                     </Button>
 
                     {report.data && (
@@ -160,7 +160,7 @@ export default function ReportsPage() {
                 <Card padding="lg" className="rounded-[25px]">
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-gray-900 text-sm">Report Preview</h3>
+                            <h3 className="font-semibold text-gray-900 text-sm">Aperçu du rapport</h3>
                             <Badge variant="success">{currentTypeInfo?.label ?? report.type}</Badge>
                         </div>
                         <Button
@@ -171,7 +171,7 @@ export default function ReportsPage() {
                             className="gap-2"
                         >
                             <Download size={12} />
-                            Export CSV
+                            Exporter CSV
                         </Button>
                     </div>
 
@@ -186,8 +186,8 @@ export default function ReportsPage() {
             {/* ── Quick Reports ────────────────────────────────────────────── */}
             <div>
                 <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold text-gray-900">Quick Reports</h3>
-                    <span className="text-xs text-gray-400">Click a card to generate instantly</span>
+                    <h3 className="font-semibold text-gray-900">Rapports rapides</h3>
+                    <span className="text-xs text-gray-400">Cliquez sur une carte pour générer instantanément</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -212,7 +212,7 @@ export default function ReportsPage() {
                                         <Icon size={17} className="text-gray-600" />
                                     </div>
                                     <Badge variant={isGenerated ? 'success' : 'neutral'} size="sm">
-                                        {isGenerated ? 'Generated' : 'Ready'}
+                                        {isGenerated ? 'Généré' : 'Prêt'}
                                     </Badge>
                                 </div>
 
@@ -234,7 +234,7 @@ export default function ReportsPage() {
                                         }}
                                     >
                                         <Download size={11} />
-                                        Export CSV
+                                        Exporter CSV
                                     </Button>
                                 </div>
                             </Card>

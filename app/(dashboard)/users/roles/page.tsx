@@ -8,10 +8,10 @@ import { Badge } from '@/components/ui/Badge';
 import { Plus, Shield, Edit, Trash2 } from 'lucide-react';
 
 const MOCK_ROLES = [
-    { id: 1, name: 'Super Admin', users: 2, permissions: ['All Access'], description: 'Full system access' },
-    { id: 2, name: 'Content Moderator', users: 5, permissions: ['Approve Content', 'Delete Posts'], description: 'Manage user content and reports' },
-    { id: 3, name: 'Support Agent', users: 8, permissions: ['View Users', 'Reply Tickets'], description: 'Customer support access' },
-    { id: 4, name: 'User', users: 1250, permissions: ['Basic Access'], description: 'Standard user access' },
+    { id: 1, name: 'Super Admin', users: 2, permissions: ['Accès complet'], description: 'Accès complet au système' },
+    { id: 2, name: 'Modérateur de contenu', users: 5, permissions: ['Approuver le contenu', 'Supprimer les posts'], description: 'Gérer le contenu et les signalements' },
+    { id: 3, name: 'Agent de support', users: 8, permissions: ['Voir les utilisateurs', 'Répondre aux tickets'], description: 'Accès au support client' },
+    { id: 4, name: 'Utilisateur', users: 1250, permissions: ['Accès basique'], description: 'Accès utilisateur standard' },
 ];
 
 export default function RolesPage() {
@@ -19,12 +19,12 @@ export default function RolesPage() {
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-xl font-bold text-gray-900">Roles & Permissions</h1>
-                    <p className="text-xs text-gray-500 mt-1">Manage system roles and their capability levels.</p>
+                    <h1 className="text-xl font-bold text-gray-900">Rôles & Permissions</h1>
+                    <p className="text-xs text-gray-500 mt-1">Gérez les rôles système et leurs niveaux de permissions.</p>
                 </div>
                 <Button size="md" className="gap-2 rounded-full">
                     <Plus size={16} />
-                    <span>Create Role</span>
+                    <span>Créer un rôle</span>
                 </Button>
             </div>
 
@@ -34,7 +34,7 @@ export default function RolesPage() {
                     keyExtractor={(role) => role.id}
                     columns={[
                         {
-                            header: 'Role Name',
+                            header: 'Nom du rôle',
                             accessor: (role) => (
                                 <div className="flex items-center gap-3">
                                     <div className="p-2 bg-primary-50 rounded-full text-primary">
@@ -48,15 +48,15 @@ export default function RolesPage() {
                             )
                         },
                         {
-                            header: 'Users Count',
+                            header: 'Nombre d\'utilisateurs',
                             accessor: (role) => (
                                 <Badge variant="neutral" size="sm" className="rounded-full">
-                                    {role.users} Users
+                                    {role.users} Utilisateurs
                                 </Badge>
                             )
                         },
                         {
-                            header: 'Global Permissions',
+                            header: 'Permissions globales',
                             accessor: (role) => (
                                 <div className="flex gap-2">
                                     {role.permissions.map((perm, idx) => (

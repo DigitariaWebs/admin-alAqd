@@ -5,11 +5,12 @@ export interface INotification {
     // Notification content
     title: string;
     body: string;
+    imageUrl?: string;
     data?: Record<string, unknown>;
-    
+
     // Targeting
-    type: 'informational' | 'promotional' | 'alert';  // ✅ MODIFIÉ
-    targetAudience?: 'all' | 'premium' | 'inactive';   // ✅ MODIFIÉ
+    type: 'informational' | 'promotional' | 'alert';
+    targetAudience?: 'all' | 'premium' | 'free';
     targetGender?: 'male' | 'female';
     targetUserIds?: string[];
     
@@ -48,18 +49,22 @@ const notificationSchema = new Schema<INotification>(
             type: String,
             required: true,
         },
+        imageUrl: {
+            type: String,
+            trim: true,
+        },
         data: {
             type: Schema.Types.Mixed,
         },
         type: {
             type: String,
-            enum: ['informational', 'promotional', 'alert'],  // ✅ MODIFIÉ
-            default: 'informational',                          // ✅ MODIFIÉ
+            enum: ['informational', 'promotional', 'alert'],
+            default: 'informational',
         },
         targetAudience: {
             type: String,
-            enum: ['all', 'premium', 'inactive'],              // ✅ MODIFIÉ
-            default: 'all',                                     // ✅ AJOUTÉ
+            enum: ['all', 'premium', 'free'],
+            default: 'all',
         },
         targetGender: {
             type: String,

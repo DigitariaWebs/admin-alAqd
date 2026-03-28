@@ -304,10 +304,10 @@ export default function SupportPage() {
 
     const ticketColumns = [
         { header: 'ID', accessor: (t: Ticket) => t.ticketNumber },
-        { header: 'User', accessor: (t: Ticket) => t.userName },
-        { header: 'Subject', accessor: (t: Ticket) => t.subject },
-        { 
-            header: 'Priority', 
+        { header: 'Utilisateur', accessor: (t: Ticket) => t.userName },
+        { header: 'Sujet', accessor: (t: Ticket) => t.subject },
+        {
+            header: 'Priorité',
             accessor: (t: Ticket) => (
                 <Badge variant={getPriorityVariant(t.priority) as any}>
                     {t.priority}
@@ -315,7 +315,7 @@ export default function SupportPage() {
             )
         },
         { 
-            header: 'Status', 
+            header: 'Statut',
             accessor: (t: Ticket) => (
                 <Badge variant={getStatusVariant(t.status) as any}>
                     {t.status}
@@ -335,7 +335,7 @@ export default function SupportPage() {
                     className="text-primary hover:text-primary-600"
                     onClick={() => fetchTicketDetails(t.id)}
                 >
-                    View
+                    Voir
                 </Button>
             )
         },
@@ -343,20 +343,20 @@ export default function SupportPage() {
 
     const logColumns = [
         { 
-            header: 'Time', 
+            header: 'Heure',
             accessor: (l: Log) => new Date(l.createdAt).toLocaleString() 
         },
         { 
-            header: 'Level', 
+            header: 'Niveau',
             accessor: (l: Log) => (
                 <Badge variant={getLogLevelVariant(l.level) as any}>
                     {l.level}
                 </Badge>
             )
         },
-        { header: 'Category', accessor: (l: Log) => l.category },
+        { header: 'Catégorie', accessor: (l: Log) => l.category },
         { header: 'Message', accessor: (l: Log) => l.message },
-        { header: 'User', accessor: (l: Log) => l.user || '-' },
+        { header: 'Utilisateur', accessor: (l: Log) => l.user || '-' },
         { header: 'IP', accessor: (l: Log) => l.ip || '-' },
     ];
 
@@ -366,8 +366,8 @@ export default function SupportPage() {
             <div className="space-y-6">
                 <div className="flex justify-between items-center">
                     <div>
-                        <h1 className="text-xl font-bold text-gray-900">Support & Logs</h1>
-                        <p className="text-xs text-gray-500 mt-1">Manage user support tickets and system logs.</p>
+                        <h1 className="text-xl font-bold text-gray-900">Support & Journaux</h1>
+                        <p className="text-xs text-gray-500 mt-1">Gérez les tickets de support et les journaux système.</p>
                     </div>
                 </div>
 
@@ -377,7 +377,7 @@ export default function SupportPage() {
                             <div className="p-6 pb-2">
                                 <div className="flex justify-between items-center mb-4">
                                     <h3 className="font-bold text-gray-900 text-sm">
-                                        {activeTab === 'tickets' ? 'Support Tickets' : 'System Logs'}
+                                        {activeTab === 'tickets' ? 'Tickets de support' : 'Journaux système'}
                                     </h3>
                                     <div className="flex gap-2">
                                         {activeTab === 'tickets' ? (
@@ -386,10 +386,10 @@ export default function SupportPage() {
                                                     value={ticketStatus}
                                                     onChange={(e) => setTicketStatus(e.target.value)}
                                                     options={[
-                                                        { value: '', label: 'All Status' },
-                                                        { value: 'open', label: 'Open' },
-                                                        { value: 'pending', label: 'Pending' },
-                                                        { value: 'closed', label: 'Closed' },
+                                                        { value: '', label: 'Tous les statuts' },
+                                                        { value: 'open', label: 'Ouvert' },
+                                                        { value: 'pending', label: 'En attente' },
+                                                        { value: 'closed', label: 'Fermé' },
                                                     ]}
                                                     className="w-32"
                                                 />
@@ -397,10 +397,10 @@ export default function SupportPage() {
                                                     value={ticketPriority}
                                                     onChange={(e) => setTicketPriority(e.target.value)}
                                                     options={[
-                                                        { value: '', label: 'All Priority' },
-                                                        { value: 'high', label: 'High' },
-                                                        { value: 'medium', label: 'Medium' },
-                                                        { value: 'low', label: 'Low' },
+                                                        { value: '', label: 'Toutes les priorités' },
+                                                        { value: 'high', label: 'Haute' },
+                                                        { value: 'medium', label: 'Moyenne' },
+                                                        { value: 'low', label: 'Basse' },
                                                     ]}
                                                     className="w-32"
                                                 />
@@ -414,16 +414,16 @@ export default function SupportPage() {
                                                     value={logLevel}
                                                     onChange={(e) => setLogLevel(e.target.value)}
                                                     options={[
-                                                        { value: '', label: 'All Levels' },
+                                                        { value: '', label: 'Tous les niveaux' },
                                                         { value: 'info', label: 'Info' },
-                                                        { value: 'warning', label: 'Warning' },
-                                                        { value: 'error', label: 'Error' },
+                                                        { value: 'warning', label: 'Avertissement' },
+                                                        { value: 'error', label: 'Erreur' },
                                                         { value: 'debug', label: 'Debug' },
                                                     ]}
                                                     className="w-32"
                                                 />
                                                 <Button variant="outline" size="sm" onClick={handleExportLogs}>
-                                                    Export
+                                                    Exporter
                                                 </Button>
                                             </>
                                         )}
@@ -437,12 +437,12 @@ export default function SupportPage() {
                                     >
                                         Tickets
                                     </Button>
-                                    <Button 
-                                        variant={activeTab === 'logs' ? 'primary' : 'outline'} 
+                                    <Button
+                                        variant={activeTab === 'logs' ? 'primary' : 'outline'}
                                         size="sm"
                                         onClick={() => setActiveTab('logs')}
                                     >
-                                        Logs
+                                        Journaux
                                     </Button>
                                 </div>
                             </div>
@@ -473,26 +473,26 @@ export default function SupportPage() {
                                 <div className="p-2 bg-white/20 rounded-full">
                                     <MessageSquare size={20} />
                                 </div>
-                                <h3 className="font-bold">Support Stats</h3>
+                                <h3 className="font-bold">Statistiques support</h3>
                             </div>
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center border-b border-white/20 pb-2">
-                                    <span className="text-xs opacity-80">Open Tickets</span>
+                                    <span className="text-xs opacity-80">Tickets ouverts</span>
                                     <span className="font-bold text-lg">{stats?.statusBreakdown?.open || 0}</span>
                                 </div>
                                 <div className="flex justify-between items-center border-b border-white/20 pb-2">
-                                    <span className="text-xs opacity-80">Avg Response</span>
+                                    <span className="text-xs opacity-80">Temps moyen</span>
                                     <span className="font-bold text-lg">{stats?.avgResponseTimeHours || 0}h</span>
                                 </div>
                                 <div className="flex justify-between items-center">
-                                    <span className="text-xs opacity-80">Closed Today</span>
+                                    <span className="text-xs opacity-80">Fermés aujourd'hui</span>
                                     <span className="font-bold text-lg">{stats?.overview?.ticketsClosedToday || 0}</span>
                                 </div>
                             </div>
                         </div>
 
                         <Card className="rounded-[30px] p-6">
-                            <h3 className="font-bold text-gray-900 text-sm mb-4 flex gap-2"><AlertCircle size={16} /> Recent Activity</h3>
+                            <h3 className="font-bold text-gray-900 text-sm mb-4 flex gap-2"><AlertCircle size={16} /> Activité récente</h3>
                             <div className="space-y-3">
                                 {tickets.slice(0, 3).map((ticket) => (
                                     <div key={ticket.id} className="text-xs border-l-2 border-gray-200 pl-3 py-1">
@@ -501,11 +501,11 @@ export default function SupportPage() {
                                     </div>
                                 ))}
                                 {tickets.length === 0 && (
-                                    <p className="text-xs text-gray-400">No recent tickets</p>
+                                    <p className="text-xs text-gray-400">Aucun ticket récent</p>
                                 )}
                             </div>
                             <Button fullWidth variant="ghost" className="mt-2 text-xs" onClick={() => setActiveTab('tickets')}>
-                                View All Tickets
+                                Voir tous les tickets
                             </Button>
                         </Card>
                     </div>
@@ -554,8 +554,8 @@ export default function SupportPage() {
                             </div>
 
                             <Textarea
-                                label="Reply"
-                                placeholder="Type your reply..."
+                                label="Réponse"
+                                placeholder="Tapez votre réponse..."
                                 value={replyContent}
                                 onChange={(e) => setReplyContent(e.target.value)}
                                 rows={3}
@@ -566,9 +566,9 @@ export default function SupportPage() {
                                     value={selectedTicket.status}
                                     onChange={(e) => handleUpdateStatus(selectedTicket.id, e.target.value)}
                                     options={[
-                                        { value: 'open', label: 'Open' },
-                                        { value: 'pending', label: 'Pending' },
-                                        { value: 'closed', label: 'Closed' },
+                                        { value: 'open', label: 'Ouvert' },
+                                        { value: 'pending', label: 'En attente' },
+                                        { value: 'closed', label: 'Fermé' },
                                     ]}
                                     className="w-40"
                                 />
@@ -580,12 +580,12 @@ export default function SupportPage() {
                                     {sendingReply ? (
                                         <>
                                             <Loader2 size={16} className="animate-spin mr-2" />
-                                            Sending...
+                                            Envoi...
                                         </>
                                     ) : (
                                         <>
                                             <Send size={16} className="mr-2" />
-                                            Send Reply
+                                            Envoyer
                                         </>
                                     )}
                                 </Button>

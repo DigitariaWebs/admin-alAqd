@@ -3,12 +3,11 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BarChart3, Lightbulb, FileText } from 'lucide-react';
+import { BarChart3, FileText } from 'lucide-react';
 
 const ANALYTICS_TABS = [
-    { name: 'Overview',    path: '/analytics',          icon: BarChart3  },
-    { name: 'AI Insights', path: '/analytics/insights', icon: Lightbulb  },
-    { name: 'Reports',     path: '/analytics/reports',  icon: FileText   },
+    { name: 'Vue d\'ensemble',    path: '/analytics',          icon: BarChart3  },
+    { name: 'Rapports',     path: '/analytics/reports',  icon: FileText   },
 ];
 
 export default function AnalyticsLayout({ children }: { children: React.ReactNode }) {
@@ -18,9 +17,9 @@ export default function AnalyticsLayout({ children }: { children: React.ReactNod
         <div className="space-y-6">
             {/* Page Header */}
             <div>
-                <h1 className="text-xl font-bold text-gray-900">Analytics</h1>
+                <h1 className="text-xl font-bold text-gray-900">Analytique</h1>
                 <p className="text-xs text-gray-500 mt-1">
-                    Visualize platform performance and metrics.
+                    Visualisez les performances et métriques de la plateforme.
                 </p>
             </div>
 

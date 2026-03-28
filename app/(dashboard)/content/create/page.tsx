@@ -66,7 +66,7 @@ export default function CreateContentPage() {
     };
 
     const categoryOptions = [
-        { value: '', label: 'Select Category' },
+        { value: '', label: 'Sélectionner une catégorie' },
         ...categories.map((cat: any) => ({ value: cat._id, label: cat.name }))
     ];
 
@@ -92,13 +92,13 @@ export default function CreateContentPage() {
                         <ArrowLeft size={18} />
                     </Link>
                     <div>
-                        <h1 className="text-xl font-bold text-gray-900">Create New Content</h1>
-                        <p className="text-xs text-gray-500">Fill in the details below to create new content.</p>
+                        <h1 className="text-xl font-bold text-gray-900">Créer un nouveau contenu</h1>
+                        <p className="text-xs text-gray-500">Remplissez les détails ci-dessous pour créer un nouveau contenu.</p>
                     </div>
                 </div>
                 <div className="flex gap-2">
                     <Link href="/content">
-                        <Button variant="outline" size="md" className="rounded-full">Cancel</Button>
+                        <Button variant="outline" size="md" className="rounded-full">Annuler</Button>
                     </Link>
                     <Button 
                         size="md" 
@@ -107,7 +107,7 @@ export default function CreateContentPage() {
                         disabled={isSubmitting}
                     >
                         {isSubmitting ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
-                        <span>Save Draft</span>
+                        <span>Enregistrer le brouillon</span>
                     </Button>
                 </div>
             </div>
@@ -116,9 +116,9 @@ export default function CreateContentPage() {
                 {/* Main Editor */}
                 <Card className="lg:col-span-2 space-y-6 rounded-[30px] p-8">
                     <Input
-                        label="Content Title"
+                        label="Titre du contenu"
                         name="title"
-                        placeholder="Enter a descriptive title"
+                        placeholder="Entrez un titre descriptif"
                         value={formData.title}
                         onChange={handleChange}
                         className="text-lg font-medium"
@@ -127,16 +127,16 @@ export default function CreateContentPage() {
                     <Input
                         label="Slug"
                         name="slug"
-                        placeholder="content-slug"
+                        placeholder="slug-du-contenu"
                         value={formData.slug}
                         onChange={handleChange}
-                        helperText="URL-friendly version of the title"
+                        helperText="Version du titre adaptée aux URL"
                     />
 
                     <Textarea
-                        label="Content Body"
+                        label="Corps du contenu"
                         name="content"
-                        placeholder="Write your content here..."
+                        placeholder="Rédigez votre contenu ici..."
                         rows={12}
                         value={formData.content}
                         onChange={handleChange}
@@ -144,9 +144,9 @@ export default function CreateContentPage() {
                     />
 
                     <Textarea
-                        label="Excerpt"
+                        label="Extrait"
                         name="excerpt"
-                        placeholder="Brief summary of the content..."
+                        placeholder="Bref résumé du contenu..."
                         rows={3}
                         value={formData.excerpt}
                         onChange={handleChange}
@@ -156,35 +156,35 @@ export default function CreateContentPage() {
                 {/* Sidebar Settings */}
                 <div className="space-y-6">
                     <Card className="rounded-[30px] p-6 space-y-4">
-                        <h3 className="font-semibold text-sm mb-2">Publishing</h3>
+                        <h3 className="font-semibold text-sm mb-2">Publication</h3>
 
                         <Select
-                            label="Content Type"
+                            label="Type de contenu"
                             name="type"
                             value={formData.type}
                             onChange={handleChange}
                             options={[
                                 { value: 'article', label: 'Article' },
-                                { value: 'video', label: 'Video' },
-                                { value: 'post', label: 'Post' },
+                                { value: 'video', label: 'Vidéo' },
+                                { value: 'post', label: 'Publication' },
                                 { value: 'page', label: 'Page' },
                             ]}
                         />
 
                         <Select
-                            label="Status"
+                            label="Statut"
                             name="status"
                             value={formData.status}
                             onChange={handleChange}
                             options={[
-                                { value: 'draft', label: 'Draft' },
-                                { value: 'published', label: 'Published' },
-                                { value: 'pending', label: 'Pending Review' },
+                                { value: 'draft', label: 'Brouillon' },
+                                { value: 'published', label: 'Publié' },
+                                { value: 'pending', label: 'En attente de révision' },
                             ]}
                         />
 
                         <Select
-                            label="Category"
+                            label="Catégorie"
                             name="category"
                             value={formData.category}
                             onChange={handleChange}
@@ -192,7 +192,7 @@ export default function CreateContentPage() {
                         />
 
                         <Input
-                            label="Author"
+                            label="Auteur"
                             name="author"
                             value={formData.author}
                             onChange={handleChange}
@@ -207,26 +207,26 @@ export default function CreateContentPage() {
                                 disabled={isSubmitting}
                             >
                                 {isSubmitting ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
-                                Publish Now
+                                Publier maintenant
                             </Button>
                         </div>
                     </Card>
 
                     <Card className="rounded-[30px] p-6 space-y-4">
-                        <h3 className="font-semibold text-sm mb-4">SEO</h3>
+                        <h3 className="font-semibold text-sm mb-4">Référencement (SEO)</h3>
 
                         <Input
-                            label="SEO Title"
+                            label="Titre SEO"
                             name="seoTitle"
-                            placeholder="SEO optimized title"
+                            placeholder="Titre optimisé pour le référencement"
                             value={formData.seoTitle}
                             onChange={handleChange}
                         />
 
                         <Textarea
-                            label="SEO Description"
+                            label="Description SEO"
                             name="seoDescription"
-                            placeholder="Meta description..."
+                            placeholder="Méta-description..."
                             rows={3}
                             value={formData.seoDescription}
                             onChange={handleChange}
@@ -234,7 +234,7 @@ export default function CreateContentPage() {
                     </Card>
 
                     <Card className="rounded-[30px] p-6">
-                        <h3 className="font-semibold text-sm mb-4">Featured Image</h3>
+                        <h3 className="font-semibold text-sm mb-4">Image mise en avant</h3>
                         <div 
                             className="border-2 border-dashed border-gray-200 rounded-[20px] h-32 flex flex-col items-center justify-center text-gray-400 hover:border-primary hover:bg-primary-50 hover:text-primary transition-all cursor-pointer relative"
                             onClick={() => document.getElementById('featured-image-input')?.click()}
@@ -278,7 +278,7 @@ export default function CreateContentPage() {
                                 }}
                             />
                             <UploadCloud size={24} className="mb-2" />
-                            <span className="text-xs">Click to upload</span>
+                            <span className="text-xs">Cliquez pour télécharger</span>
                         </div>
                         {formData.featuredImage && (
                             <div className="mt-2 relative">

@@ -34,7 +34,7 @@ export const Header = ({ toggleSidebar }: HeaderProps) => {
                     <Menu size={20} />
                 </button>
                 <h1 className="text-sm font-semibold text-gray-800 hidden sm:block">
-                    Dashboard Overview
+                    Tableau de bord
                 </h1>
             </div>
 

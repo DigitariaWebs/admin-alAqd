@@ -27,9 +27,9 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
     const [activeTab, setActiveTab] = useState('overview');
 
     const tabs = [
-        { id: 'overview', label: 'Overview' },
-        { id: 'activity', label: 'Activity Log' },
-        { id: 'security', label: 'Security & Privacy' },
+        { id: 'overview', label: 'Vue d\'ensemble' },
+        { id: 'activity', label: 'Journal d\'activité' },
+        { id: 'security', label: 'Sécurité & Confidentialité' },
     ];
 
     return (
@@ -45,12 +45,12 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
                             {user.name}
                             <Badge variant="success" size="sm">{user.status}</Badge>
                         </h1>
-                        <p className="text-xs text-gray-500">User ID: {user.id} • Last active: {user.lastActive}</p>
+                        <p className="text-xs text-gray-500">ID Utilisateur: {user.id} • Dernière activité: {user.lastActive}</p>
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" size="md" className="rounded-full text-xs">Reset Password</Button>
-                    <Button variant="danger" size="md" className="rounded-full text-xs">Suspend User</Button>
+                    <Button variant="outline" size="md" className="rounded-full text-xs">Réinitialiser le mot de passe</Button>
+                    <Button variant="danger" size="md" className="rounded-full text-xs">Suspendre l'utilisateur</Button>
                 </div>
             </div>
 
@@ -79,18 +79,18 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
                             </div>
                             <div className="flex items-center gap-3 text-xs text-gray-600">
                                 <Calendar size={14} className="text-gray-400" />
-                                <span>Joined {user.joined}</span>
+                                <span>Inscrit le {user.joined}</span>
                             </div>
                         </div>
                     </Card>
 
                     <Card className="p-6 bg-white rounded-[30px]">
-                        <h3 className="font-semibold text-sm mb-4">Verification Status</h3>
+                        <h3 className="font-semibold text-sm mb-4">Statut de vérification</h3>
                         <div className="space-y-4">
                             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-[20px]">
                                 <div className="flex items-center gap-3">
                                     <Shield size={16} className="text-success" />
-                                    <span className="text-xs font-medium">Identity/CIN</span>
+                                    <span className="text-xs font-medium">Identité/CIN</span>
                                 </div>
                                 <CheckCircle size={14} className="text-success" />
                             </div>
@@ -98,7 +98,7 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
                             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-[20px]">
                                 <div className="flex items-center gap-3">
                                     <Phone size={16} className="text-success" />
-                                    <span className="text-xs font-medium">Phone Number</span>
+                                    <span className="text-xs font-medium">Numéro de téléphone</span>
                                 </div>
                                 <CheckCircle size={14} className="text-success" />
                             </div>
@@ -106,7 +106,7 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
                             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-[20px]">
                                 <div className="flex items-center gap-3">
                                     <Mail size={16} className="text-warning" />
-                                    <span className="text-xs font-medium">Email Address</span>
+                                    <span className="text-xs font-medium">Adresse email</span>
                                 </div>
                                 <AlertTriangle size={14} className="text-warning" />
                             </div>
@@ -125,22 +125,22 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
                                     {/* Stats Grid */}
                                     <div className="grid grid-cols-3 gap-4">
                                         <div className="bg-gray-50 p-4 rounded-[20px]">
-                                            <span className="text-[10px] text-gray-500 uppercase tracking-wider">Total Orders</span>
+                                            <span className="text-[10px] text-gray-500 uppercase tracking-wider">Total commandes</span>
                                             <p className="text-lg font-bold text-gray-900 mt-1">24</p>
                                         </div>
                                         <div className="bg-gray-50 p-4 rounded-[20px]">
-                                            <span className="text-[10px] text-gray-500 uppercase tracking-wider">Active Matches</span>
+                                            <span className="text-[10px] text-gray-500 uppercase tracking-wider">Matches actifs</span>
                                             <p className="text-lg font-bold text-gray-900 mt-1">3</p>
                                         </div>
                                         <div className="bg-gray-50 p-4 rounded-[20px]">
-                                            <span className="text-[10px] text-gray-500 uppercase tracking-wider">Total Spent</span>
-                                            <p className="text-lg font-bold text-gray-900 mt-1">$450</p>
+                                            <span className="text-[10px] text-gray-500 uppercase tracking-wider">Total dépensé</span>
+                                            <p className="text-lg font-bold text-gray-900 mt-1">450 €</p>
                                         </div>
                                     </div>
 
                                     {/* Bio / About */}
                                     <div>
-                                        <h4 className="text-sm font-semibold mb-2">About</h4>
+                                        <h4 className="text-sm font-semibold mb-2">À propos</h4>
                                         <p className="text-xs text-gray-500 leading-relaxed">
                                             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
                                             Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
@@ -151,12 +151,12 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
 
                             {activeTab === 'activity' && (
                                 <div className="text-center text-xs text-gray-400 py-10">
-                                    User activity logs will appear here.
+                                    Les journaux d'activité de l'utilisateur apparaîtront ici.
                                 </div>
                             )}
                             {activeTab === 'security' && (
                                 <div className="text-center text-xs text-gray-400 py-10">
-                                    Security settings and login history.
+                                    Paramètres de sécurité et historique de connexion.
                                 </div>
                             )}
                         </div>

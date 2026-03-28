@@ -70,9 +70,9 @@ export default function InsightsPage() {
             {insights.length === 0 ? (
                 <Card className="rounded-[25px] p-8 text-center">
                     <Lightbulb className="mx-auto text-gray-400 mb-4" size={48} />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No Insights Available</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucune analyse disponible</h3>
                     <p className="text-sm text-gray-500">
-                        We need more data to generate insights. Check back later as your platform grows.
+                        Nous avons besoin de plus de données pour générer des analyses. Revenez plus tard.
                     </p>
                 </Card>
             ) : (
@@ -104,13 +104,13 @@ export default function InsightsPage() {
                                     {insight.recommendation && (
                                         <div className="bg-gray-50 rounded-lg p-3 mt-2">
                                             <p className="text-xs text-gray-600">
-                                                <span className="font-semibold">Recommendation: </span>
+                                                <span className="font-semibold">Recommandation : </span>
                                                 {insight.recommendation}
                                             </p>
                                         </div>
                                     )}
                                     <span className="text-[10px] text-gray-400 mt-2 inline-block">
-                                        Detected {new Date(insight.detectedAt).toLocaleString()}
+                                        Détecté {new Date(insight.detectedAt).toLocaleString()}
                                     </span>
                                 </div>
                             </Card>
@@ -127,7 +127,7 @@ export default function InsightsPage() {
                             <TrendingUp className="text-green-600" size={20} />
                         </div>
                         <div>
-                            <p className="text-xs text-gray-500">Positive Insights</p>
+                            <p className="text-xs text-gray-500">Analyses positives</p>
                             <p className="text-lg font-bold text-gray-900">
                                 {insights.filter(i => i.type === 'success').length}
                             </p>
@@ -141,7 +141,7 @@ export default function InsightsPage() {
                             <AlertTriangle className="text-red-600" size={20} />
                         </div>
                         <div>
-                            <p className="text-xs text-gray-500">Warnings</p>
+                            <p className="text-xs text-gray-500">Alertes</p>
                             <p className="text-lg font-bold text-gray-900">
                                 {insights.filter(i => i.type === 'warning').length}
                             </p>
@@ -155,7 +155,7 @@ export default function InsightsPage() {
                             <Users className="text-blue-600" size={20} />
                         </div>
                         <div>
-                            <p className="text-xs text-gray-500">Total Insights</p>
+                            <p className="text-xs text-gray-500">Total analyses</p>
                             <p className="text-lg font-bold text-gray-900">
                                 {insights.length}
                             </p>

@@ -70,7 +70,7 @@ export default function ContentPage() {
     };
 
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
+        return new Date(dateString).toLocaleDateString('fr-FR', {
             year: 'numeric',
             month: 'short',
             day: 'numeric'
@@ -95,13 +95,13 @@ export default function ContentPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-xl font-bold text-gray-900">Content Management</h1>
-                    <p className="text-xs text-gray-500 mt-1">Create, edit, and manage platform content.</p>
+                    <h1 className="text-xl font-bold text-gray-900">Gestion du Contenu</h1>
+                    <p className="text-xs text-gray-500 mt-1">Créez, modifiez et gérez le contenu de la plateforme.</p>
                 </div>
                 <Link href="/content/create">
                     <Button size="md" className="gap-2 rounded-full">
                         <Plus size={16} />
-                        <span>Create Content</span>
+                        <span>Créer du contenu</span>
                     </Button>
                 </Link>
             </div>
@@ -113,10 +113,10 @@ export default function ContentPage() {
                         value={filters.type}
                         onChange={(e) => setFilters({ ...filters, type: e.target.value })}
                         options={[
-                            { value: '', label: 'All Types' },
+                            { value: '', label: 'Tous les types' },
                             { value: 'article', label: 'Article' },
-                            { value: 'video', label: 'Video' },
-                            { value: 'post', label: 'Post' },
+                            { value: 'video', label: 'Vidéo' },
+                            { value: 'post', label: 'Publication' },
                             { value: 'page', label: 'Page' },
                         ]}
                     />
@@ -126,17 +126,17 @@ export default function ContentPage() {
                         value={filters.status}
                         onChange={(e) => setFilters({ ...filters, status: e.target.value })}
                         options={[
-                            { value: '', label: 'All Status' },
-                            { value: 'published', label: 'Published' },
-                            { value: 'draft', label: 'Draft' },
-                            { value: 'pending', label: 'Pending' },
+                            { value: '', label: 'Tous les statuts' },
+                            { value: 'published', label: 'Publié' },
+                            { value: 'draft', label: 'Brouillon' },
+                            { value: 'pending', label: 'En attente' },
                         ]}
                     />
                 </div>
                 <div className="flex-1 min-w-50">
                     <input
                         type="text"
-                        placeholder="Search content..."
+                        placeholder="Rechercher du contenu..."
                         value={filters.search}
                         onChange={(e) => setFilters({ ...filters, search: e.target.value })}
                         className="w-full px-4 py-2 text-sm border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-primary"
@@ -149,7 +149,7 @@ export default function ContentPage() {
                 keyExtractor={(item) => item.id}
                 columns={[
                     {
-                        header: 'Title',
+                        header: 'Titre',
                         accessor: (item) => (
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-gray-50 rounded-lg">
@@ -163,11 +163,11 @@ export default function ContentPage() {
                         )
                     },
                     { 
-                        header: 'Author', 
+                        header: 'Auteur', 
                         accessor: (item) => item.author || '—' 
                     },
                     {
-                        header: 'Status',
+                        header: 'Statut',
                         accessor: (item) => (
                             <Badge variant={getStatusVariant(item.status) as 'success' | 'neutral' | 'warning'}>
                                 {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
@@ -179,7 +179,7 @@ export default function ContentPage() {
                         accessor: (item) => formatDate(item.date) 
                     },
                     { 
-                        header: 'Views', 
+                        header: 'Vues', 
                         accessor: (item) => (item.viewCount || 0).toLocaleString() 
                     },
                     {
@@ -213,10 +213,10 @@ export default function ContentPage() {
                         disabled={currentPage === 1}
                         onClick={() => setCurrentPage(p => p - 1)}
                     >
-                        Previous
+                        Précédent
                     </Button>
                     <span className="flex items-center text-sm text-gray-500">
-                        Page {currentPage} of {pagination.totalPages}
+                        Page {currentPage} sur {pagination.totalPages}
                     </span>
                     <Button
                         variant="outline"
@@ -224,7 +224,7 @@ export default function ContentPage() {
                         disabled={currentPage >= pagination.totalPages}
                         onClick={() => setCurrentPage(p => p + 1)}
                     >
-                        Next
+                        Suivant
                     </Button>
                 </div>
             )}

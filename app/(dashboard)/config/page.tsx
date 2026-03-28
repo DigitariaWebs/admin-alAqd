@@ -58,14 +58,14 @@ export default function ConfigPage() {
     };
 
     const tabs = [
-        { id: 'countries', label: 'Countries', count: config?.countries.length || 0 },
-        { id: 'ethnicities', label: 'Ethnicities', count: config?.ethnicities.length || 0 },
-        { id: 'education', label: 'Education', count: config?.educationLevels.length || 0 },
-        { id: 'marital', label: 'Marital Status', count: config?.maritalStatuses.length || 0 },
-        { id: 'religious', label: 'Religious', count: config?.religiousPractices.length || 0 },
-        { id: 'faith', label: 'Faith Tags', count: config?.faithTags.length || 0 },
-        { id: 'personality', label: 'Personality', count: config?.personalityTypes.length || 0 },
-        { id: 'interests', label: 'Interests', count: config?.interests.length || 0 },
+        { id: 'countries', label: 'Pays', count: config?.countries.length || 0 },
+        { id: 'ethnicities', label: 'Ethnies', count: config?.ethnicities.length || 0 },
+        { id: 'education', label: 'Éducation', count: config?.educationLevels.length || 0 },
+        { id: 'marital', label: 'Situation matrimoniale', count: config?.maritalStatuses.length || 0 },
+        { id: 'religious', label: 'Pratique religieuse', count: config?.religiousPractices.length || 0 },
+        { id: 'faith', label: 'Tags de foi', count: config?.faithTags.length || 0 },
+        { id: 'personality', label: 'Personnalité', count: config?.personalityTypes.length || 0 },
+        { id: 'interests', label: 'Centres d\'intérêt', count: config?.interests.length || 0 },
     ];
 
     const filterData = <T extends { label?: string; value?: string; name?: string }>(items: T[], nameField: 'label' | 'name' = 'label') => {
@@ -192,8 +192,8 @@ export default function ConfigPage() {
             <Toaster position="top-right" />
             <div className="space-y-6">
                 <div>
-                    <h1 className="text-xl font-bold text-gray-900">Configuration Data</h1>
-                    <p className="text-xs text-gray-500 mt-1">View and manage application configuration options.</p>
+                    <h1 className="text-xl font-bold text-gray-900">Données de configuration</h1>
+                    <p className="text-xs text-gray-500 mt-1">Consultez et gérez les options de configuration de l'application.</p>
                 </div>
 
                 {loading ? (
@@ -222,7 +222,7 @@ export default function ConfigPage() {
                         <div className="mb-4">
                             <input
                                 type="text"
-                                placeholder="Search..."
+                                placeholder="Rechercher..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="w-full md:w-64 px-4 py-2 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary"
@@ -235,7 +235,7 @@ export default function ConfigPage() {
                     </>
                 ) : (
                     <Card className="rounded-[30px] p-6">
-                        <p className="text-gray-500">No configuration data available</p>
+                        <p className="text-gray-500">Aucune donnée de configuration disponible</p>
                     </Card>
                 )}
             </div>

@@ -47,9 +47,9 @@ export default function SettingsPage() {
     const [message, setMessage] = useState('');
 
     const tabs = [
-        { id: 'general', label: 'General' },
-        { id: 'security', label: 'Security' },
-        { id: 'integrations', label: 'Integrations' },
+        { id: 'general', label: 'Général' },
+        { id: 'security', label: 'Sécurité' },
+        { id: 'integrations', label: 'Intégrations' },
     ];
 
     const getToken = () => localStorage.getItem('auth_token');
@@ -286,8 +286,8 @@ export default function SettingsPage() {
         return (
             <div className="space-y-6">
                 <div>
-                    <h1 className="text-xl font-bold text-gray-900">System Settings</h1>
-                    <p className="text-xs text-gray-500 mt-1">Configure global application settings.</p>
+                    <h1 className="text-xl font-bold text-gray-900">Paramètres Système</h1>
+                    <p className="text-xs text-gray-500 mt-1">Configurez les paramètres globaux de l'application.</p>
                 </div>
                 <Card className="rounded-[30px] min-h-[500px] flex items-center justify-center">
                     <div className="text-center">
@@ -304,8 +304,8 @@ export default function SettingsPage() {
             <Toaster position="top-right" />
             <div className="space-y-6">
                 <div>
-                    <h1 className="text-xl font-bold text-gray-900">System Settings</h1>
-                    <p className="text-xs text-gray-500 mt-1">Configure global application settings.</p>
+                    <h1 className="text-xl font-bold text-gray-900">Paramètres Système</h1>
+                    <p className="text-xs text-gray-500 mt-1">Configurez les paramètres globaux de l'application.</p>
                 </div>
 
                 <Card className="rounded-[30px] min-h-[500px]">
@@ -315,33 +315,33 @@ export default function SettingsPage() {
                         {activeTab === 'general' && (
                             <form onSubmit={handleGeneralSettingsSave} className="space-y-6">
                                 <h3 className="flex items-center gap-2 font-semibold text-gray-900 text-sm">
-                                    <Globe size={16} /> Platform Information
+                                    <Globe size={16} /> Informations de la plateforme
                                 </h3>
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <Input
-                                        label="Platform Name"
+                                        label="Nom de la plateforme"
                                         value={settings.platformName}
                                         onChange={(e) => setSettings(prev => prev ? { ...prev, platformName: e.target.value } : null)}
                                     />
                                     <Input
-                                        label="Support Email"
+                                        label="Email de support"
                                         value={settings.supportEmail}
                                         onChange={(e) => setSettings(prev => prev ? { ...prev, supportEmail: e.target.value } : null)}
                                     />
                                 </div>
                                 <Input
-                                    label="Default Language"
+                                    label="Langue par défaut"
                                     value={settings.defaultLanguage}
                                     onChange={(e) => setSettings(prev => prev ? { ...prev, defaultLanguage: e.target.value } : null)}
                                 />
 
                                 <div className="pt-4 border-t border-gray-100">
-                                    <h3 className="font-semibold text-gray-900 text-sm mb-4">Maintenance Mode</h3>
+                                    <h3 className="font-semibold text-gray-900 text-sm mb-4">Mode maintenance</h3>
                                     <div className="flex items-center justify-between p-4 bg-gray-50 rounded-[20px]">
                                         <div>
-                                            <p className="font-medium text-sm text-gray-900">Enable Maintenance Mode</p>
-                                            <p className="text-xs text-gray-500">Prevent users from accessing the platform.</p>
+                                            <p className="font-medium text-sm text-gray-900">Activer le mode maintenance</p>
+                                            <p className="text-xs text-gray-500">Empêcher les utilisateurs d'accéder à la plateforme.</p>
                                         </div>
                                         {settings.maintenanceMode ? (
                                             <ToggleRight size={32} className="text-primary cursor-pointer" onClick={toggleMaintenanceMode} />
@@ -351,7 +351,7 @@ export default function SettingsPage() {
                                     </div>
                                     {settings.maintenanceMode && (
                                         <Input
-                                            label="Maintenance Message"
+                                            label="Message de maintenance"
                                             value={settings.maintenanceMessage}
                                             onChange={(e) => setSettings(prev => prev ? { ...prev, maintenanceMessage: e.target.value } : null)}
                                             className="mt-4"
@@ -367,7 +367,7 @@ export default function SettingsPage() {
 
                                 <div className="pt-4">
                                     <Button type="submit" size="md" className="rounded-full" disabled={saving}>
-                                        {saving ? 'Saving...' : 'Save Changes'}
+                                        {saving ? 'Enregistrement...' : 'Enregistrer'}
                                     </Button>
                                 </div>
                             </form>
@@ -376,13 +376,13 @@ export default function SettingsPage() {
                         {activeTab === 'security' && (
                             <form onSubmit={handleSecuritySettingsSave} className="space-y-6">
                                 <h3 className="flex items-center gap-2 font-semibold text-gray-900 text-sm">
-                                    <Lock size={16} /> Security Policies
+                                    <Lock size={16} /> Politiques de sécurité
                                 </h3>
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between p-4 bg-gray-50 rounded-[20px]">
                                         <div>
-                                            <p className="font-medium text-sm text-gray-900">Two-Factor Authentication (2FA)</p>
-                                            <p className="text-xs text-gray-500">Require 2FA for all admin accounts.</p>
+                                            <p className="font-medium text-sm text-gray-900">Authentification à deux facteurs (2FA)</p>
+                                            <p className="text-xs text-gray-500">Exiger la 2FA pour tous les comptes admin.</p>
                                         </div>
                                         {settings.require2FA ? (
                                             <ToggleRight size={32} className="text-primary cursor-pointer" onClick={() => setSettings(prev => prev ? { ...prev, require2FA: false } : null)} />
@@ -393,8 +393,8 @@ export default function SettingsPage() {
 
                                     <div className="flex items-center justify-between p-4 bg-gray-50 rounded-[20px]">
                                         <div>
-                                            <p className="font-medium text-sm text-gray-900">Force Password Reset</p>
-                                            <p className="text-xs text-gray-500">Require regular password updates every 90 days.</p>
+                                            <p className="font-medium text-sm text-gray-900">Forcer la réinitialisation du mot de passe</p>
+                                            <p className="text-xs text-gray-500">Exiger des mises à jour régulières du mot de passe tous les 90 jours.</p>
                                         </div>
                                         {settings.passwordExpiryDays === 90 ? (
                                             <ToggleRight size={32} className="text-primary cursor-pointer" onClick={() => setSettings(prev => prev ? { ...prev, passwordExpiryDays: 0 } : null)} />
@@ -404,7 +404,7 @@ export default function SettingsPage() {
                                     </div>
 
                                     <Input
-                                        label="Login Attempts Limit"
+                                        label="Limite de tentatives de connexion"
                                         type="number"
                                         value={settings.loginAttemptsLimit}
                                         onChange={(e) => setSettings(prev => prev ? { ...prev, loginAttemptsLimit: parseInt(e.target.value) } : null)}
@@ -413,7 +413,7 @@ export default function SettingsPage() {
                                     />
 
                                     <Input
-                                        label="Session Timeout (minutes)"
+                                        label="Délai d'expiration de session (minutes)"
                                         type="number"
                                         value={settings.sessionTimeoutMinutes}
                                         onChange={(e) => setSettings(prev => prev ? { ...prev, sessionTimeoutMinutes: parseInt(e.target.value) } : null)}
@@ -430,7 +430,7 @@ export default function SettingsPage() {
 
                                 <div className="pt-4">
                                     <Button type="submit" size="md" className="rounded-full" disabled={saving}>
-                                        {saving ? 'Updating...' : 'Update Security'}
+                                        {saving ? 'Mise à jour...' : 'Mettre à jour la sécurité'}
                                     </Button>
                                 </div>
                             </form>
@@ -439,7 +439,7 @@ export default function SettingsPage() {
                         {activeTab === 'integrations' && (
                             <form onSubmit={handleIntegrationsSave} className="space-y-6">
                                 <h3 className="flex items-center gap-2 font-semibold text-gray-900 text-sm">
-                                    <Database size={16} /> External Services
+                                    <Database size={16} /> Services externes
                                 </h3>
 
                                 {integrations.filter(i => !/(stripe|s3|aws)/i.test(i.name)).map((integration) => (
@@ -451,7 +451,7 @@ export default function SettingsPage() {
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <Badge variant={integration.connected ? 'success' : 'error'}>
-                                                    {integration.connected ? 'Connected' : 'Disconnected'}
+                                                    {integration.connected ? 'Connecté' : 'Déconnecté'}
                                                 </Badge>
                                                 {integration.enabled ? (
                                                     <ToggleRight size={24} className="text-primary cursor-pointer" onClick={() => setSettings(prev => prev ? { ...prev, [`${integration.name.toLowerCase().replace(/\s+/g, '')}Enabled`]: false } : null)} />
@@ -484,7 +484,7 @@ export default function SettingsPage() {
 
                                 <div className="pt-4">
                                     <Button type="submit" size="md" className="rounded-full" disabled={saving}>
-                                        {saving ? 'Saving...' : 'Save Changes'}
+                                        {saving ? 'Enregistrement...' : 'Enregistrer'}
                                     </Button>
                                 </div>
                             </form>

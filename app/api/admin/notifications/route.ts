@@ -78,6 +78,7 @@ export async function GET(request: NextRequest) {
                 id: notification._id?.toString() || notification._id,
                 title: notification.title,
                 body: notification.body,
+                imageUrl: notification.imageUrl,
                 data: notification.data,
                 type: notification.type,
                 targetAudience: notification.targetAudience,
@@ -128,6 +129,7 @@ export async function POST(request: NextRequest) {
         const {
             title,
             body: messageBody,
+            imageUrl,
             data,
             type = 'broadcast',
             targetAudience = 'all',
@@ -184,6 +186,7 @@ export async function POST(request: NextRequest) {
         const notification = await Notification.create({
             title,
             body: messageBody,
+            imageUrl: imageUrl || undefined,
             data,
             type,
             targetAudience,
@@ -230,6 +233,7 @@ export async function POST(request: NextRequest) {
                 id: notification._id.toString(),
                 title: notification.title,
                 body: notification.body,
+                imageUrl: notification.imageUrl,
                 type: notification.type,
                 targetAudience: notification.targetAudience,
                 targetGender: notification.targetGender,
