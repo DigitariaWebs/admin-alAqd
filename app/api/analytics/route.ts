@@ -69,6 +69,9 @@ export async function GET(request: NextRequest) {
             lastActive: { $gte: thirtyDaysAgo }
         });
 
+        // Admin count
+        const totalAdmins = await User.countDocuments({ role: { $in: ['admin', 'moderator'] } });
+
         // Subscription stats: count distinct users with completed orders
         const premiumUserIds = await Order.distinct('userId', {
             status: 'completed',
@@ -143,6 +146,7 @@ export async function GET(request: NextRequest) {
                 newMessages,
                 totalSwipes,
                 newSwipes,
+                totalAdmins,
                 revenue: subscriptionRevenue,
                 engagementRate,
                 genderDistribution: {

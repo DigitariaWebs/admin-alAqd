@@ -40,6 +40,8 @@ const getRoleLabel = (role: string) => {
 export default function UsersPage() {
     const dispatch = useAppDispatch();
     const { list, selectedUser, roles, isLoading, isLoadingDetail, isCreating, error } = useAppSelector(state => state.users);
+    const currentUser = useAppSelector(state => state.auth.user);
+    const isAdmin = currentUser?.role === 'admin';
     
     // Modal states
     const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
@@ -219,10 +221,12 @@ export default function UsersPage() {
                     <h1 className="text-xl font-bold text-gray-900">Gestion des utilisateurs</h1>
                     <p className="text-xs text-gray-500 mt-1">Gérez les utilisateurs, rôles et statuts de la plateforme.</p>
                 </div>
-                <Button size="md" className="gap-2 rounded-full" onClick={() => setIsAddUserModalOpen(true)}>
-                    <Plus size={16} />
-                    <span>Ajouter un admin</span>
-                </Button>
+                {isAdmin && (
+                    <Button size="md" className="gap-2 rounded-full" onClick={() => setIsAddUserModalOpen(true)}>
+                        <Plus size={16} />
+                        <span>Ajouter un admin</span>
+                    </Button>
+                )}
             </div>
 
             {/* Filters & Actions */}
@@ -401,12 +405,14 @@ export default function UsersPage() {
                                 >
                                     <Eye size={14} />
                                 </button>
-                                <button
-                                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
-                                    onClick={() => handleDeleteUser(user.id)}
-                                >
-                                    <Trash2 size={14} />
-                                </button>
+                                {(isAdmin || user.role === 'user') && (
+                                    <button
+                                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                                        onClick={() => handleDeleteUser(user.id)}
+                                    >
+                                        <Trash2 size={14} />
+                                    </button>
+                                )}
                             </div>
                         )
                     }
@@ -550,29 +556,45 @@ export default function UsersPage() {
                         {selectedUser.role === 'admin' || selectedUser.role === 'moderator' ? (
                             /* ───── ADMIN / MODERATOR VIEW ───── */
                             <>
-                                <div>
-                                    <h4 className="text-xs font-semibold text-gray-400 uppercase mb-3">Gestion du compte</h4>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <Select
-                                            label="Rôle"
-                                            value={editRole}
-                                            onChange={(e) => setEditRole(e.target.value)}
-                                            options={[
-                                                { label: 'Administrateur', value: 'admin' },
-                                                { label: 'Modérateur', value: 'moderator' },
-                                            ]}
-                                        />
-                                        <Select
-                                            label="Statut"
-                                            value={editStatus}
-                                            onChange={(e) => setEditStatus(e.target.value)}
-                                            options={[
-                                                { label: 'Actif', value: 'active' },
-                                                { label: 'Suspendu', value: 'suspended' },
-                                            ]}
-                                        />
+                                {isAdmin ? (
+                                    <div>
+                                        <h4 className="text-xs font-semibold text-gray-400 uppercase mb-3">Gestion du compte</h4>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <Select
+                                                label="Rôle"
+                                                value={editRole}
+                                                onChange={(e) => setEditRole(e.target.value)}
+                                                options={[
+                                                    { label: 'Administrateur', value: 'admin' },
+                                                    { label: 'Modérateur', value: 'moderator' },
+                                                ]}
+                                            />
+                                            <Select
+                                                label="Statut"
+                                                value={editStatus}
+                                                onChange={(e) => setEditStatus(e.target.value)}
+                                                options={[
+                                                    { label: 'Actif', value: 'active' },
+                                                    { label: 'Suspendu', value: 'suspended' },
+                                                ]}
+                                            />
+                                        </div>
                                     </div>
-                                </div>
+                                ) : (
+                                    <div>
+                                        <h4 className="text-xs font-semibold text-gray-400 uppercase mb-2">Compte</h4>
+                                        <div className="grid grid-cols-2 gap-3 text-sm">
+                                            <div>
+                                                <p className="text-gray-500">Rôle</p>
+                                                <p className="font-medium">{getRoleLabel(selectedUser.role)}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-gray-500">Statut</p>
+                                                <p className="font-medium">{getStatusLabel(selectedUser.status)}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
 
                                 <div className="border-t pt-4">
                                     <h4 className="text-xs font-semibold text-gray-400 uppercase mb-2">Informations</h4>
@@ -596,27 +618,29 @@ export default function UsersPage() {
                                     </div>
                                 </div>
 
-                                <div className="flex gap-3 justify-between pt-4 border-t">
-                                    <Button
-                                        variant="danger"
-                                        size="sm"
-                                        className="rounded-full"
-                                        onClick={() => {
-                                            setIsViewModalOpen(false);
-                                            handleDeleteUser(selectedUser.id);
-                                        }}
-                                    >
-                                        <Trash2 size={14} className="mr-1" /> Supprimer
-                                    </Button>
-                                    <Button
-                                        size="sm"
-                                        className="rounded-full"
-                                        onClick={handleSaveChanges}
-                                        disabled={editStatus === selectedUser.status && editRole === selectedUser.role}
-                                    >
-                                        Enregistrer
-                                    </Button>
-                                </div>
+                                {isAdmin && (
+                                    <div className="flex gap-3 justify-between pt-4 border-t">
+                                        <Button
+                                            variant="danger"
+                                            size="sm"
+                                            className="rounded-full"
+                                            onClick={() => {
+                                                setIsViewModalOpen(false);
+                                                handleDeleteUser(selectedUser.id);
+                                            }}
+                                        >
+                                            <Trash2 size={14} className="mr-1" /> Supprimer
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            className="rounded-full"
+                                            onClick={handleSaveChanges}
+                                            disabled={editStatus === selectedUser.status && editRole === selectedUser.role}
+                                        >
+                                            Enregistrer
+                                        </Button>
+                                    </div>
+                                )}
                             </>
                         ) : (
                             /* ───── REGULAR USER VIEW ───── */

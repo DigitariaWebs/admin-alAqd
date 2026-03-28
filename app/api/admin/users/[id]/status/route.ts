@@ -50,6 +50,11 @@ export async function PATCH(
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
+        // Moderators cannot modify admin or other moderator accounts
+        if (authResult.user.role === 'moderator' && (user.role === 'admin' || user.role === 'moderator')) {
+            return NextResponse.json({ error: 'Vous n\'avez pas la permission de modifier ce compte' }, { status: 403 });
+        }
+
         user.status = status;
         user.updatedAt = new Date();
         await user.save();

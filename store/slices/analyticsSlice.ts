@@ -7,6 +7,7 @@ interface DashboardStats {
     activeUsers: number;
     premiumUsers: number;
     freeUsers: number;
+    totalAdmins: number;
     totalMatches: number;
     newMatches: number;
     totalMessages: number;

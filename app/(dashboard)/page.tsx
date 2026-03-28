@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/Card';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { fetchDashboard, fetchRevenue, fetchActivities } from '@/store/slices/analyticsSlice';
-import { Users, Crown, Activity, CreditCard, Loader2 } from 'lucide-react';
+import { Users, Crown, ShieldCheck, CreditCard, Loader2 } from 'lucide-react';
 
 function formatNumber(num: number): string {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
@@ -72,10 +72,10 @@ export default function DashboardPage() {
             icon: Users,
         },
         {
-            label: 'Utilisateurs Actifs',
-            value: formatNumber(overview.activeUsers),
-            growth: overview.engagementRate,
-            icon: Activity,
+            label: 'Admins & Modérateurs',
+            value: formatNumber(overview.totalAdmins),
+            growth: 0,
+            icon: ShieldCheck,
         },
         {
             label: 'Utilisateurs Premium',
