@@ -50,11 +50,6 @@ export async function PATCH(
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
-        // Prevent lowering own role (only admins can assign admin)
-        if (user.role === 'admin' && role !== 'admin') {
-            return NextResponse.json({ error: 'Cannot downgrade admin role' }, { status: 403 });
-        }
-
         user.role = role;
         user.updatedAt = new Date();
         await user.save();

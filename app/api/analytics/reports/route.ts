@@ -3,6 +3,7 @@ import connectDB from '@/lib/db/mongodb';
 import { User } from '@/lib/db/models/User';
 import { Match } from '@/lib/db/models/Match';
 import { Message } from '@/lib/db/models/Message';
+import { Order } from '@/lib/db/models/Order';
 import { requireRole } from '@/lib/auth/middleware';
 
 // ─── GET /api/analytics/reports ────────────────────────────────────────────────
@@ -110,61 +111,76 @@ async function generateSummaryReport(startDate: Date, endDate: Date): Promise<Re
 }
 
 async function generateFinancialReport(startDate: Date, endDate: Date): Promise<Record<string, unknown>> {
-    const premiumUsers = await User.find({
-        'subscription.plan': { $in: ['premium', 'gold'] }
-    }).select('subscription name email createdAt').lean();
+    // Revenue by plan from actual completed orders
+    const revenueByPlan = await Order.aggregate([
+        {
+            $match: {
+                status: 'completed',
+                paymentStatus: 'paid',
+                completedAt: { $gte: startDate, $lt: endDate },
+            },
+        },
+        {
+            $group: {
+                _id: '$planId',
+                count: { $sum: 1 },
+                revenue: { $sum: '$total' },
+            },
+        },
+    ]);
 
-    const planPrices: Record<string, number> = {
-        premium: 9.99,
-        gold: 19.99
-    };
-
-    let monthlyRevenue = 0;
-    const byPlan: Record<string, { count: number; revenue: number }> = {
-        premium: { count: 0, revenue: 0 },
-        gold: { count: 0, revenue: 0 }
-    };
-
-    for (const user of premiumUsers) {
-        const plan = user.subscription?.plan || 'premium';
-        const price = planPrices[plan] || 0;
-        monthlyRevenue += price;
-        
-        if (byPlan[plan]) {
-            byPlan[plan].count++;
-            byPlan[plan].revenue += price;
-        }
+    const byPlan: Record<string, { count: number; revenue: number }> = {};
+    let totalRevenue = 0;
+    for (const entry of revenueByPlan) {
+        const revenueEuros = entry.revenue / 100; // cents to euros
+        byPlan[entry._id || 'unknown'] = { count: entry.count, revenue: revenueEuros };
+        totalRevenue += revenueEuros;
     }
 
-    // Monthly breakdown
+    // Monthly breakdown from actual orders
     const monthlyBreakdown: Array<{ month: string; revenue: number; newSubscriptions: number }> = [];
     const currentDate = new Date(startDate);
-    
+
     while (currentDate <= endDate) {
         const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-        const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+        const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
 
-        const newSubscriptions = await User.countDocuments({
-            role: 'user',
-            'subscription.plan': { $in: ['premium', 'gold'] },
-            'subscription.startDate': { $gte: monthStart, $lt: monthEnd }
-        });
+        const monthStats = await Order.aggregate([
+            {
+                $match: {
+                    status: 'completed',
+                    paymentStatus: 'paid',
+                    completedAt: { $gte: monthStart, $lt: monthEnd },
+                },
+            },
+            {
+                $group: {
+                    _id: null,
+                    revenue: { $sum: '$total' },
+                    count: { $sum: 1 },
+                },
+            },
+        ]);
 
         monthlyBreakdown.push({
             month: monthStart.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-            revenue: Math.round(monthlyRevenue * 100) / 100,
-            newSubscriptions
+            revenue: (monthStats[0]?.revenue || 0) / 100, // cents to euros
+            newSubscriptions: monthStats[0]?.count || 0,
         });
 
         currentDate.setMonth(currentDate.getMonth() + 1);
     }
 
+    // Calculate average monthly revenue for projection
+    const monthCount = monthlyBreakdown.length || 1;
+    const avgMonthlyRevenue = totalRevenue / monthCount;
+
     return {
-        totalMonthlyRevenue: Math.round(monthlyRevenue * 100) / 100,
-        projectedAnnualRevenue: Math.round(monthlyRevenue * 12 * 100) / 100,
+        totalRevenue: Math.round(totalRevenue * 100) / 100,
+        projectedAnnualRevenue: Math.round(avgMonthlyRevenue * 12 * 100) / 100,
         byPlan,
         monthlyBreakdown,
-        currency: 'USD',
+        currency: 'EUR',
         period: {
             start: startDate.toISOString(),
             end: endDate.toISOString()

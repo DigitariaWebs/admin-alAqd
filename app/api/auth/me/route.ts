@@ -26,6 +26,13 @@ export async function GET(request: NextRequest) {
             );
         }
 
+        if (user.status === 'suspended') {
+            return NextResponse.json(
+                { error: 'Votre compte a été suspendu' },
+                { status: 403 }
+            );
+        }
+
         return NextResponse.json({
             success: true,
             user: {

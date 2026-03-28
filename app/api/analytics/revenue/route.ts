@@ -63,10 +63,10 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        // Totals
+        // Totals (already in euros after getRevenueForPeriod conversion)
         const totalRevenue = revenueData.reduce((sum, d) => sum + d.revenue, 0);
         const totalSubscriptions = revenueData.reduce((sum, d) => sum + d.subscriptions, 0);
-        const averageRevenue = totalRevenue / revenueData.length || 0;
+        const averageRevenue = revenueData.length > 0 ? totalRevenue / revenueData.length : 0;
 
         // Growth
         const currentPeriod = revenueData[revenueData.length - 1]?.revenue || 0;
@@ -82,8 +82,8 @@ export async function GET(request: NextRequest) {
             success: true,
             revenueData,
             summary: {
-                totalRevenue: Math.round(totalRevenue) / 100,
-                averageRevenue: Math.round(averageRevenue) / 100,
+                totalRevenue: Math.round(totalRevenue * 100) / 100,
+                averageRevenue: Math.round(averageRevenue * 100) / 100,
                 totalSubscriptions,
                 growthPercentage,
             },
@@ -115,7 +115,7 @@ async function getRevenueForPeriod(startDate: Date, endDate: Date) {
     ]);
 
     return {
-        revenue: result[0]?.revenue || 0,
+        revenue: (result[0]?.revenue || 0) / 100, // Convert cents to euros
         subscriptions: result[0]?.count || 0,
     };
 }
@@ -142,6 +142,6 @@ async function getRevenueByPlan() {
     return result.map((r) => ({
         plan: r._id,
         count: r.count,
-        revenue: r.revenue,
+        revenue: r.revenue / 100, // Convert cents to euros
     }));
 }

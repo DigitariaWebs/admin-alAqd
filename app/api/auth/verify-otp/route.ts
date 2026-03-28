@@ -135,6 +135,14 @@ export async function POST(request: NextRequest) {
       });
       isNewUser = true;
     } else {
+      // Block suspended users
+      if (user.status === 'suspended') {
+        return NextResponse.json(
+          { error: 'Votre compte a été suspendu' },
+          { status: 403 }
+        );
+      }
+
       console.log("[verify-otp] Found existing user:", user._id, "name:", user.name, "phone:", user.phoneNumber, "isOnboarded:", user.isOnboarded);
       // Update existing user
       user.isPhoneVerified = true;

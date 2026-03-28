@@ -223,6 +223,9 @@ const usersSlice = createSlice({
             state.list.users = state.list.users.filter(u => u.id !== action.payload);
             state.list.pagination.total -= 1;
         });
+        builder.addCase(deleteUser.rejected, (state, action) => {
+            state.error = action.payload as string;
+        });
 
         // Update User Status
         builder.addCase(updateUserStatus.fulfilled, (state, action) => {
@@ -234,6 +237,9 @@ const usersSlice = createSlice({
                 state.selectedUser.status = action.payload.status;
             }
         });
+        builder.addCase(updateUserStatus.rejected, (state, action) => {
+            state.error = action.payload as string;
+        });
 
         // Update User Role
         builder.addCase(updateUserRole.fulfilled, (state, action) => {
@@ -244,6 +250,9 @@ const usersSlice = createSlice({
             if (state.selectedUser?.id === action.payload.id) {
                 state.selectedUser.role = action.payload.role;
             }
+        });
+        builder.addCase(updateUserRole.rejected, (state, action) => {
+            state.error = action.payload as string;
         });
 
         // Fetch Roles

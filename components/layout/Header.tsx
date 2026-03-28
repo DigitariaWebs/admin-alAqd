@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Bell, Search, Menu } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
 interface HeaderProps {
@@ -26,22 +26,6 @@ export const Header = ({ toggleSidebar }: HeaderProps) => {
 
             {/* Right: Actions */}
             <div className="flex items-center gap-4">
-                {/* Search Bar - Small & Rounded */}
-                <div className="hidden md:flex items-center bg-gray-50 rounded-full px-3 py-1.5 border border-transparent focus-within:border-primary-100 focus-within:bg-white focus-within:ring-2 focus-within:ring-primary-50 transition-all w-64">
-                    <Search size={14} className="text-gray-400" />
-                    <input
-                        type="text"
-                        placeholder="Search..."
-                        className="bg-transparent border-none text-xs ml-2 w-full focus:outline-none text-gray-700 placeholder:text-gray-400"
-                    />
-                </div>
-
-                {/* Notifications */}
-                <button className="relative p-2 text-gray-400 hover:text-primary hover:bg-primary-50 rounded-full transition-colors">
-                    <Bell size={18} />
-                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full border border-white"></span>
-                </button>
-
                 {/* User Profile */}
                 <div className="flex items-center gap-3 pl-4 border-l border-gray-100">
                     <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary font-bold text-xs">

@@ -4,6 +4,7 @@ import { User } from '@/lib/db/models/User';
 import { Match } from '@/lib/db/models/Match';
 import { Message } from '@/lib/db/models/Message';
 import { Swipe } from '@/lib/db/models/Swipe';
+import { Order } from '@/lib/db/models/Order';
 import { requireRole } from '@/lib/auth/middleware';
 
 // ─── GET /api/analytics/dashboard ────────────────────────────────────────────────
@@ -68,11 +69,12 @@ export async function GET(request: NextRequest) {
             lastActive: { $gte: thirtyDaysAgo }
         });
 
-        // Subscription stats
-        const premiumUsers = await User.countDocuments({
-            'subscription.isActive': true,
-            'subscription.plan': { $in: ['premium', 'gold'] }
+        // Subscription stats: count distinct users with completed orders
+        const premiumUserIds = await Order.distinct('userId', {
+            status: 'completed',
+            paymentStatus: 'paid',
         });
+        const premiumUsers = premiumUserIds.length;
 
         const freeUsers = totalUsers - premiumUsers;
 
@@ -162,56 +164,72 @@ export async function GET(request: NextRequest) {
     }
 }
 
-// Helper function to calculate revenue
+// Helper function to calculate revenue from actual completed orders
 async function calculateRevenue(startDate: Date, endDate: Date): Promise<number> {
-    // Get users who had active subscriptions in the period
-    const usersWithSubscriptions = await User.find({
-        'subscription.isActive': true,
-        'subscription.plan': { $in: ['premium', 'gold'] }
-    }).select('subscription').lean();
+    const result = await Order.aggregate([
+        {
+            $match: {
+                status: 'completed',
+                paymentStatus: 'paid',
+                completedAt: { $gte: startDate, $lt: endDate },
+            },
+        },
+        {
+            $group: {
+                _id: null,
+                revenue: { $sum: '$total' },
+            },
+        },
+    ]);
 
-    // Calculate estimated revenue based on plan prices
-    // In production, this would be fetched from Stripe
-    const planPrices: Record<string, number> = {
-        premium: 9.99, // monthly
-        gold: 19.99    // monthly
-    };
-
-    let monthlyRevenue = 0;
-    for (const user of usersWithSubscriptions) {
-        if (user.subscription?.plan && planPrices[user.subscription.plan]) {
-            monthlyRevenue += planPrices[user.subscription.plan];
-        }
-    }
-
-    // Calculate months in period
-    const monthsDiff = (endDate.getTime() - startDate.getTime()) / (30 * 24 * 60 * 60 * 1000);
-    
-    return Math.round(monthlyRevenue * Math.max(0.5, monthsDiff) * 100) / 100;
+    // total is stored in cents, convert to euros
+    return (result[0]?.revenue || 0) / 100;
 }
 
 // Helper function to get daily growth
 async function getDailyGrowth(startDate: Date, endDate: Date): Promise<Array<{ date: string; users: number; revenue: number }>> {
+    // Aggregate daily user registrations
+    const userGrowth = await User.aggregate([
+        { $match: { role: 'user', createdAt: { $gte: startDate, $lt: endDate } } },
+        {
+            $group: {
+                _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+                count: { $sum: 1 },
+            },
+        },
+    ]);
+
+    // Aggregate daily revenue from completed orders
+    const revenueGrowth = await Order.aggregate([
+        {
+            $match: {
+                status: 'completed',
+                paymentStatus: 'paid',
+                completedAt: { $gte: startDate, $lt: endDate },
+            },
+        },
+        {
+            $group: {
+                _id: { $dateToString: { format: '%Y-%m-%d', date: '$completedAt' } },
+                revenue: { $sum: '$total' },
+            },
+        },
+    ]);
+
+    const userMap = new Map(userGrowth.map((d) => [d._id, d.count]));
+    const revenueMap = new Map(revenueGrowth.map((d) => [d._id, d.revenue]));
+
     const days: Array<{ date: string; users: number; revenue: number }> = [];
-    
     const currentDate = new Date(startDate);
     while (currentDate <= endDate) {
-        const dayStart = new Date(currentDate);
-        const dayEnd = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
-        
-        const userCount = await User.countDocuments({
-            role: 'user',
-            createdAt: { $gte: dayStart, $lt: dayEnd }
-        });
-
+        const dateStr = currentDate.toISOString().split('T')[0];
         days.push({
-            date: currentDate.toISOString().split('T')[0],
-            users: userCount,
-            revenue: 0 // Would be calculated from actual payments
+            date: dateStr,
+            users: userMap.get(dateStr) || 0,
+            revenue: ((revenueMap.get(dateStr) || 0) / 100), // cents to euros
         });
-        
         currentDate.setDate(currentDate.getDate() + 1);
     }
-    
+
     return days;
 }

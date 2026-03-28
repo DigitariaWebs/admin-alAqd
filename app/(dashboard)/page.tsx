@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/Card';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { fetchDashboard, fetchRevenue, fetchActivities } from '@/store/slices/analyticsSlice';
-import { Users, UserPlus, Activity, CreditCard, Loader2 } from 'lucide-react';
+import { Users, Crown, Activity, CreditCard, Loader2 } from 'lucide-react';
 
 function formatNumber(num: number): string {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
@@ -60,6 +60,10 @@ export default function DashboardPage() {
 
     const overview = dashboard.overview;
 
+    const conversionRate = overview && overview.totalUsers > 0
+        ? Math.round((overview.premiumUsers / overview.totalUsers) * 100)
+        : 0;
+
     const metrics = overview ? [
         {
             label: 'Utilisateurs Totaux',
@@ -68,21 +72,21 @@ export default function DashboardPage() {
             icon: Users,
         },
         {
-            label: 'Nouveaux Utilisateurs',
-            value: formatNumber(overview.newUsers),
-            growth: overview.growth.users,
-            icon: UserPlus,
-        },
-        {
             label: 'Utilisateurs Actifs',
             value: formatNumber(overview.activeUsers),
             growth: overview.engagementRate,
             icon: Activity,
         },
         {
+            label: 'Utilisateurs Premium',
+            value: formatNumber(overview.premiumUsers),
+            growth: conversionRate,
+            icon: Crown,
+        },
+        {
             label: 'Revenu',
-            value: formatCurrency(overview.revenue),
-            growth: overview.growth.revenue,
+            value: formatCurrency(revenue.summary?.totalRevenue ?? overview.revenue),
+            growth: revenue.summary?.growthPercentage ?? overview.growth.revenue,
             icon: CreditCard,
         },
     ] : [];
@@ -103,7 +107,7 @@ export default function DashboardPage() {
 
             {/* Metrics Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {isLoading && !overview ? (
+                {isLoading || !overview || !revenue.summary ? (
                     [1, 2, 3, 4].map((i) => (
                         <Card key={i} className="flex flex-col gap-2 animate-pulse">
                             <div className="h-3 w-24 bg-gray-200 rounded" />
@@ -194,9 +198,6 @@ export default function DashboardPage() {
                         <div className="flex items-center gap-4 mt-4 pt-4 border-t border-gray-100">
                             <div className="text-xs text-gray-500">
                                 Total: <span className="font-semibold text-gray-900">{formatCurrency(revenue.summary.totalRevenue)}</span>
-                            </div>
-                            <div className="text-xs text-gray-500">
-                                Moyenne: <span className="font-semibold text-gray-900">{formatCurrency(revenue.summary.averageRevenue)}</span>
                             </div>
                             <div className="text-xs text-gray-500">
                                 Abonnements: <span className="font-semibold text-gray-900">{revenue.summary.totalSubscriptions}</span>

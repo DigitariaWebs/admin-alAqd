@@ -82,6 +82,14 @@ export async function POST(request: NextRequest) {
           });
           isNewUser = true;
         } else {
+          // Block suspended users
+          if (user.status === 'suspended') {
+            return NextResponse.json(
+              { error: 'Votre compte a été suspendu' },
+              { status: 403 }
+            );
+          }
+
           user.lastActive = new Date();
           await user.save();
         }

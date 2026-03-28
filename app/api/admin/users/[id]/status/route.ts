@@ -50,11 +50,6 @@ export async function PATCH(
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
-        // Prevent lowering own role
-        if (user.role === 'admin' && authResult.user.role !== 'admin') {
-            return NextResponse.json({ error: 'Cannot modify admin status' }, { status: 403 });
-        }
-
         user.status = status;
         user.updatedAt = new Date();
         await user.save();

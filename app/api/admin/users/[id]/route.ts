@@ -39,9 +39,9 @@ export async function GET(
 
         // Get additional stats for this user
         const [matchCount, messageCount, swipeCount] = await Promise.all([
-            Match.countDocuments({ $or: [{ user1Id: id }, { user2Id: id }] }),
+            Match.countDocuments({ $or: [{ user1: id }, { user2: id }] }),
             Message.countDocuments({ senderId: id }),
-            Swipe.countDocuments({ swiperId: id }),
+            Swipe.countDocuments({ fromUser: id }),
         ]);
 
         return NextResponse.json({
@@ -233,11 +233,6 @@ export async function DELETE(
 
         if (!user) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
-        }
-
-        // Prevent deleting other admins
-        if (user.role === 'admin') {
-            return NextResponse.json({ error: 'Cannot delete admin users' }, { status: 403 });
         }
 
         await User.findByIdAndDelete(id);
