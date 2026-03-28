@@ -5,7 +5,6 @@ export interface INotification {
     // Notification content
     title: string;
     body: string;
-    imageUrl?: string;
     data?: Record<string, unknown>;
 
     // Targeting
@@ -48,10 +47,6 @@ const notificationSchema = new Schema<INotification>(
         body: {
             type: String,
             required: true,
-        },
-        imageUrl: {
-            type: String,
-            trim: true,
         },
         data: {
             type: Schema.Types.Mixed,

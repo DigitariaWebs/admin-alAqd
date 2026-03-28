@@ -10,12 +10,9 @@ import {
     ShoppingCart,
     BarChart2,
     Bell,
-    Settings,
-    LifeBuoy,
     LogOut,
     ChevronRight,
     Shield,
-    Database
 } from 'lucide-react';
 import { Assets } from '@/config/assets';
 
@@ -26,9 +23,6 @@ const MENU_ITEMS = [
     { name: 'Commandes', icon: ShoppingCart, path: '/orders' },
     { name: 'Analytique', icon: BarChart2, path: '/analytics' },
     { name: 'Notifications', icon: Bell, path: '/notifications' },
-    { name: 'Paramètres', icon: Settings, path: '/settings' },
-    { name: 'Support & Journaux', icon: LifeBuoy, path: '/support' },
-    { name: 'Configuration', icon: Database, path: '/config' },
 ];
 
 export const Sidebar = () => {
@@ -68,7 +62,7 @@ export const Sidebar = () => {
                             key={item.path}
                             href={item.path}
                             className={`
-                group flex items-center justify-between px-3 py-2.5 rounded-full text-xs font-medium transition-all duration-200
+                group flex items-center justify-between px-3 py-2.5 rounded-full text-sm font-medium transition-all duration-200
                 ${isActive
                                     ? 'bg-primary text-white shadow-sm'
                                     : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'

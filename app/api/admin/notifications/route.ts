@@ -3,6 +3,7 @@ import connectDB from '@/lib/db/mongodb';
 import { Notification } from '@/lib/db/models/Notification';
 import { User } from '@/lib/db/models/User';
 import { requireRole } from '@/lib/auth/middleware';
+import { sendNotificationEmail } from '@/lib/email';
 import mongoose from 'mongoose';
 
 // ─── GET /api/admin/notifications ───────────────────────────────────────────────
@@ -78,7 +79,7 @@ export async function GET(request: NextRequest) {
                 id: notification._id?.toString() || notification._id,
                 title: notification.title,
                 body: notification.body,
-                imageUrl: notification.imageUrl,
+
                 data: notification.data,
                 type: notification.type,
                 targetAudience: notification.targetAudience,
@@ -129,7 +130,7 @@ export async function POST(request: NextRequest) {
         const {
             title,
             body: messageBody,
-            imageUrl,
+            imageBase64,
             data,
             type = 'broadcast',
             targetAudience = 'all',
@@ -186,7 +187,6 @@ export async function POST(request: NextRequest) {
         const notification = await Notification.create({
             title,
             body: messageBody,
-            imageUrl: imageUrl || undefined,
             data,
             type,
             targetAudience,
@@ -205,26 +205,51 @@ export async function POST(request: NextRequest) {
             createdBy: authResult.user.userId,
         });
 
-        // TODO: Integrate with actual push notification service (Firebase, OneSignal, etc.)
-        // For now, we'll simulate the push notification sending
+        // Send emails to target users
         if (sendNow && !isScheduled) {
-            // In production, you would:
-            // 1. Query users based on targetAudience
-            // 2. Send push notification via FCM/APNs/OneSignal
-            // 3. Update deliveryStats based on results
-            
-            console.log(`[PUSH NOTIFICATION] Sending to ${totalRecipients} recipients:`);
-            console.log(`Title: ${title}`);
-            console.log(`Body: ${messageBody}`);
-            
-            // Simulate successful delivery (in production, this would be actual delivery count)
+            // Query target users with email addresses
+            const userQuery: Record<string, unknown> = { status: 'active', email: { $exists: true, $ne: null } };
+
+            if (targetAudience === 'premium') {
+                userQuery['subscription.plan'] = { $in: ['premium', 'gold'] };
+            } else if (targetAudience === 'free') {
+                userQuery.$or = [
+                    { 'subscription.plan': 'free' },
+                    { subscription: { $exists: false } },
+                    { 'subscription.isActive': false },
+                ];
+            }
+
+            const targetUsers = await User.find(userQuery).select('email').lean();
+            const emails = targetUsers.map((u: any) => u.email).filter(Boolean) as string[];
+
+            let delivered = 0;
+            let failed = 0;
+
+            for (const email of emails) {
+                try {
+                    await sendNotificationEmail({
+                        to: email,
+                        subject: title,
+                        body: messageBody,
+                        imageBase64: imageBase64 || undefined,
+                    });
+                    delivered++;
+                } catch (err) {
+                    console.error(`Failed to send email to ${email}:`, err);
+                    failed++;
+                }
+            }
+
             notification.deliveryStats = {
-                totalRecipients,
-                sent: totalRecipients,
-                delivered: Math.floor(totalRecipients * 0.95), // 95% delivery rate
-                failed: Math.floor(totalRecipients * 0.05), // 5% failure rate
+                totalRecipients: emails.length,
+                sent: emails.length,
+                delivered,
+                failed,
             };
             await notification.save();
+
+            console.log(`[EMAIL NOTIFICATION] Sent to ${delivered}/${emails.length} recipients (${failed} failed)`);
         }
 
         return NextResponse.json({
@@ -233,7 +258,7 @@ export async function POST(request: NextRequest) {
                 id: notification._id.toString(),
                 title: notification.title,
                 body: notification.body,
-                imageUrl: notification.imageUrl,
+
                 type: notification.type,
                 targetAudience: notification.targetAudience,
                 targetGender: notification.targetGender,

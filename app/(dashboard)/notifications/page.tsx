@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/Button';
 import  Table  from '@/components/ui/Table';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
-import { Send, Clock, Trash2, BarChart3, ImagePlus, X, Loader2 } from 'lucide-react';
+import { Send, Clock, Trash2, ImagePlus, X } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 
 // Types
@@ -38,28 +38,6 @@ interface Notification {
     };
 }
 
-interface StatsData {
-    overview: {
-        totalNotifications: number;
-        totalRecipients: number;
-        totalSent: number;
-        totalDelivered: number;
-        totalFailed: number;
-        deliveryRate: number;
-        openRate: number;
-        clickRate: number;
-    };
-    statusBreakdown: Record<string, number>;
-    typeBreakdown: Array<{ _id: string; count: number }>;
-    scheduledPending: number;
-    recentTrend: Array<{ date: string; count: number }>;
-    userReach: {
-        totalUsers: number;
-        premiumUsers: number;
-        freeUsers: number;
-    };
-}
-
 const AUDIENCE_LABELS: Record<string, string> = {
     all: 'Tous',
     premium: 'Premium',
@@ -77,11 +55,8 @@ const STATUS_LABELS: Record<string, string> = {
 export default function NotificationsPage() {
     const [loading, setLoading] = useState(false);
     const [notifications, setNotifications] = useState<Notification[]>([]);
-    const [stats, setStats] = useState<StatsData | null>(null);
-    const [showStats, setShowStats] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
-    const [isUploading, setIsUploading] = useState(false);
     const [formData, setFormData] = useState({
         title: '',
         body: '',
@@ -97,7 +72,6 @@ export default function NotificationsPage() {
 
     useEffect(() => {
         fetchNotifications();
-        fetchStats();
     }, []);
 
     const fetchNotifications = async () => {
@@ -113,18 +87,6 @@ export default function NotificationsPage() {
         } catch { toast.error('Erreur lors du chargement'); }
     };
 
-    const fetchStats = async () => {
-        try {
-            const token = getToken();
-            if (!token) return;
-            const res = await fetch('/api/admin/notifications/stats', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
-            if (data.success) setStats(data.stats);
-        } catch { console.error('Error fetching stats'); }
-    };
-
     const handleDeleteClick = (id: string) => {
         setDeleteTargetId(id);
         setIsDeleteModalOpen(true);
@@ -138,37 +100,20 @@ export default function NotificationsPage() {
                 method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
-            if (data.success) { toast.success('Notification supprimée'); fetchNotifications(); fetchStats(); }
+            if (data.success) { toast.success('Notification supprimée'); fetchNotifications(); }
         } catch { toast.error('Erreur lors de la suppression'); }
         finally { setIsDeleteModalOpen(false); setDeleteTargetId(null); }
     };
 
-    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        setIsUploading(true);
-        try {
-            const uploadData = new FormData();
-            uploadData.append('file', file);
-            uploadData.append('upload_preset', 'al-aqd-notifications');
-
-            const res = await fetch(
-                `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'deyjooxbi'}/image/upload`,
-                { method: 'POST', body: uploadData }
-            );
-            const data = await res.json();
-            if (data.secure_url) {
-                setFormData({ ...formData, imageUrl: data.secure_url });
-                toast.success('Image téléchargée');
-            } else {
-                toast.error('Échec du téléchargement');
-            }
-        } catch {
-            toast.error('Erreur lors du téléchargement');
-        } finally {
-            setIsUploading(false);
-        }
+        const reader = new FileReader();
+        reader.onload = () => {
+            setFormData({ ...formData, imageUrl: reader.result as string });
+        };
+        reader.readAsDataURL(file);
     };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -189,7 +134,7 @@ export default function NotificationsPage() {
                 createdBy: adminId,
             };
 
-            if (formData.imageUrl) payload.imageUrl = formData.imageUrl;
+            if (formData.imageUrl) payload.imageBase64 = formData.imageUrl;
 
             if (formData.isScheduled && formData.scheduledFor) {
                 payload.isScheduled = true;
@@ -267,88 +212,30 @@ export default function NotificationsPage() {
                         <h1 className="text-xl font-bold text-gray-900">Notifications</h1>
                         <p className="text-xs text-gray-500 mt-1">Envoyez des notifications et gérez les alertes.</p>
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => setShowStats(!showStats)} className="flex items-center gap-2 rounded-full">
-                        <BarChart3 size={16} />
-                        {showStats ? 'Masquer les stats' : 'Voir les stats'}
-                    </Button>
                 </div>
 
-                {showStats && stats && (
-                    <Card>
-                        <h3 className="font-bold text-gray-900 mb-4 text-sm">Statistiques de livraison</h3>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div className="bg-gray-50 p-4 rounded-xl">
-                                <p className="text-xs text-gray-500">Total notifications</p>
-                                <p className="text-2xl font-bold">{stats.overview.totalNotifications}</p>
-                            </div>
-                            <div className="bg-gray-50 p-4 rounded-xl">
-                                <p className="text-xs text-gray-500">Taux de livraison</p>
-                                <p className="text-2xl font-bold">{stats.overview.deliveryRate}%</p>
-                            </div>
-                            <div className="bg-gray-50 p-4 rounded-xl">
-                                <p className="text-xs text-gray-500">Taux d'ouverture</p>
-                                <p className="text-2xl font-bold">{stats.overview.openRate}%</p>
-                            </div>
-                            <div className="bg-gray-50 p-4 rounded-xl">
-                                <p className="text-xs text-gray-500">Programmées</p>
-                                <p className="text-2xl font-bold">{stats.scheduledPending}</p>
-                            </div>
-                        </div>
+                {/* Form */}
+                <Card>
+                    <h3 className="font-bold text-gray-900 text-sm mb-4 flex items-center gap-2">
+                        <Send size={16} /> Composer une notification
+                    </h3>
 
-                        <div className="grid grid-cols-2 gap-4 mt-4">
-                            <div>
-                                <h4 className="font-semibold mb-2 text-sm">Par type</h4>
-                                {stats.typeBreakdown.map(t => (
-                                    <div key={t._id} className="flex justify-between text-sm">
-                                        <span>{t._id}</span>
-                                        <span className="font-bold">{t.count}</span>
-                                    </div>
-                                ))}
-                            </div>
-                            <div>
-                                <h4 className="font-semibold mb-2 text-sm">Portée</h4>
-                                <div className="space-y-1 text-sm">
-                                    <div className="flex justify-between">
-                                        <span>Total utilisateurs</span>
-                                        <span className="font-bold">{stats.userReach.totalUsers}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span>Premium</span>
-                                        <span className="font-bold">{stats.userReach.premiumUsers}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span>Gratuit</span>
-                                        <span className="font-bold">{stats.userReach.freeUsers}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </Card>
-                )}
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* Form */}
-                    <Card className="h-fit">
-                        <h3 className="font-bold text-gray-900 text-sm mb-4 flex items-center gap-2">
-                            <Send size={16} /> Composer une notification
-                        </h3>
-
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <Input
-                                label="Titre"
-                                placeholder="Titre de la notification"
-                                value={formData.title}
-                                onChange={(e) => setFormData({...formData, title: e.target.value})}
-                                required
-                            />
-                            <Textarea
-                                label="Message"
-                                placeholder="Rédigez votre message ici..."
-                                rows={4}
-                                value={formData.body}
-                                onChange={(e) => setFormData({...formData, body: e.target.value})}
-                                required
-                            />
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <Input
+                            label="Titre"
+                            placeholder="Titre de la notification"
+                            value={formData.title}
+                            onChange={(e) => setFormData({...formData, title: e.target.value})}
+                            required
+                        />
+                        <Textarea
+                            label="Message"
+                            placeholder="Rédigez votre message ici..."
+                            rows={4}
+                            value={formData.body}
+                            onChange={(e) => setFormData({...formData, body: e.target.value})}
+                            required
+                        />
 
                             {/* Image Upload */}
                             <div>
@@ -366,12 +253,9 @@ export default function NotificationsPage() {
                                     </div>
                                 ) : (
                                     <label className="flex items-center justify-center gap-2 w-full p-4 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-primary/50 hover:bg-primary-50/30 transition-colors">
-                                        {isUploading ? (
-                                            <><Loader2 size={16} className="animate-spin text-gray-400" /> <span className="text-sm text-gray-500">Téléchargement...</span></>
-                                        ) : (
-                                            <><ImagePlus size={16} className="text-gray-400" /> <span className="text-sm text-gray-500">Ajouter une image</span></>
-                                        )}
-                                        <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={isUploading} />
+                                        <ImagePlus size={16} className="text-gray-400" />
+                                        <span className="text-sm text-gray-500">Ajouter une image</span>
+                                        <input type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
                                     </label>
                                 )}
                             </div>
@@ -407,13 +291,12 @@ export default function NotificationsPage() {
                         </form>
                     </Card>
 
-                    {/* History */}
-                    <div className="space-y-4">
-                        <h3 className="font-bold text-gray-900 text-sm flex items-center gap-2 pl-2">
-                            <Clock size={16} /> Historique récent
-                        </h3>
-                        <Table data={notifications} keyExtractor={(notif) => notif.id} columns={columns} />
-                    </div>
+                {/* History */}
+                <div className="space-y-4">
+                    <h3 className="font-bold text-gray-900 text-sm flex items-center gap-2">
+                        <Clock size={16} /> Historique récent
+                    </h3>
+                    <Table data={notifications} keyExtractor={(notif) => notif.id} columns={columns} />
                 </div>
             </div>
 
