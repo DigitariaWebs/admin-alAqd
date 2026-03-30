@@ -241,7 +241,6 @@ async function seed() {
     const phone = buildPhone(country, i);
     const emailHandle = `${firstName.toLowerCase()}.${lastName.toLowerCase().replace(/ /g, '')}${i}`;
     const email = `${emailHandle}@alaqd-test.com`;
-    const location = pick(LOCATIONS);
     const nationality = [pick(NATIONALITIES)];
     const ethnicity = [pick(ETHNICITIES)];
 
@@ -253,7 +252,6 @@ async function seed() {
       dateOfBirth: randomDOB(20, 38),
       bio: `Salam, I'm ${firstName}. Looking for a serious and blessed relationship.`,
       profession: pick(PROFESSIONS),
-      location,
       height: isMale ? randomInt(168, 195) : randomInt(155, 178),
       provider: 'phone',
       isEmailVerified: true,
