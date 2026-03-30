@@ -127,7 +127,7 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
     photoBlurEnabled: { type: Boolean, default: true },
 
     preferences: {
-      distance: Number,
+      distance: { type: Number, default: 500 },
       ageRange: {
         min: { type: Number, default: 18 },
         max: { type: Number, default: 60 },

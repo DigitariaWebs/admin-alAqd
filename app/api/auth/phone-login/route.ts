@@ -1,23 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongodb';
 import { OTP } from '@/lib/db/models/OTP';
-
-function normalizePhoneNumber(value: string): string {
-  const trimmed = value.trim();
-  const digits = trimmed.replace(/\D/g, "");
-  if (!digits) return "";
-  return `+${digits}`;
-}
-
-/**
- * Build a regex that matches a phone number by its digits alone,
- * ignoring any formatting characters (spaces, dashes, parens, dots).
- */
-function buildPhoneDigitsRegex(normalizedPhone: string): RegExp {
-  const digits = normalizedPhone.replace(/\D/g, "");
-  const pattern = digits.split("").join("\\D*");
-  return new RegExp(`^\\+?\\D*${pattern}\\D*$`);
-}
+import { normalizePhoneNumber, buildPhoneDigitsRegex } from '@/lib/auth/phone-utils';
 
 export async function POST(request: NextRequest) {
     try {

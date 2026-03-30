@@ -6,8 +6,8 @@ import { requireAuth } from '@/lib/auth/middleware';
 // ─── Defaults ─────────────────────────────────────────────────────────────────
 
 export const DEFAULT_PREFERENCES = {
-    distance: 50,
-    ageRange: { min: 18, max: 45 },
+    distance: 500,
+    ageRange: { min: 18, max: 60 },
     religiousPractice: [] as string[],
     ethnicity: [] as string[],
     education: [] as string[],

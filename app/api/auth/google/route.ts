@@ -110,6 +110,37 @@ export async function POST(request: NextRequest) {
             );
           }
 
+          // Merge Google identity into existing account (e.g. phone user logging in with Google)
+          if (!user.providerId && user.email === email.toLowerCase()) {
+            user.providerId = googleId;
+            user.isEmailVerified = true;
+          }
+
+          // Auto-repair isOnboarded flag for returning users
+          if (!user.isOnboarded) {
+            const signals = [
+              Boolean(user.name && user.name !== "User" && user.name.trim() !== ""),
+              Boolean(user.dateOfBirth),
+              Boolean(user.gender),
+              Boolean(user.profession && String(user.profession).trim() !== ""),
+              Boolean(user.location && String(user.location).trim() !== ""),
+              Boolean(user.bio && String(user.bio).trim() !== ""),
+              Array.isArray(user.photos) && user.photos.length > 0,
+              Array.isArray(user.interests) && user.interests.length > 0,
+              Array.isArray(user.personality) && user.personality.length > 0,
+              Array.isArray(user.nationality) && user.nationality.length > 0,
+              Array.isArray(user.ethnicity) && user.ethnicity.length > 0,
+              Boolean(user.education && String(user.education).trim() !== ""),
+              Boolean(user.maritalStatus && String(user.maritalStatus).trim() !== ""),
+              Boolean(user.religiousPractice && String(user.religiousPractice).trim() !== ""),
+              Array.isArray(user.faithTags) && user.faithTags.length > 0,
+              Boolean(user.height),
+            ];
+            if (signals.filter(Boolean).length >= 3) {
+              user.isOnboarded = true;
+            }
+          }
+
           user.lastActive = new Date();
           await user.save();
         }
@@ -133,11 +164,14 @@ export async function POST(request: NextRequest) {
             user: {
                 id: user._id.toString(),
                 email: user.email,
+                phoneNumber: user.phoneNumber,
                 name: user.name,
                 provider: user.provider,
                 role: user.role,
                 isNewUser,
                 isOnboarded: user.isOnboarded,
+                isPhoneVerified: user.isPhoneVerified ?? false,
+                isEmailVerified: user.isEmailVerified ?? false,
             },
         });
     } catch (error) {

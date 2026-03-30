@@ -40,12 +40,13 @@ export async function GET(request: NextRequest) {
                 email: user.email,
                 name: user.name,
                 role: user.role,
+                provider: user.provider,
                 phoneNumber: user.phoneNumber,
                 status: user.status,
                 lastActive: user.lastActive,
                 isOnboarded: user.isOnboarded,
-                isPhoneVerified: user.isPhoneVerified,
-                isEmailVerified: user.isEmailVerified,
+                isPhoneVerified: user.isPhoneVerified ?? false,
+                isEmailVerified: user.isEmailVerified ?? false,
             },
         });
     } catch (error) {

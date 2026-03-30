@@ -3,25 +3,7 @@ import connectDB from '@/lib/db/mongodb';
 import { OTP } from '@/lib/db/models/OTP';
 import { User } from '@/lib/db/models/User';
 import { generateAccessToken, generateRefreshToken, storeRefreshToken } from '@/lib/auth/jwt';
-
-function normalizePhoneNumber(value: string): string {
-  const trimmed = value.trim();
-  const digits = trimmed.replace(/\D/g, "");
-  if (!digits) return "";
-  return `+${digits}`;
-}
-
-/**
- * Build a regex that matches a phone number by its digits alone,
- * ignoring any formatting characters (spaces, dashes, parens, dots).
- * e.g. digits "16123456789" matches "+1 612 345-6789", "+16123456789", etc.
- */
-function buildPhoneDigitsRegex(normalizedPhone: string): RegExp {
-  const digits = normalizedPhone.replace(/\D/g, "");
-  // Each digit with optional non-digit chars between them
-  const pattern = digits.split("").join("\\D*");
-  return new RegExp(`^\\+?\\D*${pattern}\\D*$`);
-}
+import { normalizePhoneNumber, buildPhoneDigitsRegex } from '@/lib/auth/phone-utils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -210,10 +192,14 @@ export async function POST(request: NextRequest) {
       user: {
         id: user._id.toString(),
         phoneNumber: user.phoneNumber,
+        email: user.email,
         name: user.name,
+        provider: user.provider,
         role: user.role,
         isNewUser,
         isOnboarded: user.isOnboarded,
+        isPhoneVerified: user.isPhoneVerified ?? false,
+        isEmailVerified: user.isEmailVerified ?? false,
       },
     });
   } catch (error) {
