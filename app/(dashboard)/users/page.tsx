@@ -920,7 +920,7 @@ export default function UsersPage() {
                 {selectedUser ? (
                     <div className="space-y-4">
                         <p className="text-gray-600">
-                            Êtes-vous sûr de vouloir supprimer l'utilisateur <strong>{selectedUser.name}</strong> ?
+                            Êtes-vous sûr de vouloir supprimer l&apos;utilisateur <strong>{selectedUser.name}</strong> ?
                             Cette action est irréversible.
                         </p>
                         <div className="flex gap-3 justify-end">

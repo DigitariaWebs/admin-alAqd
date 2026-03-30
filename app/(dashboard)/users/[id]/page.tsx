@@ -50,7 +50,7 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
                 </div>
                 <div className="flex gap-2">
                     <Button variant="outline" size="md" className="rounded-full text-xs">Réinitialiser le mot de passe</Button>
-                    <Button variant="danger" size="md" className="rounded-full text-xs">Suspendre l'utilisateur</Button>
+                    <Button variant="danger" size="md" className="rounded-full text-xs">Suspendre l&apos;utilisateur</Button>
                 </div>
             </div>
 
@@ -151,7 +151,7 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
 
                             {activeTab === 'activity' && (
                                 <div className="text-center text-xs text-gray-400 py-10">
-                                    Les journaux d'activité de l'utilisateur apparaîtront ici.
+                                    Les journaux d&apos;activité de l&apos;utilisateur apparaîtront ici.
                                 </div>
                             )}
                             {activeTab === 'security' && (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Header } from '@/components/layout/Header';  // ✅ IMPORTE LE HEADER
@@ -20,14 +20,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const router = useRouter();
     const dispatch = useAppDispatch();
     const { isAuthenticated, isLoading } = useAppSelector((state) => state.auth);
-    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    useEffect(() => {
-        if (!mounted) return;
+        if (typeof window === 'undefined') return;
 
         const token = localStorage.getItem('auth_token');
 
@@ -36,17 +31,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         } else if (!token && !isLoading) {
             router.push('/login');
         }
-    }, [mounted, dispatch, isAuthenticated, isLoading, router]);
+    }, [dispatch, isAuthenticated, isLoading, router]);
 
     useEffect(() => {
-        if (!mounted) return;
+        if (typeof window === 'undefined') return;
 
         if (!isLoading && !isAuthenticated) {
             router.push('/login');
         }
-    }, [mounted, isAuthenticated, isLoading, router]);
+    }, [isAuthenticated, isLoading, router]);
 
-    if (!mounted || isLoading) {
+    if (typeof window === 'undefined' || isLoading) {
         return <LoadingScreen />;
     }
 

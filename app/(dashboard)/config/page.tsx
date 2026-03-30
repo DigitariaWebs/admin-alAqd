@@ -193,7 +193,7 @@ export default function ConfigPage() {
             <div className="space-y-6">
                 <div>
                     <h1 className="text-xl font-bold text-gray-900">Données de configuration</h1>
-                    <p className="text-xs text-gray-500 mt-1">Consultez et gérez les options de configuration de l'application.</p>
+                    <p className="text-xs text-gray-500 mt-1">Consultez et gérez les options de configuration de l&apos;application.</p>
                 </div>
 
                 {loading ? (

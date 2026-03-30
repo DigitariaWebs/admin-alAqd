@@ -287,7 +287,7 @@ export default function SettingsPage() {
             <div className="space-y-6">
                 <div>
                     <h1 className="text-xl font-bold text-gray-900">Paramètres Système</h1>
-                    <p className="text-xs text-gray-500 mt-1">Configurez les paramètres globaux de l'application.</p>
+                    <p className="text-xs text-gray-500 mt-1">Configurez les paramètres globaux de l&apos;application.</p>
                 </div>
                 <Card className="rounded-[30px] min-h-[500px] flex items-center justify-center">
                     <div className="text-center">
@@ -305,7 +305,7 @@ export default function SettingsPage() {
             <div className="space-y-6">
                 <div>
                     <h1 className="text-xl font-bold text-gray-900">Paramètres Système</h1>
-                    <p className="text-xs text-gray-500 mt-1">Configurez les paramètres globaux de l'application.</p>
+                    <p className="text-xs text-gray-500 mt-1">Configurez les paramètres globaux de l&apos;application.</p>
                 </div>
 
                 <Card className="rounded-[30px] min-h-[500px]">
@@ -341,7 +341,7 @@ export default function SettingsPage() {
                                     <div className="flex items-center justify-between p-4 bg-gray-50 rounded-[20px]">
                                         <div>
                                             <p className="font-medium text-sm text-gray-900">Activer le mode maintenance</p>
-                                            <p className="text-xs text-gray-500">Empêcher les utilisateurs d'accéder à la plateforme.</p>
+                                            <p className="text-xs text-gray-500">Empêcher les utilisateurs d&apos;accéder à la plateforme.</p>
                                         </div>
                                         {settings.maintenanceMode ? (
                                             <ToggleRight size={32} className="text-primary cursor-pointer" onClick={toggleMaintenanceMode} />
@@ -413,7 +413,7 @@ export default function SettingsPage() {
                                     />
 
                                     <Input
-                                        label="Délai d'expiration de session (minutes)"
+                                        label="Délai d&apos;expiration de session (minutes)"
                                         type="number"
                                         value={settings.sessionTimeoutMinutes}
                                         onChange={(e) => setSettings(prev => prev ? { ...prev, sessionTimeoutMinutes: parseInt(e.target.value) } : null)}

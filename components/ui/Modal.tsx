@@ -31,13 +31,6 @@ export const Modal: React.FC<ModalProps> = ({
     children,
     maxWidth = 'md',
 }) => {
-    const [mounted, setMounted] = React.useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-        return () => setMounted(false);
-    }, []);
-
     // Prevent body scroll when modal is open
     useEffect(() => {
         if (isOpen) {
@@ -50,7 +43,7 @@ export const Modal: React.FC<ModalProps> = ({
         };
     }, [isOpen]);
 
-    if (!mounted) return null;
+    if (typeof window === 'undefined') return null;
 
     return createPortal(
         <AnimatePresence>

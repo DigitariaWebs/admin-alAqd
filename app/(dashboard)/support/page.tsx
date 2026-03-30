@@ -485,7 +485,7 @@ export default function SupportPage() {
                                     <span className="font-bold text-lg">{stats?.avgResponseTimeHours || 0}h</span>
                                 </div>
                                 <div className="flex justify-between items-center">
-                                    <span className="text-xs opacity-80">Fermés aujourd'hui</span>
+                                    <span className="text-xs opacity-80">Fermés aujourd&apos;hui</span>
                                     <span className="font-bold text-lg">{stats?.overview?.ticketsClosedToday || 0}</span>
                                 </div>
                             </div>

@@ -51,7 +51,7 @@ export default function LoginPage() {
                     </div>
                     <h1 className="text-2xl font-bold text-gray-900">Connexion Admin</h1>
                     <p className="text-sm text-gray-500 mt-2 text-center">
-                        Accédez au panneau d'administration sécurisé Al-Aqd.
+                        Accédez au panneau d&apos;administration sécurisé Al-Aqd.
                     </p>
                 </div>
 
