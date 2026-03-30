@@ -661,6 +661,21 @@ export default function UsersPage() {
                                     </div>
                                 </div>
 
+                                {/* Photos */}
+                                {selectedUser.photos && selectedUser.photos.length > 0 && (
+                                    <div className="border-t pt-4">
+                                        <h4 className="text-xs font-semibold text-gray-400 uppercase mb-2">Photos ({selectedUser.photos.length})</h4>
+                                        <div className="flex gap-2 overflow-x-auto pb-2">
+                                            {selectedUser.photos.map((photo: string, i: number) => (
+                                                <img key={i} src={photo} alt={`Photo ${i + 1}`} className="w-20 h-20 rounded-lg object-cover shrink-0" />
+                                            ))}
+                                        </div>
+                                        {selectedUser.photoBlurEnabled && (
+                                            <p className="text-xs text-amber-600 mt-1">🔒 Flou activé</p>
+                                        )}
+                                    </div>
+                                )}
+
                                 {/* Personal Info */}
                                 <div className="border-t pt-4">
                                     <h4 className="text-xs font-semibold text-gray-400 uppercase mb-2">Informations personnelles</h4>
@@ -678,6 +693,10 @@ export default function UsersPage() {
                                             <p className="font-medium">{selectedUser.maritalStatus || '-'}</p>
                                         </div>
                                         <div>
+                                            <p className="text-gray-500">Taille</p>
+                                            <p className="font-medium">{selectedUser.height ? `${selectedUser.height} cm` : '-'}</p>
+                                        </div>
+                                        <div>
                                             <p className="text-gray-500">Nationalité</p>
                                             <p className="font-medium">{selectedUser.nationality?.length ? selectedUser.nationality.join(', ') : '-'}</p>
                                         </div>
@@ -685,16 +704,12 @@ export default function UsersPage() {
                                             <p className="text-gray-500">Origine</p>
                                             <p className="font-medium">{selectedUser.ethnicity?.length ? selectedUser.ethnicity.join(', ') : '-'}</p>
                                         </div>
-                                        <div>
-                                            <p className="text-gray-500">Taille</p>
-                                            <p className="font-medium">{selectedUser.height ? `${selectedUser.height} cm` : '-'}</p>
-                                        </div>
                                     </div>
                                 </div>
 
-                                {/* Professional & Location */}
+                                {/* Professional & Religion */}
                                 <div className="border-t pt-4">
-                                    <h4 className="text-xs font-semibold text-gray-400 uppercase mb-2">Professionnel & Localisation</h4>
+                                    <h4 className="text-xs font-semibold text-gray-400 uppercase mb-2">Professionnel & Religion</h4>
                                     <div className="grid grid-cols-2 gap-3 text-sm">
                                         <div>
                                             <p className="text-gray-500">Profession</p>
@@ -705,12 +720,16 @@ export default function UsersPage() {
                                             <p className="font-medium">{selectedUser.education || '-'}</p>
                                         </div>
                                         <div>
-                                            <p className="text-gray-500">Localisation</p>
-                                            <p className="font-medium">{selectedUser.location || '-'}</p>
-                                        </div>
-                                        <div>
                                             <p className="text-gray-500">Pratique religieuse</p>
                                             <p className="font-medium">{selectedUser.religiousPractice || '-'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-500">Tabac</p>
+                                            <p className="font-medium">{selectedUser.smoking || '-'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-500">Alcool</p>
+                                            <p className="font-medium">{selectedUser.drinking || '-'}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -723,49 +742,68 @@ export default function UsersPage() {
                                     </div>
                                 )}
 
-                                {/* Interests & Faith Tags */}
-                                {(selectedUser.interests?.length || selectedUser.faithTags?.length) ? (
+                                {/* Interests */}
+                                {selectedUser.interests && selectedUser.interests.length > 0 && (
                                     <div className="border-t pt-4">
-                                        <h4 className="text-xs font-semibold text-gray-400 uppercase mb-2">Centres d'intérêt</h4>
+                                        <h4 className="text-xs font-semibold text-gray-400 uppercase mb-2">Centres d&apos;intérêt</h4>
                                         <div className="flex flex-wrap gap-2">
-                                            {selectedUser.interests?.map((interest, i) => (
+                                            {selectedUser.interests.map((interest: string, i: number) => (
                                                 <span key={i} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">{interest}</span>
                                             ))}
-                                            {selectedUser.faithTags?.map((tag, i) => (
-                                                <span key={`ft-${i}`} className="px-2 py-1 bg-primary-50 text-primary text-xs rounded-full">{tag}</span>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ) : null}
-
-                                {/* Subscription */}
-                                {selectedUser.subscription && selectedUser.subscription.plan !== 'free' && (
-                                    <div className="border-t pt-4">
-                                        <h4 className="text-xs font-semibold text-gray-400 uppercase mb-2">Abonnement</h4>
-                                        <div className="grid grid-cols-2 gap-3 text-sm">
-                                            <div>
-                                                <p className="text-gray-500">Plan</p>
-                                                <p className="font-medium capitalize">{selectedUser.subscription.plan}</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-gray-500">Statut</p>
-                                                <p className="font-medium">{selectedUser.subscription.isActive ? 'Actif' : 'Inactif'}</p>
-                                            </div>
-                                            {selectedUser.subscription.startDate && (
-                                                <div>
-                                                    <p className="text-gray-500">Début</p>
-                                                    <p className="font-medium">{new Date(selectedUser.subscription.startDate).toLocaleDateString('fr-FR')}</p>
-                                                </div>
-                                            )}
-                                            {selectedUser.subscription.endDate && (
-                                                <div>
-                                                    <p className="text-gray-500">Fin</p>
-                                                    <p className="font-medium">{new Date(selectedUser.subscription.endDate).toLocaleDateString('fr-FR')}</p>
-                                                </div>
-                                            )}
                                         </div>
                                     </div>
                                 )}
+
+                                {/* Personality */}
+                                {selectedUser.personality && selectedUser.personality.length > 0 && (
+                                    <div className="border-t pt-4">
+                                        <h4 className="text-xs font-semibold text-gray-400 uppercase mb-2">Personnalité</h4>
+                                        <div className="flex flex-wrap gap-2">
+                                            {selectedUser.personality.map((trait: string, i: number) => (
+                                                <span key={i} className="px-2 py-1 bg-indigo-50 text-indigo-700 text-xs rounded-full">{trait}</span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Faith Tags */}
+                                {selectedUser.faithTags && selectedUser.faithTags.length > 0 && (
+                                    <div className="border-t pt-4">
+                                        <h4 className="text-xs font-semibold text-gray-400 uppercase mb-2">Foi & Pratiques</h4>
+                                        <div className="flex flex-wrap gap-2">
+                                            {selectedUser.faithTags.map((tag: string, i: number) => (
+                                                <span key={i} className="px-2 py-1 bg-emerald-50 text-emerald-700 text-xs rounded-full">{tag}</span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Subscription */}
+                                <div className="border-t pt-4">
+                                    <h4 className="text-xs font-semibold text-gray-400 uppercase mb-2">Abonnement</h4>
+                                    <div className="grid grid-cols-2 gap-3 text-sm">
+                                        <div>
+                                            <p className="text-gray-500">Plan</p>
+                                            <p className="font-medium capitalize">{selectedUser.subscription?.plan || 'free'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-500">Statut</p>
+                                            <p className="font-medium">{selectedUser.subscription?.isActive ? 'Actif' : 'Inactif'}</p>
+                                        </div>
+                                        {selectedUser.subscription?.startDate && (
+                                            <div>
+                                                <p className="text-gray-500">Début</p>
+                                                <p className="font-medium">{new Date(selectedUser.subscription.startDate).toLocaleDateString('fr-FR')}</p>
+                                            </div>
+                                        )}
+                                        {selectedUser.subscription?.endDate && (
+                                            <div>
+                                                <p className="text-gray-500">Fin</p>
+                                                <p className="font-medium">{new Date(selectedUser.subscription.endDate).toLocaleDateString('fr-FR')}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
 
                                 {/* Account Info */}
                                 <div className="border-t pt-4">
@@ -794,23 +832,27 @@ export default function UsersPage() {
                                     </div>
                                 </div>
 
-                                {/* Guardian */}
-                                {selectedUser.guardian && selectedUser.guardian.status !== 'none' && (
+                                {/* Mahram */}
+                                {selectedUser.mahram?.email && (
                                     <div className="border-t pt-4">
-                                        <h4 className="text-xs font-semibold text-gray-400 uppercase mb-2">Tuteur / Wali</h4>
+                                        <h4 className="text-xs font-semibold text-gray-400 uppercase mb-2">Mahram</h4>
                                         <div className="grid grid-cols-2 gap-3 text-sm">
                                             <div>
-                                                <p className="text-gray-500">Nom</p>
-                                                <p className="font-medium">{selectedUser.guardian.name || '-'}</p>
-                                            </div>
-                                            <div>
                                                 <p className="text-gray-500">Email</p>
-                                                <p className="font-medium">{selectedUser.guardian.email || '-'}</p>
+                                                <p className="font-medium">{selectedUser.mahram.email}</p>
                                             </div>
                                             <div>
-                                                <p className="text-gray-500">Statut</p>
-                                                <p className="font-medium capitalize">{selectedUser.guardian.status}</p>
+                                                <p className="text-gray-500">Relation</p>
+                                                <p className="font-medium capitalize">{
+                                                    ({ father: 'Père', brother: 'Frère', uncle: 'Oncle', grandfather: 'Grand-père', other: 'Autre' } as Record<string, string>)[selectedUser.mahram?.relationship ?? ''] || selectedUser.mahram?.relationship || '-'
+                                                }</p>
                                             </div>
+                                            {selectedUser.mahram.notifiedAt && (
+                                                <div>
+                                                    <p className="text-gray-500">Notifié le</p>
+                                                    <p className="font-medium">{new Date(selectedUser.mahram.notifiedAt).toLocaleDateString('fr-FR')}</p>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 )}

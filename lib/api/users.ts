@@ -25,6 +25,9 @@ export interface AdminUser {
     interests?: string[];
     personality?: string[];
     photos?: string[];
+    photoBlurEnabled?: boolean;
+    drinking?: string;
+    smoking?: string;
     role: 'user' | 'moderator' | 'admin';
     status: 'active' | 'inactive' | 'suspended' | 'banned';
     subscription?: {
@@ -37,11 +40,10 @@ export interface AdminUser {
     isEmailVerified?: boolean;
     isPhoneVerified?: boolean;
     provider?: string;
-    guardian?: {
+    mahram?: {
         email?: string;
-        name?: string;
-        accessCode?: string;
-        status: string;
+        relationship?: string;
+        notifiedAt?: string;
     };
     preferences?: Record<string, unknown>;
     createdAt: string;
