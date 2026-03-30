@@ -18,7 +18,7 @@ export interface IUser {
 
   // Authentication
   password?: string;
-  provider?: "phone" | "google" | "apple" | "email";
+  provider?: "phone" | "google" | "email";
   providerId?: string;
   isEmailVerified: boolean;
   isPhoneVerified: boolean;
@@ -105,7 +105,7 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
     password: String,
     provider: {
       type: String,
-      enum: ["phone", "google", "apple", "email"],
+      enum: ["phone", "google", "email"],
       default: "phone",
     },
     providerId: String,

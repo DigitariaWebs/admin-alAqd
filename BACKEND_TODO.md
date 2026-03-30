@@ -9,7 +9,6 @@
 - [x] User phone login (OTP)
 - [x] Verify OTP
 - [x] Google OAuth login
-- [x] Apple OAuth login
 - [x] Refresh JWT token
 - [x] User logout
 

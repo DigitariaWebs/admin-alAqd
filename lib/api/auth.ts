@@ -18,10 +18,6 @@ export interface GoogleLoginData {
     idToken: string;
 }
 
-export interface AppleLoginData {
-    identityToken: string;
-}
-
 export interface ForgotPasswordData {
     email: string;
 }
@@ -174,22 +170,6 @@ export const authApi = {
         if (!response.ok) {
             const error = await response.json();
             throw new Error(error.error || 'Google login failed');
-        }
-        
-        return response.json();
-    },
-
-    // Apple OAuth
-    appleLogin: async (data: AppleLoginData) => {
-        const response = await fetch(`${API_BASE_URL}/auth/apple`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-        });
-        
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Apple login failed');
         }
         
         return response.json();
