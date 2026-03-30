@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
 
         const swipes = await Swipe.find({
             fromUser: currentUserId,
-            action: { $in: ['like', 'superlike'] },
+            action: 'like',
         })
             .sort({ createdAt: -1 })
             .lean();

@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
         // On refresh, only exclude profiles that were positively swiped (not passes)
         const likedIds = await Swipe.find({
             fromUser: authResult.user.userId,
-            action: { $in: ['like', 'superlike'] },
+            action: 'like',
         }).distinct('toUser');
 
         const targetGender = currentUser.gender === 'male' ? 'female' : 'male';

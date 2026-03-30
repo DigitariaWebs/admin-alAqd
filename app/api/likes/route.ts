@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
         // Base query: swipes pointing at me with a positive action
         const swipeQuery: Record<string, unknown> = {
             toUser: currentUserId,
-            action: { $in: ['like', 'superlike'] },
+            action: 'like',
         };
 
         // Extra filter: "new" = last 48 h

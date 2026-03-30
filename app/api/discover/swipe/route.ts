@@ -30,9 +30,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!["like", "pass", "superlike"].includes(action)) {
+    if (!["like", "pass"].includes(action)) {
       return NextResponse.json(
-        { error: "Invalid action. Must be like, pass, or superlike" },
+        { error: "Invalid action. Must be like or pass" },
         { status: 400 },
       );
     }
@@ -116,12 +116,12 @@ export async function POST(request: NextRequest) {
     let matchId: string | undefined;
     let matchCreatedAt: Date | undefined;
 
-    if (action === "like" || action === "superlike") {
+    if (action === "like") {
       // Check if the target already liked back
       const theirSwipe = await Swipe.findOne({
         fromUser: targetUserId,
         toUser: currentUserId,
-        action: { $in: ["like", "superlike"] },
+        action: "like",
       });
 
       if (theirSwipe) {

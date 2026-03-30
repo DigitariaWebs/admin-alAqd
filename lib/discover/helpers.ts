@@ -366,7 +366,7 @@ export function serializeLikeCard(
     likedAt: swipe.createdAt
       ? new Date(swipe.createdAt).toISOString()
       : new Date().toISOString(),
-    action: swipe.action as "like" | "superlike",
+    action: "like" as const,
     isFavorited,
     isMutual,
   };

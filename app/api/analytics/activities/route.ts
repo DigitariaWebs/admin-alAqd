@@ -110,7 +110,7 @@ export async function GET(request: NextRequest) {
 
             for (const swipe of recentSwipes) {
                 const swiperName = (swipe as unknown as { fromUser: { name: string } }).fromUser?.name || 'User';
-                const action = swipe.action === 'like' ? 'liked' : swipe.action === 'pass' ? 'passed' : 'superliked';
+                const action = swipe.action === 'like' ? 'liked' : 'passed';
                 activities.push({
                     id: `swipe-${swipe._id}`,
                     type: 'swipe_action',

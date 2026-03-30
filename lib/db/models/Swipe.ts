@@ -4,7 +4,7 @@ export interface ISwipe {
     _id: string;
     fromUser: mongoose.Types.ObjectId;
     toUser: mongoose.Types.ObjectId;
-    action: 'like' | 'pass' | 'superlike';
+    action: 'like' | 'pass';
     createdAt: Date;
     updatedAt: Date;
 }
@@ -13,7 +13,7 @@ const swipeSchema = new Schema<ISwipe>(
     {
         fromUser: { type: Schema.Types.ObjectId, ref: 'User', required: true },
         toUser: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-        action: { type: String, enum: ['like', 'pass', 'superlike'], required: true },
+        action: { type: String, enum: ['like', 'pass'], required: true },
     },
     { timestamps: true }
 );

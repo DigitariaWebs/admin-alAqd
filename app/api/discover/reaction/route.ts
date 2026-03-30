@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
     const theirSwipe = await Swipe.findOne({
       fromUser: targetUserId,
       toUser: currentUserId,
-      action: { $in: ["like", "superlike"] },
+      action: "like",
     });
 
     let matched = false;

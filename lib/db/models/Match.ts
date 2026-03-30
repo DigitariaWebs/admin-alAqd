@@ -4,7 +4,7 @@ export interface IMatch {
     _id: string;
     user1: mongoose.Types.ObjectId;
     user2: mongoose.Types.ObjectId;
-    matchType: 'like' | 'superlike';
+    matchType: 'like';
     isActive: boolean;
     lastMessage?: string;
     lastMessageAt?: Date;
@@ -20,7 +20,7 @@ const matchSchema = new Schema<IMatch>(
         // to guarantee uniqueness regardless of which user triggers the match
         user1: { type: Schema.Types.ObjectId, ref: 'User', required: true },
         user2: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-        matchType: { type: String, enum: ['like', 'superlike'], default: 'like' },
+        matchType: { type: String, default: 'like' },
         isActive: { type: Boolean, default: true },
         lastMessage: String,
         lastMessageAt: Date,

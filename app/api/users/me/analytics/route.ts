@@ -30,34 +30,21 @@ export async function GET(request: NextRequest) {
         const [
             profileViews,
             likesReceived,
-            superLikesReceived,
             matchesCount,
             conversationsCount,
             unreadMessages,
         ] = await Promise.all([
-            // Everyone who swiped on this user (any action) = profile views proxy
             Swipe.countDocuments({ toUser: userId }),
-
-            // Like or superlike swipes received
-            Swipe.countDocuments({ toUser: userId, action: { $in: ['like', 'superlike'] } }),
-
-            // Superlike specifically
-            Swipe.countDocuments({ toUser: userId, action: 'superlike' }),
-
-            // Active matches
+            Swipe.countDocuments({ toUser: userId, action: 'like' }),
             Match.countDocuments({
                 $or: [{ user1: userId }, { user2: userId }],
                 isActive: true,
             }),
-
-            // Matches that have at least one message (active conversations)
             Match.countDocuments({
                 $or: [{ user1: userId }, { user2: userId }],
                 isActive: true,
                 lastMessage: { $exists: true, $ne: '' },
             }),
-
-            // Unread messages
             Message.countDocuments({ receiverId: userId, isRead: false, isDeleted: false }),
         ]);
 
@@ -66,7 +53,6 @@ export async function GET(request: NextRequest) {
             analytics: {
                 profileViews,
                 likesReceived,
-                superLikesReceived,
                 matchesCount,
                 conversationsCount,
                 unreadMessages,
