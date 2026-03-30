@@ -3,8 +3,6 @@ import mongoose from 'mongoose';
 import connectDB from '@/lib/db/mongodb';
 import { Match } from '@/lib/db/models/Match';
 import { Message } from '@/lib/db/models/Message';
-import { Guardian } from '@/lib/db/models/Guardian';
-import { User } from '@/lib/db/models/User';
 import { requireAuth } from '@/lib/auth/middleware';
 import { serializeMessage } from '@/lib/discover/helpers';
 
@@ -12,13 +10,6 @@ type Params = { params: Promise<{ id: string }> };
 
 /**
  * GET /api/conversations/:id/messages
- *
- * Query params (all optional):
- *   limit  = max messages to return (default 50, max 100)
- *   before = ISO timestamp — return messages older than this (load more / pagination)
- *   after  = ISO timestamp — return messages newer than this (polling for new messages)
- *
- * When neither before nor after is supplied, returns the most recent `limit` messages.
  */
 export async function GET(request: NextRequest, { params }: Params) {
     try {
@@ -37,33 +28,14 @@ export async function GET(request: NextRequest, { params }: Params) {
         const match = await Match.findOne({
             _id: id,
             isActive: true,
+            $or: [
+                { user1: authResult.user.userId },
+                { user2: authResult.user.userId },
+            ],
         }).lean();
 
         if (!match) {
             return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
-        }
-
-        const isDirectParticipant =
-            match.user1.toString() === authResult.user.userId ||
-            match.user2.toString() === authResult.user.userId;
-
-        let guardianLink: { femaleUserId?: mongoose.Types.ObjectId } | null = null;
-
-        if (!isDirectParticipant) {
-            guardianLink = await Guardian.findOne({
-                maleUserId: authResult.user.userId,
-                status: 'active',
-                $or: [
-                    { femaleUserId: match.user1 },
-                    { femaleUserId: match.user2 },
-                ],
-            })
-                .select('femaleUserId')
-                .lean();
-
-            if (!guardianLink) {
-                return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
-            }
         }
 
         const { searchParams } = new URL(request.url);
@@ -83,13 +55,11 @@ export async function GET(request: NextRequest, { params }: Params) {
         }
 
         const messages = await Message.find(query)
-            .sort({ createdAt: after ? 1 : -1 }) // ASC for polling, DESC for pagination
-            .limit(after ? 200 : limit)           // polling can get many new ones
+            .sort({ createdAt: after ? 1 : -1 })
+            .limit(after ? 200 : limit)
             .lean();
 
-        // For pagination (DESC) reverse to get chronological order
         const ordered = after ? messages : [...messages].reverse();
-
         const hasMore = !after && messages.length === limit;
 
         return NextResponse.json({
@@ -105,9 +75,6 @@ export async function GET(request: NextRequest, { params }: Params) {
 
 /**
  * POST /api/conversations/:id/messages
- * Send a new message (text or emoji).
- *
- * Body: { content: string, contentType?: 'text' | 'emoji' }
  */
 export async function POST(request: NextRequest, { params }: Params) {
     try {
@@ -126,33 +93,14 @@ export async function POST(request: NextRequest, { params }: Params) {
         const match = await Match.findOne({
             _id: id,
             isActive: true,
+            $or: [
+                { user1: authResult.user.userId },
+                { user2: authResult.user.userId },
+            ],
         }).lean();
 
         if (!match) {
             return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
-        }
-
-        const isDirectParticipant =
-            match.user1.toString() === authResult.user.userId ||
-            match.user2.toString() === authResult.user.userId;
-
-        let guardianLink: { femaleUserId?: mongoose.Types.ObjectId } | null = null;
-
-        if (!isDirectParticipant) {
-            guardianLink = await Guardian.findOne({
-                maleUserId: authResult.user.userId,
-                status: 'active',
-                $or: [
-                    { femaleUserId: match.user1 },
-                    { femaleUserId: match.user2 },
-                ],
-            })
-                .select('femaleUserId')
-                .lean();
-
-            if (!guardianLink) {
-                return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
-            }
         }
 
         const body = await request.json();
@@ -166,45 +114,9 @@ export async function POST(request: NextRequest, { params }: Params) {
         }
 
         const senderId = authResult.user.userId;
-
-        let receiverId: string;
-
-        if (isDirectParticipant) {
-            const directReceiverId =
-                match.user1.toString() === senderId
-                    ? match.user2.toString()
-                    : match.user1.toString();
-
-            receiverId = directReceiverId;
-
-            const [senderUser, receiverUser] = await Promise.all([
-                User.findById(senderId).select('gender').lean(),
-                User.findById(directReceiverId).select('gender').lean(),
-            ]);
-
-            if (senderUser?.gender === 'male' && receiverUser?.gender === 'female') {
-                const activeGuardian = await Guardian.findOne({
-                    femaleUserId: directReceiverId,
-                    status: 'active',
-                    maleUserId: { $exists: true, $ne: null },
-                })
-                    .select('maleUserId')
-                    .lean();
-
-                const mahramReceiver = activeGuardian?.maleUserId?.toString();
-                if (mahramReceiver && mahramReceiver !== senderId) {
-                    receiverId = mahramReceiver;
-                }
-            }
-        } else {
-            const femaleId = guardianLink?.femaleUserId?.toString();
-            if (!femaleId) {
-                return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
-            }
-            receiverId = match.user1.toString() === femaleId
-                ? match.user2.toString()
-                : match.user1.toString();
-        }
+        const receiverId = match.user1.toString() === senderId
+            ? match.user2.toString()
+            : match.user1.toString();
 
         const message = await Message.create({
             conversationId: id,
@@ -214,7 +126,6 @@ export async function POST(request: NextRequest, { params }: Params) {
             contentType,
         });
 
-        // Update conversation's last-message preview on the Match document
         await Match.updateOne(
             { _id: id },
             {

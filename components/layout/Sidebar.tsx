@@ -19,7 +19,7 @@ import { Assets } from '@/config/assets';
 const MENU_ITEMS = [
     { name: 'Tableau de bord', icon: LayoutDashboard, path: '/' },
     { name: 'Utilisateurs', icon: Users, path: '/users' },
-    { name: 'Tuteurs / Mahram', icon: Shield, path: '/guardians' },
+    { name: 'Mahram', icon: Shield, path: '/guardians' },
     { name: 'Commandes', icon: ShoppingCart, path: '/orders' },
     { name: 'Analytique', icon: BarChart2, path: '/analytics' },
     { name: 'Notifications', icon: Bell, path: '/notifications' },

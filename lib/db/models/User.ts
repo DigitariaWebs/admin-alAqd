@@ -67,14 +67,11 @@ export interface IUser {
   isOnboarded: boolean;
   lastActive?: Date;
 
-  // Guardian (for female users)
-  guardian?: {
+  // Mahram (for female users)
+  mahram?: {
     email?: string;
-    name?: string;
-    accessCode?: string;
-    status: "pending" | "active" | "revoked";
-    linkedAt?: Date;
-    requestedAt?: Date;
+    relationship?: "father" | "brother" | "uncle" | "grandfather" | "other";
+    notifiedAt?: Date;
   };
 
   // Metadata
@@ -84,7 +81,6 @@ export interface IUser {
 
 interface IUserMethods {
   comparePassword(candidatePassword: string): Promise<boolean>;
-  generateAccessCode(): string;
 }
 
 type UserModel = Model<IUser, {}, IUserMethods>;
@@ -167,17 +163,13 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
     isOnboarded: { type: Boolean, default: false },
     lastActive: Date,
 
-    guardian: {
+    mahram: {
       email: String,
-      name: String,
-      accessCode: String,
-      status: {
+      relationship: {
         type: String,
-        enum: ["pending", "active", "revoked"],
-        default: "pending",
+        enum: ["father", "brother", "uncle", "grandfather", "other"],
       },
-      linkedAt: Date,
-      requestedAt: Date,
+      notifiedAt: Date,
     },
   },
   {
@@ -207,21 +199,9 @@ userSchema.methods.comparePassword = async function (candidatePassword: string):
 };
 
 // Generate access code for guardian
-userSchema.methods.generateAccessCode = function (): string {
-    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-    this.guardian = {
-        ...this.guardian,
-        accessCode: code,
-        status: 'pending',
-        requestedAt: new Date(),
-    };
-    return code;
-};
-
 // Indexes (phoneNumber and email are already indexed via unique:true in the schema)
 userSchema.index({ role: 1, status: 1 });
-userSchema.index({ 'guardian.accessCode': 1 });
-userSchema.index({ location: 1, gender: 1, status: 1 });
+userSchema.index({ gender: 1, status: 1 });
 
 if (process.env.NODE_ENV !== 'production' && mongoose.models.User) {
   mongoose.deleteModel('User');

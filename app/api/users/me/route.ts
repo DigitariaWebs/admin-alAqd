@@ -8,7 +8,6 @@ import { Reaction } from '@/lib/db/models/Reaction';
 import { Block } from '@/lib/db/models/Block';
 import { Favorite } from '@/lib/db/models/Favorite';
 import { Report } from '@/lib/db/models/Report';
-import { Guardian } from '@/lib/db/models/Guardian';
 import { RefreshToken } from '@/lib/db/models/RefreshToken';
 import { Notification } from '@/lib/db/models/Notification';
 import { Order } from '@/lib/db/models/Order';
@@ -179,7 +178,6 @@ export async function DELETE(request: NextRequest) {
             Block.deleteMany({ $or: [{ blockerId: userId }, { blockedId: userId }] }),
             Favorite.deleteMany({ $or: [{ fromUser: userId }, { toUser: userId }] }),
             Report.deleteMany({ $or: [{ reporterId: userId }, { reportedId: userId }] }),
-            Guardian.deleteMany({ $or: [{ femaleUserId: userId }, { maleUserId: userId }] }),
             RefreshToken.deleteMany({ userId }),
             Order.deleteMany({ userId }),
             Transaction.deleteMany({ userId }),

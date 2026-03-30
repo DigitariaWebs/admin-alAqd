@@ -3,7 +3,6 @@ import mongoose from 'mongoose';
 import connectDB from '@/lib/db/mongodb';
 import { Match } from '@/lib/db/models/Match';
 import { Message } from '@/lib/db/models/Message';
-import { Guardian } from '@/lib/db/models/Guardian';
 import { requireAuth } from '@/lib/auth/middleware';
 
 type Params = { params: Promise<{ id: string }> };
@@ -26,32 +25,17 @@ export async function PATCH(request: NextRequest, { params }: Params) {
             return NextResponse.json({ error: 'Invalid conversation id' }, { status: 400 });
         }
 
-        // Verify membership (direct participant or active guardian for female participant)
-        const match = await Match.findOne({ _id: id }).lean();
+        const match = await Match.findOne({
+            _id: id,
+            isActive: true,
+            $or: [
+                { user1: authResult.user.userId },
+                { user2: authResult.user.userId },
+            ],
+        }).lean();
 
         if (!match) {
             return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
-        }
-
-        const isDirectParticipant =
-            match.user1.toString() === authResult.user.userId ||
-            match.user2.toString() === authResult.user.userId;
-
-        if (!isDirectParticipant) {
-            const guardianLink = await Guardian.findOne({
-                maleUserId: authResult.user.userId,
-                status: 'active',
-                $or: [
-                    { femaleUserId: match.user1 },
-                    { femaleUserId: match.user2 },
-                ],
-            })
-                .select('_id')
-                .lean();
-
-            if (!guardianLink) {
-                return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
-            }
         }
 
         const now = new Date();
