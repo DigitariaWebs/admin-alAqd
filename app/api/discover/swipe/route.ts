@@ -116,6 +116,15 @@ export async function POST(request: NextRequest) {
     let matchId: string | undefined;
     let matchCreatedAt: Date | undefined;
 
+    if (action === "pass") {
+      // Deactivate any existing match between the two users
+      const [u1, u2] = [currentUserId, targetUserId].sort();
+      await Match.findOneAndUpdate(
+        { user1: u1, user2: u2, isActive: true },
+        { $set: { isActive: false } },
+      );
+    }
+
     if (action === "like") {
       // Check if the target already liked back
       const theirSwipe = await Swipe.findOne({
@@ -145,10 +154,10 @@ export async function POST(request: NextRequest) {
               user1: u1,
               user2: u2,
               matchType: action,
-              isActive: true,
               similarities: sharedInterests,
               compatibility,
             },
+            $set: { isActive: true, deletedBy: [] },
           },
           { upsert: true, new: true },
         );

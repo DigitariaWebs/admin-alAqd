@@ -6,6 +6,8 @@ export interface IMatch {
     user2: mongoose.Types.ObjectId;
     matchType: 'like';
     isActive: boolean;
+    deletedBy: mongoose.Types.ObjectId[];
+    clearedAt: Map<string, Date>;
     lastMessage?: string;
     lastMessageAt?: Date;
     similarities?: string[];
@@ -22,6 +24,8 @@ const matchSchema = new Schema<IMatch>(
         user2: { type: Schema.Types.ObjectId, ref: 'User', required: true },
         matchType: { type: String, default: 'like' },
         isActive: { type: Boolean, default: true },
+        deletedBy: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+        clearedAt: { type: Map, of: Date, default: {} },
         lastMessage: String,
         lastMessageAt: Date,
         similarities: [String],

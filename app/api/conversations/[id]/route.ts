@@ -7,8 +7,9 @@ type Params = { params: Promise<{ id: string }> };
 
 /**
  * DELETE /api/conversations/:id
- * Soft-deletes the conversation by marking the match as inactive.
- * Messages are preserved but the conversation disappears from the list.
+ * Hides the conversation for the current user by adding them to deletedBy.
+ * The match stays active so it won't reappear in likes/discover.
+ * Messages are preserved.
  */
 export async function DELETE(request: NextRequest, { params }: Params) {
     try {
@@ -30,7 +31,10 @@ export async function DELETE(request: NextRequest, { params }: Params) {
                 ],
                 isActive: true,
             },
-            { $set: { isActive: false } },
+            {
+                $addToSet: { deletedBy: authResult.user.userId },
+                $set: { [`clearedAt.${authResult.user.userId}`]: new Date() },
+            },
             { new: true }
         );
 

@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
 
         const matches = await Match.find({
             isActive: true,
+            deletedBy: { $ne: currentUserId },
             $or: [
                 { user1: currentUserId },
                 { user2: currentUserId },

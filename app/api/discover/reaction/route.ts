@@ -143,10 +143,10 @@ export async function POST(request: NextRequest) {
             user1: u1,
             user2: u2,
             matchType: "like",
-            isActive: true,
             similarities: sharedInterests,
             compatibility,
           },
+          $set: { isActive: true, deletedBy: [] },
         },
         { upsert: true, new: true },
       );

@@ -48,10 +48,25 @@ export async function GET(request: NextRequest, { params }: Params) {
             isDeleted: false,
         };
 
+        // Hide messages from before the user cleared the conversation
+        const clearedAt = (match as any).clearedAt?.get?.(authResult.user.userId)
+            ?? (match as any).clearedAt?.[authResult.user.userId];
+        const createdAtFilter: Record<string, Date> = {};
+        if (clearedAt) {
+            createdAtFilter.$gt = new Date(clearedAt);
+        }
+
         if (after) {
-            query.createdAt = { $gt: new Date(after) };
+            const afterDate = new Date(after);
+            createdAtFilter.$gt = createdAtFilter.$gt && createdAtFilter.$gt > afterDate
+                ? createdAtFilter.$gt
+                : afterDate;
         } else if (before) {
-            query.createdAt = { $lt: new Date(before) };
+            createdAtFilter.$lt = new Date(before);
+        }
+
+        if (Object.keys(createdAtFilter).length > 0) {
+            query.createdAt = createdAtFilter;
         }
 
         const messages = await Message.find(query)
