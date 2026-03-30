@@ -14,11 +14,31 @@ interface GoogleUserInfo {
 }
 
 async function verifyGoogleToken(
-  accessToken: string,
+  token: string,
 ): Promise<GoogleUserInfo | null> {
   try {
+    // Try as idToken first (native Google Sign-In)
+    const idTokenRes = await fetch(
+      `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(token)}`,
+    );
+    if (idTokenRes.ok) {
+      const data = await idTokenRes.json();
+      if (data.email && data.sub) {
+        return {
+          id: data.sub,
+          email: data.email,
+          verified_email: data.email_verified === "true",
+          name: data.name || data.email,
+          given_name: data.given_name,
+          family_name: data.family_name,
+          picture: data.picture,
+        };
+      }
+    }
+
+    // Fallback: try as access token (web OAuth flow)
     const res = await fetch(
-      `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${encodeURIComponent(accessToken)}`,
+      `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${encodeURIComponent(token)}`,
       { headers: { Accept: "application/json" } },
     );
     if (!res.ok) return null;
