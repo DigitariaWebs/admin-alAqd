@@ -87,9 +87,8 @@ export default function MahramPage() {
 
     const columns = [
         {
-            key: 'user',
-            label: 'Utilisatrice',
-            render: (row: MahramUser) => (
+            header: 'Utilisatrice',
+            accessor: (row: MahramUser) => (
                 <div>
                     <div className="font-medium text-gray-900">{row.name}</div>
                     <div className="text-sm text-gray-500">{row.email}</div>
@@ -97,9 +96,8 @@ export default function MahramPage() {
             ),
         },
         {
-            key: 'mahramEmail',
-            label: 'Email Mahram',
-            render: (row: MahramUser) => (
+            header: 'Email Mahram',
+            accessor: (row: MahramUser) => (
                 <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-gray-400" />
                     <span className="text-sm">{row.mahram.email}</span>
@@ -107,27 +105,24 @@ export default function MahramPage() {
             ),
         },
         {
-            key: 'relationship',
-            label: 'Relation',
-            render: (row: MahramUser) => (
+            header: 'Relation',
+            accessor: (row: MahramUser) => (
                 <Badge variant="primary">
                     {RELATIONSHIP_LABELS[row.mahram.relationship] || row.mahram.relationship}
                 </Badge>
             ),
         },
         {
-            key: 'notifiedAt',
-            label: 'Notifié le',
-            render: (row: MahramUser) => (
+            header: 'Notifié le',
+            accessor: (row: MahramUser) => (
                 <span className="text-sm text-gray-600">
                     {formatDate(row.mahram.notifiedAt)}
                 </span>
             ),
         },
         {
-            key: 'createdAt',
-            label: 'Inscription',
-            render: (row: MahramUser) => (
+            header: 'Inscription',
+            accessor: (row: MahramUser) => (
                 <span className="text-sm text-gray-600">
                     {formatDate(row.createdAt)}
                 </span>
@@ -198,11 +193,8 @@ export default function MahramPage() {
                 <Table
                     columns={columns}
                     data={users}
+                    keyExtractor={(row) => row.id}
                     isLoading={isLoading}
-                    emptyMessage="Aucun mahram déclaré"
-                    page={page}
-                    totalPages={totalPages}
-                    onPageChange={setPage}
                 />
             </Card>
         </div>

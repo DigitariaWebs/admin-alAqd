@@ -12,7 +12,7 @@ import {
 const DISCOVER_SELECT =
   "name dateOfBirth gender location bio profession photos interests religiousPractice " +
   "ethnicity height maritalStatus isPhoneVerified isEmailVerified subscription lastActive " +
-  "faithTags personality photoBlurEnabled";
+  "faithTags personality photoBlurEnabled nationality";
 
 /**
  * POST /api/discover/refresh

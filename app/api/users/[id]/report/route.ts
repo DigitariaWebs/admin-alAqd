@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongodb';
 import { Report, ReportReason } from '@/lib/db/models/Report';
+import { Block } from '@/lib/db/models/Block';
 import { requireAuth } from '@/lib/auth/middleware';
 import mongoose from 'mongoose';
 
@@ -66,9 +67,21 @@ export async function POST(request: NextRequest, { params }: Params) {
             { upsert: true }
         );
 
+        // Auto-block the reported user
+        await Block.findOneAndUpdate(
+            { blockerId: authResult.user.userId, blockedId: targetId },
+            {
+                $setOnInsert: {
+                    blockerId: authResult.user.userId,
+                    blockedId: targetId,
+                },
+            },
+            { upsert: true }
+        );
+
         return NextResponse.json({
             success: true,
-            message: 'Report submitted. Our moderation team will review it shortly.',
+            message: 'Report submitted. The user has been blocked.',
         });
     } catch (error) {
         console.error('Report user error:', error);

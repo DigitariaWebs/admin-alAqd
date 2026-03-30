@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAppDispatch } from '@/store/hooks';
 import {
+    AlertTriangle,
     LayoutDashboard,
     Users,
     ShoppingCart,
@@ -20,6 +21,7 @@ const MENU_ITEMS = [
     { name: 'Tableau de bord', icon: LayoutDashboard, path: '/' },
     { name: 'Utilisateurs', icon: Users, path: '/users' },
     { name: 'Mahram', icon: Shield, path: '/guardians' },
+    { name: 'Signalements', icon: AlertTriangle, path: '/reports' },
     { name: 'Commandes', icon: ShoppingCart, path: '/orders' },
     { name: 'Analytique', icon: BarChart2, path: '/analytics' },
     { name: 'Notifications', icon: Bell, path: '/notifications' },
