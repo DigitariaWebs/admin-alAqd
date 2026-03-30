@@ -671,7 +671,7 @@ export default function UsersPage() {
                                             ))}
                                         </div>
                                         {selectedUser.photoBlurEnabled && (
-                                            <p className="text-xs text-amber-600 mt-1">🔒 Flou activé</p>
+                                            <p className="text-xs text-amber-600 mt-1">Flou activé</p>
                                         )}
                                     </div>
                                 )}

@@ -9,7 +9,7 @@ import { serializeFavoriteCard } from '@/lib/discover/helpers';
 
 const USER_SELECT =
   "name dateOfBirth profession location gender photos photoBlurEnabled isPhoneVerified isEmailVerified " +
-  "subscription lastActive religiousPractice";
+  "subscription lastActive religiousPractice nationality";
 
 /**
  * GET /api/likes/favorites

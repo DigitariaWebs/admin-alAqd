@@ -366,6 +366,7 @@ export function serializeLikeCard(
     likedAt: swipe.createdAt
       ? new Date(swipe.createdAt).toISOString()
       : new Date().toISOString(),
+    nationality: (user.nationality || [])[0] as string | undefined,
     action: "like" as const,
     isFavorited,
     isMutual,
