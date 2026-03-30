@@ -373,7 +373,7 @@ export default function SupportPage() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2">
-                        <Card className="rounded-[30px] p-0 overflow-hidden min-h-[400px]">
+                        <Card className="rounded-[30px] p-0 overflow-hidden min-h-100">
                             <div className="p-6 pb-2">
                                 <div className="flex justify-between items-center mb-4">
                                     <h3 className="font-bold text-gray-900 text-sm">

@@ -116,7 +116,7 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
 
                 {/* Right Content: Tabs */}
                 <div className="lg:col-span-2 space-y-6">
-                    <Card className="min-h-[500px] rounded-[30px]">
+                    <Card className="min-h-125 rounded-[30px]">
                         <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
 
                         <div className="py-6">

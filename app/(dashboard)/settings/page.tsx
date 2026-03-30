@@ -289,7 +289,7 @@ export default function SettingsPage() {
                     <h1 className="text-xl font-bold text-gray-900">Paramètres Système</h1>
                     <p className="text-xs text-gray-500 mt-1">Configurez les paramètres globaux de l&apos;application.</p>
                 </div>
-                <Card className="rounded-[30px] min-h-[500px] flex items-center justify-center">
+                <Card className="rounded-[30px] min-h-125 flex items-center justify-center">
                     <div className="text-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
                         <p className="text-gray-500">Loading settings...</p>
@@ -308,7 +308,7 @@ export default function SettingsPage() {
                     <p className="text-xs text-gray-500 mt-1">Configurez les paramètres globaux de l&apos;application.</p>
                 </div>
 
-                <Card className="rounded-[30px] min-h-[500px]">
+                <Card className="rounded-[30px] min-h-125">
                     <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
 
                     <div className="p-6 max-w-2xl">
