@@ -8,7 +8,7 @@
  *   3. The purchase flow will create Checkout Sessions using these IDs.
  */
 
-export type PlanId = 'gold_1m' | 'gold_3m' | 'gold_12m';
+export type PlanId = 'gold_1m' | 'gold_3m' | 'gold_6m';
 export type PlanTier = 'free' | 'premium' | 'gold';
 
 export interface SubscriptionPlan {
@@ -29,7 +29,7 @@ export const PLANS: SubscriptionPlan[] = [
     {
         id: 'gold_1m',
         tier: 'gold',
-        name: '1 Mois',
+        name: '1_month',
         durationMonths: 1,
         priceAmount: 2999,
         pricePerMonth: 2999,
@@ -38,7 +38,7 @@ export const PLANS: SubscriptionPlan[] = [
     {
         id: 'gold_3m',
         tier: 'gold',
-        name: '3 Mois',
+        name: '3_months',
         durationMonths: 3,
         priceAmount: 5999,
         pricePerMonth: 1999,
@@ -46,14 +46,14 @@ export const PLANS: SubscriptionPlan[] = [
         savingPercent: 33,
     },
     {
-        id: 'gold_12m',
+        id: 'gold_6m',
         tier: 'gold',
-        name: '12 Mois',
-        durationMonths: 12,
-        priceAmount: 14999,
-        pricePerMonth: 1249,
+        name: '6_months',
+        durationMonths: 6,
+        priceAmount: 8999,
+        pricePerMonth: 1499,
         currency: 'eur',
-        savingPercent: 58,
+        savingPercent: 50,
         highlight: true,
     },
 ];
