@@ -14,6 +14,10 @@ export interface ISetting {
   loginAttemptsLimit: number;
   sessionTimeoutMinutes: number;
 
+  // Ads settings
+  adsEnabled: boolean;
+  freeSwipeLimit: number;
+
   // Integrations settings
   stripeEnabled: boolean;
   stripeApiKey: string;
@@ -69,6 +73,16 @@ const settingSchema = new Schema<ISetting>(
     sessionTimeoutMinutes: {
       type: Number,
       default: 60,
+    },
+
+    // Ads settings
+    adsEnabled: {
+      type: Boolean,
+      default: true,
+    },
+    freeSwipeLimit: {
+      type: Number,
+      default: 7,
     },
 
     // Integrations settings

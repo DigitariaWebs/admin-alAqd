@@ -39,6 +39,10 @@ export async function GET(request: NextRequest) {
                 loginAttemptsLimit: settings.loginAttemptsLimit,
                 sessionTimeoutMinutes: settings.sessionTimeoutMinutes,
 
+                // Ads settings
+                adsEnabled: settings.adsEnabled,
+                freeSwipeLimit: settings.freeSwipeLimit,
+
                 // Integrations settings
                 stripeEnabled: settings.stripeEnabled,
                 stripeApiKey: settings.stripeApiKey,
