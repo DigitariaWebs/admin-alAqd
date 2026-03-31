@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth/middleware';
-import twilio from 'twilio';
+import { StreamClient } from '@stream-io/node-sdk';
 
-const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID || '';
-const TWILIO_API_KEY_SID = process.env.TWILIO_API_KEY_SID || '';
-const TWILIO_API_KEY_SECRET = process.env.TWILIO_API_KEY_SECRET || '';
+const STREAM_API_KEY = process.env.STREAM_VIDEO_API_KEY || '';
+const STREAM_API_SECRET = process.env.STREAM_VIDEO_API_SECRET || '';
 
 /**
  * POST /api/calls/token
- * Generates a Twilio Video access token for the authenticated user.
- * Body: { roomName: string }
+ * Generates a Stream Video token for the authenticated user.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -18,35 +16,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status });
     }
 
-    const { roomName } = await request.json();
-    if (!roomName) {
-      return NextResponse.json({ error: 'roomName is required' }, { status: 400 });
+    if (!STREAM_API_KEY || !STREAM_API_SECRET) {
+      return NextResponse.json({ error: 'Stream Video credentials not configured' }, { status: 500 });
     }
 
-    if (!TWILIO_ACCOUNT_SID || !TWILIO_API_KEY_SID || !TWILIO_API_KEY_SECRET) {
-      return NextResponse.json({ error: 'Twilio credentials not configured' }, { status: 500 });
-    }
-
-    const AccessToken = twilio.jwt.AccessToken;
-    const VideoGrant = AccessToken.VideoGrant;
-
-    const token = new AccessToken(
-      TWILIO_ACCOUNT_SID,
-      TWILIO_API_KEY_SID,
-      TWILIO_API_KEY_SECRET,
-      { identity: authResult.user.userId }
-    );
-
-    const videoGrant = new VideoGrant({ room: roomName });
-    token.addGrant(videoGrant);
+    const client = new StreamClient(STREAM_API_KEY, STREAM_API_SECRET);
+    const token = client.generateUserToken({ user_id: authResult.user.userId });
 
     return NextResponse.json({
       success: true,
-      token: token.toJwt(),
-      roomName,
+      token,
+      apiKey: STREAM_API_KEY,
+      userId: authResult.user.userId,
     });
   } catch (error) {
-    console.error('Twilio token error:', error);
+    console.error('Stream token error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
