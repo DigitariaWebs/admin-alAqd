@@ -262,6 +262,7 @@ export function serializeUser(user: any) {
       personality: user.personality ?? [],
       photos: user.photos ?? [],
       photoBlurEnabled: user.photoBlurEnabled !== false,
+      unblurredFor: (user.unblurredFor ?? []).map((id: any) => id.toString()),
       role: user.role,
       status: user.status,
       isOnboarded: user.isOnboarded,

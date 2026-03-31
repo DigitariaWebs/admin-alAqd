@@ -37,6 +37,7 @@ export interface IUser {
   personality?: string[];
   photos?: string[];
   photoBlurEnabled?: boolean;
+  unblurredFor?: string[];
 
   // Preferences
   preferences?: {
@@ -121,6 +122,7 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
     personality: [String],
     photos: [String],
     photoBlurEnabled: { type: Boolean, default: true },
+    unblurredFor: [{ type: Schema.Types.ObjectId, ref: 'User' }],
 
     preferences: {
       distance: { type: Number, default: 500 },

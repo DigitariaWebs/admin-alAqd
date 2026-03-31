@@ -36,6 +36,8 @@ export function getPhotosForViewer(options: {
   targetGender?: string;
   blurEnabled?: boolean;
   isOwner: boolean;
+  viewerId?: string;
+  unblurredFor?: string[];
 }): string[] {
   const photos = normalizePhotos(options.photos);
   const shouldBlur = shouldBlurPhotosForViewer(options);
@@ -51,12 +53,22 @@ export function shouldBlurPhotosForViewer(options: {
   targetGender?: string;
   blurEnabled?: boolean;
   isOwner: boolean;
+  viewerId?: string;
+  unblurredFor?: string[];
 }): boolean {
-  return (
-    options.targetGender === 'female' &&
-    options.blurEnabled !== false &&
-    !options.isOwner
-  );
+  if (options.isOwner) return false;
+  if (options.targetGender !== 'female') return false;
+  if (options.blurEnabled === false) return false;
+
+  // Check if viewer has been specifically unblurred
+  if (options.viewerId && options.unblurredFor?.length) {
+    const viewerStr = options.viewerId.toString();
+    if (options.unblurredFor.some((id) => id.toString() === viewerStr)) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 export function getPrimaryPhotoForViewer(options: {
@@ -64,6 +76,8 @@ export function getPrimaryPhotoForViewer(options: {
   targetGender?: string;
   blurEnabled?: boolean;
   isOwner: boolean;
+  viewerId?: string;
+  unblurredFor?: string[];
 }): string {
   return getPhotosForViewer(options)[0] ?? "";
 }
