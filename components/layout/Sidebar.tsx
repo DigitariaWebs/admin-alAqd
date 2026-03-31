@@ -14,6 +14,7 @@ import {
     LogOut,
     ChevronRight,
     Shield,
+    ShieldCheck,
     Megaphone,
 } from 'lucide-react';
 import { Assets } from '@/config/assets';
@@ -22,6 +23,7 @@ const MENU_ITEMS = [
     { name: 'Tableau de bord', icon: LayoutDashboard, path: '/' },
     { name: 'Utilisateurs', icon: Users, path: '/users' },
     { name: 'Mahram', icon: Shield, path: '/guardians' },
+    { name: 'Verification KYC', icon: ShieldCheck, path: '/kyc' },
     { name: 'Signalements', icon: AlertTriangle, path: '/reports' },
     { name: 'Publicités', icon: Megaphone, path: '/ads' },
     { name: 'Commandes', icon: ShoppingCart, path: '/orders' },

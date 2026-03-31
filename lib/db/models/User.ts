@@ -62,6 +62,9 @@ export interface IUser {
   stripeCustomerId?: string;
   stripeSubscriptionId?: string;
 
+  // KYC
+  kycStatus?: "none" | "pending" | "verified" | "rejected" | "manual_review";
+
   // Status
   role: "user" | "admin" | "moderator";
   status: "active" | "inactive" | "suspended" | "banned";
@@ -151,6 +154,12 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
     },
     stripeCustomerId: { type: String, sparse: true },
     stripeSubscriptionId: { type: String, sparse: true },
+
+    kycStatus: {
+      type: String,
+      enum: ["none", "pending", "verified", "rejected", "manual_review"],
+      default: "none",
+    },
 
     role: {
       type: String,
