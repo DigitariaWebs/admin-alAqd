@@ -23,28 +23,44 @@ function normalizeName(name: string): string {
   return name
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/[\u0300-\u036f]/g, '') // remove accents
+    .replace(/[^a-z0-9\s]/g, '')    // remove special chars
     .replace(/\s+/g, ' ')
     .trim();
 }
 
+/**
+ * Check if the user's name appears in the extracted ID text.
+ * The ID text may contain the name in uppercase, in Arabic, or split across lines.
+ * We check each name part individually — if at least 2 parts match, it's a match.
+ */
 function checkNameInText(userName: string, extractedText: string): boolean {
+  if (!userName || !extractedText) return false;
+
   const normalizedUser = normalizeName(userName);
   const normalizedText = normalizeName(extractedText);
 
-  if (!normalizedUser || !normalizedText) return false;
+  // Direct full match
   if (normalizedText.includes(normalizedUser)) return true;
 
+  // Split name into parts and check each one
   const nameParts = normalizedUser.split(' ').filter(p => p.length >= 2);
   if (nameParts.length === 0) return false;
 
   const matchedParts = nameParts.filter(part => normalizedText.includes(part));
-  return matchedParts.length >= Math.ceil(nameParts.length / 2);
+
+  // For short names (1-2 parts): all must match
+  // For longer names (3+): at least 2 must match
+  if (nameParts.length <= 2) {
+    return matchedParts.length === nameParts.length;
+  }
+  return matchedParts.length >= 2;
 }
 
 /**
- * Check if the user's birth year appears in the extracted ID text.
+ * Check if the user's date of birth appears in the extracted ID text.
+ * Handles many date formats: DD/MM/YYYY, YYYY.MM.DD, DD-MM-YYYY, DD.MM.YYYY, etc.
+ * Also checks just the birth year as a fallback.
  */
 function checkDobInText(dob: Date | string | undefined, extractedText: string): boolean {
   if (!dob || !extractedText) return false;
@@ -52,17 +68,33 @@ function checkDobInText(dob: Date | string | undefined, extractedText: string): 
   const birthDate = new Date(dob);
   if (isNaN(birthDate.getTime())) return false;
 
-  const birthYear = birthDate.getFullYear().toString();
-  const birthFull = `${String(birthDate.getDate()).padStart(2, '0')}/${String(birthDate.getMonth() + 1).padStart(2, '0')}/${birthYear}`;
-  const birthFullDash = `${String(birthDate.getDate()).padStart(2, '0')}-${String(birthDate.getMonth() + 1).padStart(2, '0')}-${birthYear}`;
-  const birthFullDot = `${String(birthDate.getDate()).padStart(2, '0')}.${String(birthDate.getMonth() + 1).padStart(2, '0')}.${birthYear}`;
+  const y = birthDate.getFullYear().toString();
+  const m = String(birthDate.getMonth() + 1).padStart(2, '0');
+  const d = String(birthDate.getDate()).padStart(2, '0');
 
-  // Check various date formats
-  if (extractedText.includes(birthFull)) return true;
-  if (extractedText.includes(birthFullDash)) return true;
-  if (extractedText.includes(birthFullDot)) return true;
-  // At minimum check the birth year
-  if (extractedText.includes(birthYear)) return true;
+  // Also check +1 day to handle UTC timezone shift (e.g., stored as Sept 17 UTC = Sept 18 local)
+  const nextDay = new Date(birthDate.getTime() + 86400000);
+  const ny = nextDay.getFullYear().toString();
+  const nm = String(nextDay.getMonth() + 1).padStart(2, '0');
+  const nd = String(nextDay.getDate()).padStart(2, '0');
+
+  const formats = [
+    // Original date
+    `${d}/${m}/${y}`, `${d}-${m}-${y}`, `${d}.${m}.${y}`,
+    `${y}/${m}/${d}`, `${y}-${m}-${d}`, `${y}.${m}.${d}`,
+    `${m}/${d}/${y}`, `${m}-${d}-${y}`,
+    // +1 day (timezone fix)
+    `${nd}/${nm}/${ny}`, `${nd}-${nm}-${ny}`, `${nd}.${nm}.${ny}`,
+    `${ny}/${nm}/${nd}`, `${ny}-${nm}-${nd}`, `${ny}.${nm}.${nd}`,
+    `${nm}/${nd}/${ny}`, `${nm}-${nd}-${ny}`,
+  ];
+
+  for (const fmt of formats) {
+    if (extractedText.includes(fmt)) return true;
+  }
+
+  // Fallback: at least the birth year
+  if (extractedText.includes(y)) return true;
 
   return false;
 }
