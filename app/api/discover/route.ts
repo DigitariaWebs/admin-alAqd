@@ -7,13 +7,17 @@ import { requireAuth } from '@/lib/auth/middleware';
 import {
     buildAgeRangeFilter,
     buildCountryFilter,
+    computeMatchScore,
     serializeProfileCard,
 } from '@/lib/discover/helpers';
 
 const DISCOVER_SELECT =
   "name dateOfBirth gender location bio profession photos interests religiousPractice " +
   "ethnicity height maritalStatus isPhoneVerified isEmailVerified subscription lastActive " +
-  "faithTags personality photoBlurEnabled nationality";
+  "faithTags personality photoBlurEnabled nationality education";
+
+// Fetch a larger pool to score and rank, then return the top page
+const SCORING_POOL_SIZE = 100;
 
 export async function GET(request: NextRequest) {
     try {
@@ -30,7 +34,7 @@ export async function GET(request: NextRequest) {
         const countryFilter = searchParams.get('country')?.trim();
 
         const currentUser = await User.findById(authResult.user.userId).select(
-            'gender preferences interests religiousPractice'
+            'gender preferences interests religiousPractice ethnicity nationality education maritalStatus dateOfBirth personality faithTags'
         );
 
         if (!currentUser) {
@@ -60,7 +64,6 @@ export async function GET(request: NextRequest) {
             status: 'active',
             isOnboarded: true,
             role: 'user',
-            // Must have at least one photo
             photos: { $exists: true, $not: { $size: 0 } },
         };
 
@@ -83,26 +86,61 @@ export async function GET(request: NextRequest) {
             query.$and = [...((query.$and as Record<string, unknown>[] | undefined) ?? []), countryClause];
         }
 
+        const total = await User.countDocuments(query);
+
+        // Fetch a pool of candidates for scoring
+        const poolSize = Math.min(SCORING_POOL_SIZE, total);
+        const pool = await User.find(query)
+            .select(DISCOVER_SELECT)
+            .sort({ lastActive: -1 })
+            .limit(poolSize)
+            .lean();
+
+        // Score each profile against the current user
+        const me = {
+            interests: currentUser.interests ?? [],
+            religiousPractice: currentUser.religiousPractice,
+            ethnicity: currentUser.ethnicity ?? [],
+            nationality: currentUser.nationality ?? [],
+            education: currentUser.education,
+            maritalStatus: currentUser.maritalStatus,
+            dateOfBirth: currentUser.dateOfBirth,
+            personality: currentUser.personality ?? [],
+            faithTags: currentUser.faithTags ?? [],
+        };
+
+        const scored = pool.map((user) => ({
+            user,
+            score: computeMatchScore(me, {
+                interests: user.interests ?? [],
+                religiousPractice: user.religiousPractice,
+                ethnicity: user.ethnicity ?? [],
+                nationality: user.nationality ?? [],
+                education: user.education,
+                maritalStatus: user.maritalStatus,
+                dateOfBirth: user.dateOfBirth,
+                lastActive: user.lastActive,
+                personality: user.personality ?? [],
+                faithTags: user.faithTags ?? [],
+            }),
+        }));
+
+        // Sort by score descending (highest compatibility first)
+        scored.sort((a, b) => b.score - a.score);
+
+        // Paginate the scored results
         const skip = (page - 1) * limit;
+        const pageResults = scored.slice(skip, skip + limit);
 
-        const [profiles, total] = await Promise.all([
-            User.find(query)
-                .select(DISCOVER_SELECT)
-                .sort({ lastActive: -1 })
-                .skip(skip)
-                .limit(limit)
-                .lean(),
-            User.countDocuments(query),
-        ]);
-
-        const profileCards = profiles.map((user) =>
-            serializeProfileCard(
+        const profileCards = pageResults.map(({ user, score }) => ({
+            ...serializeProfileCard(
                 user,
                 currentUser.interests ?? [],
                 currentUser.religiousPractice,
                 authResult.user.userId
-            )
-        );
+            ),
+            compatibility: score,
+        }));
 
         return NextResponse.json({
             success: true,
@@ -111,7 +149,7 @@ export async function GET(request: NextRequest) {
                 page,
                 limit,
                 total,
-                hasMore: skip + profiles.length < total,
+                hasMore: skip + pageResults.length < Math.min(poolSize, total),
             },
         });
     } catch (error) {

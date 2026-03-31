@@ -6,13 +6,14 @@ import { requireAuth } from '@/lib/auth/middleware';
 import {
     buildAgeRangeFilter,
     buildCountryFilter,
+    computeMatchScore,
     serializeProfileCard,
 } from '@/lib/discover/helpers';
 
 const DISCOVER_SELECT =
   "name dateOfBirth gender location bio profession photos interests religiousPractice " +
   "ethnicity height maritalStatus isPhoneVerified isEmailVerified subscription lastActive " +
-  "faithTags personality photoBlurEnabled nationality";
+  "faithTags personality photoBlurEnabled nationality education";
 
 /**
  * POST /api/discover/refresh
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
         const countryFilter = typeof body?.country === 'string' ? body.country.trim() : undefined;
 
         const currentUser = await User.findById(authResult.user.userId).select(
-            'gender preferences interests religiousPractice'
+            'gender preferences interests religiousPractice ethnicity nationality education maritalStatus dateOfBirth personality faithTags'
         );
 
         if (!currentUser) {
@@ -77,24 +78,52 @@ export async function POST(request: NextRequest) {
             query.$and = [...((query.$and as Record<string, unknown>[] | undefined) ?? []), countryClause];
         }
 
-        const [profiles, total] = await Promise.all([
-            User.find(query)
-                .select(DISCOVER_SELECT)
-                // Randomize the order so the refresh feels fresh
-                .sort({ lastActive: -1 })
-                .limit(limit)
-                .lean(),
-            User.countDocuments(query),
-        ]);
+        const total = await User.countDocuments(query);
+        const pool = await User.find(query)
+            .select(DISCOVER_SELECT)
+            .sort({ lastActive: -1 })
+            .limit(100)
+            .lean();
 
-        const profileCards = profiles.map((user) =>
-            serializeProfileCard(
+        const me = {
+            interests: currentUser.interests ?? [],
+            religiousPractice: currentUser.religiousPractice,
+            ethnicity: currentUser.ethnicity ?? [],
+            nationality: currentUser.nationality ?? [],
+            education: currentUser.education,
+            maritalStatus: currentUser.maritalStatus,
+            dateOfBirth: currentUser.dateOfBirth,
+            personality: currentUser.personality ?? [],
+            faithTags: currentUser.faithTags ?? [],
+        };
+
+        const scored = pool.map((user) => ({
+            user,
+            score: computeMatchScore(me, {
+                interests: user.interests ?? [],
+                religiousPractice: user.religiousPractice,
+                ethnicity: user.ethnicity ?? [],
+                nationality: user.nationality ?? [],
+                education: user.education,
+                maritalStatus: user.maritalStatus,
+                dateOfBirth: user.dateOfBirth,
+                lastActive: user.lastActive,
+                personality: user.personality ?? [],
+                faithTags: user.faithTags ?? [],
+            }),
+        }));
+
+        scored.sort((a, b) => b.score - a.score);
+
+        const profileCards = scored.slice(0, limit).map(({ user, score }) => ({
+            ...serializeProfileCard(
                 user,
                 currentUser.interests ?? [],
                 currentUser.religiousPractice,
                 authResult.user.userId
-            )
-        );
+            ),
+            compatibility: score,
+        }));
 
         return NextResponse.json({
             success: true,
