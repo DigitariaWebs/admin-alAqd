@@ -63,16 +63,6 @@ export async function POST(request: NextRequest) {
 
         Object.assign(query, buildAgeRangeFilter(prefs?.ageRange));
 
-        if (prefs?.religiousPractice?.length) {
-            query.religiousPractice = { $in: prefs.religiousPractice };
-        }
-        if (prefs?.ethnicity?.length) {
-            query.ethnicity = { $in: prefs.ethnicity };
-        }
-        if (prefs?.education?.length) {
-            query.education = { $in: prefs.education };
-        }
-
         const countryClause = buildCountryFilter(countryFilter);
         if (countryClause) {
             query.$and = [...((query.$and as Record<string, unknown>[] | undefined) ?? []), countryClause];
@@ -132,7 +122,7 @@ export async function POST(request: NextRequest) {
                 page: 1,
                 limit,
                 total,
-                hasMore: profiles.length < total,
+                hasMore: profileCards.length < total,
             },
         });
     } catch (error) {

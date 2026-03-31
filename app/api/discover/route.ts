@@ -67,19 +67,8 @@ export async function GET(request: NextRequest) {
             photos: { $exists: true, $not: { $size: 0 } },
         };
 
-        // Age range from preferences
+        // Age range from preferences (keep as hard filter - fundamental preference)
         Object.assign(query, buildAgeRangeFilter(prefs?.ageRange));
-
-        // Optional preference filters
-        if (prefs?.religiousPractice?.length) {
-            query.religiousPractice = { $in: prefs.religiousPractice };
-        }
-        if (prefs?.ethnicity?.length) {
-            query.ethnicity = { $in: prefs.ethnicity };
-        }
-        if (prefs?.education?.length) {
-            query.education = { $in: prefs.education };
-        }
 
         const countryClause = buildCountryFilter(countryFilter);
         if (countryClause) {
@@ -141,6 +130,8 @@ export async function GET(request: NextRequest) {
             ),
             compatibility: score,
         }));
+
+        console.log(`[DISCOVER] user=${currentUser.gender} page=${page} limit=${limit} total=${total} pool=${pool.length} returning=${profileCards.length} hasMore=${skip + pageResults.length < Math.min(poolSize, total)}`);
 
         return NextResponse.json({
             success: true,
