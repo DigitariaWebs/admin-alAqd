@@ -71,7 +71,7 @@ export interface IUser {
   // Mahram (for female users)
   mahram?: {
     email?: string;
-    relationship?: "father" | "brother" | "uncle" | "grandfather" | "other";
+    relationship?: "father" | "brother" | "paternalUncle" | "maternalUncle" | "grandfather" | "son" | "other";
     notifiedAt?: Date;
   };
 
@@ -169,7 +169,7 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
       email: String,
       relationship: {
         type: String,
-        enum: ["father", "brother", "uncle", "grandfather", "other"],
+        enum: ["father", "brother", "paternalUncle", "maternalUncle", "grandfather", "son", "other"],
       },
       notifiedAt: Date,
     },

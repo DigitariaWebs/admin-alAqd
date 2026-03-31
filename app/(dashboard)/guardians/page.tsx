@@ -29,8 +29,10 @@ interface MahramUser {
 const RELATIONSHIP_LABELS: Record<string, string> = {
     father: 'Père',
     brother: 'Frère',
-    uncle: 'Oncle',
+    paternalUncle: 'Oncle paternel',
+    maternalUncle: 'Oncle maternel',
     grandfather: 'Grand-père',
+    son: 'Fils',
     other: 'Autre',
 };
 

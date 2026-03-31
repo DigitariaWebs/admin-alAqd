@@ -269,6 +269,11 @@ export function serializeUser(user: any) {
       isEmailVerified: user.isEmailVerified,
       isPhoneVerified: user.isPhoneVerified,
       subscription: user.subscription,
+      mahram: user.mahram ? {
+        email: user.mahram.email,
+        relationship: user.mahram.relationship,
+        notifiedAt: user.mahram.notifiedAt,
+      } : undefined,
       lastActive: user.lastActive,
       createdAt: user.createdAt,
     };
