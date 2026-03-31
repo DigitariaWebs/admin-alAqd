@@ -90,9 +90,11 @@ export async function POST(request: NextRequest) {
                 verification.rejectionReason = result.reason;
                 await verification.save();
 
-                await User.findByIdAndUpdate(authResult.user.userId, {
-                    kycStatus: result.decision,
-                });
+                const userUpdate: Record<string, unknown> = { kycStatus: result.decision };
+                if (result.decision === 'rejected') {
+                    userUpdate.kycRejectedAt = new Date();
+                }
+                await User.findByIdAndUpdate(authResult.user.userId, userUpdate);
             })
             .catch(async (err) => {
                 console.error('[KYC] Processing error:', err);

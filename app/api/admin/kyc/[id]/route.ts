@@ -38,9 +38,11 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         await verification.save();
 
         // Update user kycStatus
-        await User.findByIdAndUpdate(verification.userId, {
-            kycStatus: newStatus,
-        });
+        const userUpdate: Record<string, unknown> = { kycStatus: newStatus };
+        if (newStatus === 'rejected') {
+            userUpdate.kycRejectedAt = new Date();
+        }
+        await User.findByIdAndUpdate(verification.userId, userUpdate);
 
         return NextResponse.json({
             success: true,

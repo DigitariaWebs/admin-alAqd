@@ -200,6 +200,8 @@ export async function POST(request: NextRequest) {
         isOnboarded: user.isOnboarded,
         isPhoneVerified: user.isPhoneVerified ?? false,
         isEmailVerified: user.isEmailVerified ?? false,
+        kycStatus: user.kycStatus ?? 'none',
+        kycRejectedAt: user.kycRejectedAt ?? null,
       },
     });
   } catch (error) {

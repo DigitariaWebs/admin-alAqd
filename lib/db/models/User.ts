@@ -64,6 +64,7 @@ export interface IUser {
 
   // KYC
   kycStatus?: "none" | "pending" | "verified" | "rejected" | "manual_review";
+  kycRejectedAt?: Date;
 
   // Status
   role: "user" | "admin" | "moderator";
@@ -159,6 +160,10 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
       type: String,
       enum: ["none", "pending", "verified", "rejected", "manual_review"],
       default: "none",
+    },
+    kycRejectedAt: {
+      type: Date,
+      default: null,
     },
 
     role: {
