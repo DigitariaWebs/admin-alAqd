@@ -11,6 +11,9 @@ const RELATIONSHIP_LABELS: Record<string, Record<string, string>> = {
   maternalUncle: { en: 'niece', fr: 'nièce', ar: 'ابنة أختك', es: 'sobrina' },
   grandfather: { en: 'granddaughter', fr: 'petite-fille', ar: 'حفيدتك', es: 'nieta' },
   son: { en: 'mother', fr: 'mère', ar: 'والدتك', es: 'madre' },
+  muslimFriend: { en: 'friend', fr: 'amie', ar: 'صديقتك', es: 'amiga' },
+  sisterInIslam: { en: 'sister in Islam', fr: 'soeur en Islam', ar: 'أختك في الإسلام', es: 'hermana en el Islam' },
+  communityRepresentative: { en: 'community member', fr: 'membre de la communauté', ar: 'فرد من مجتمعك', es: 'miembro de la comunidad' },
   other: { en: 'relative', fr: 'proche', ar: 'قريبتك', es: 'familiar' },
 };
 
@@ -66,7 +69,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
     }
 
-    const validRelationships = ['father', 'brother', 'paternalUncle', 'maternalUncle', 'grandfather', 'son', 'other'];
+    const validRelationships = ['father', 'brother', 'paternalUncle', 'maternalUncle', 'grandfather', 'son', 'muslimFriend', 'sisterInIslam', 'communityRepresentative', 'other'];
     if (!validRelationships.includes(relationship)) {
       return NextResponse.json({ error: 'Invalid relationship' }, { status: 400 });
     }

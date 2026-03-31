@@ -844,7 +844,7 @@ export default function UsersPage() {
                                             <div>
                                                 <p className="text-gray-500">Relation</p>
                                                 <p className="font-medium capitalize">{
-                                                    ({ father: 'Père', brother: 'Frère', paternalUncle: 'Oncle paternel', maternalUncle: 'Oncle maternel', grandfather: 'Grand-père', son: 'Fils', other: 'Autre' } as Record<string, string>)[selectedUser.mahram?.relationship ?? ''] || selectedUser.mahram?.relationship || '-'
+                                                    ({ father: 'Père', brother: 'Frère', paternalUncle: 'Oncle paternel', maternalUncle: 'Oncle maternel', grandfather: 'Grand-père', son: 'Fils', muslimFriend: 'Amie musulmane', sisterInIslam: 'Soeur en Islam', communityRepresentative: 'Représentant', other: 'Autre' } as Record<string, string>)[selectedUser.mahram?.relationship ?? ''] || selectedUser.mahram?.relationship || '-'
                                                 }</p>
                                             </div>
                                             {selectedUser.mahram.notifiedAt && (

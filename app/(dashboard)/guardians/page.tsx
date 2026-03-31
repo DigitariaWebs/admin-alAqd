@@ -33,6 +33,9 @@ const RELATIONSHIP_LABELS: Record<string, string> = {
     maternalUncle: 'Oncle maternel',
     grandfather: 'Grand-père',
     son: 'Fils',
+    muslimFriend: 'Amie musulmane',
+    sisterInIslam: 'Soeur en Islam',
+    communityRepresentative: 'Représentant communautaire',
     other: 'Autre',
 };
 
