@@ -124,7 +124,7 @@ export async function POST(request: NextRequest, { params }: Params) {
         if (!content || typeof content !== 'string' || content.trim().length === 0) {
             return NextResponse.json({ error: 'content is required' }, { status: 400 });
         }
-        if (!['text', 'emoji', 'image'].includes(contentType)) {
+        if (!['text', 'emoji', 'image', 'call_invite'].includes(contentType)) {
             return NextResponse.json({ error: 'Invalid contentType' }, { status: 400 });
         }
 
