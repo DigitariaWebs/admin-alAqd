@@ -68,7 +68,7 @@ export default function MahramPage() {
             if (data.success) {
                 setUsers(data.users);
                 setTotalPages(data.pagination?.totalPages || 1);
-                setStats(data.stats || stats);
+                setStats(prev => data.stats || prev);
             }
         } catch (error) {
             console.error('Failed to fetch mahrams:', error);

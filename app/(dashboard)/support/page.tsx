@@ -77,12 +77,14 @@ export default function SupportPage() {
     useEffect(() => {
         fetchTickets();
         fetchStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
         if (activeTab === 'logs') {
             fetchLogs();
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeTab, logLevel, logCategory]);
 
     const fetchTickets = async () => {

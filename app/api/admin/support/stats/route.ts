@@ -62,9 +62,9 @@ export async function GET(request: NextRequest) {
         let ticketsWithResponse = 0;
 
         for (const ticket of ticketsWithAdminReply) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             const firstUserMessage = ticket.messages.find((m: any) => m.sender === 'user');
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             const firstAdminMessage = ticket.messages.find((m: any) => m.sender === 'admin');
 
             if (firstUserMessage && firstAdminMessage) {

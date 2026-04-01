@@ -8,7 +8,7 @@ import { Table } from '@/components/ui/Table';
 import { Badge } from '@/components/ui/Badge';
 import { Select } from '@/components/ui/Select';
 import { Modal } from '@/components/ui/Modal';
-import { Plus, Edit, Trash2, FileText, Image, Video, Loader2 } from 'lucide-react';
+import { Plus, Edit, Trash2, FileText, Image as ImageIcon, Video, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ContentPage() {
@@ -55,7 +55,7 @@ export default function ContentPage() {
     const getTypeIcon = (type: string) => {
         switch (type) {
             case 'video': return <Video size={14} className="text-blue-500" />;
-            case 'image': return <Image size={14} className="text-purple-500" />;
+            case 'image': return <ImageIcon size={14} className="text-purple-500" />;
             default: return <FileText size={14} className="text-gray-500" />;
         }
     };

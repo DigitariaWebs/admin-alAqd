@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -72,6 +73,7 @@ export default function NotificationsPage() {
 
     useEffect(() => {
         fetchNotifications();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fetchNotifications = async () => {

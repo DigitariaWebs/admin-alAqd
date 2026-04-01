@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -83,7 +84,7 @@ export default function ReportsPage() {
             if (data.success) {
                 setReports(data.reports);
                 setTotalPages(data.pagination?.totalPages || 1);
-                setStats(data.stats || stats);
+                setStats(prev => data.stats || prev);
             }
         } catch (error) {
             console.error('Failed to fetch reports:', error);
