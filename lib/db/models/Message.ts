@@ -1,6 +1,6 @@
 import mongoose, { Schema, Model } from 'mongoose';
 
-export type MessageContentType = 'text' | 'emoji' | 'image' | 'call_invite';
+export type MessageContentType = 'text' | 'emoji' | 'image' | 'call_invite' | 'call_declined';
 
 export interface IMessage {
     _id: string;
@@ -22,7 +22,7 @@ const messageSchema = new Schema<IMessage>(
         senderId:       { type: Schema.Types.ObjectId, ref: 'User',  required: true },
         receiverId:     { type: Schema.Types.ObjectId, ref: 'User',  required: true },
         content:        { type: String, required: true, maxlength: 2000 },
-        contentType:    { type: String, enum: ['text', 'emoji', 'image', 'call_invite'], default: 'text' },
+        contentType:    { type: String, enum: ['text', 'emoji', 'image', 'call_invite', 'call_declined'], default: 'text' },
         isRead:         { type: Boolean, default: false },
         readAt:         Date,
         isDeleted:      { type: Boolean, default: false },

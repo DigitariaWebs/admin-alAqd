@@ -43,6 +43,8 @@ export async function GET(
           targetGender: user.gender,
           blurEnabled: user.photoBlurEnabled,
           isOwner: false,
+          viewerId: authResult.user.userId,
+          unblurredFor: (user.unblurredFor ?? []).map((id: any) => id.toString()),
         });
 
         return NextResponse.json({

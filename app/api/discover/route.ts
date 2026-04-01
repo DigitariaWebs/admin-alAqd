@@ -14,7 +14,7 @@ import {
 const DISCOVER_SELECT =
   "name dateOfBirth gender location bio profession photos interests religiousPractice " +
   "ethnicity height maritalStatus isPhoneVerified isEmailVerified subscription lastActive " +
-  "faithTags personality photoBlurEnabled nationality education";
+  "faithTags personality photoBlurEnabled unblurredFor nationality education";
 
 // Fetch a larger pool to score and rank, then return the top page
 const SCORING_POOL_SIZE = 100;

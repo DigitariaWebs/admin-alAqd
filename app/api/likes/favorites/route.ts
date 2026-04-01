@@ -8,7 +8,7 @@ import { requireAuth } from '@/lib/auth/middleware';
 import { serializeFavoriteCard } from '@/lib/discover/helpers';
 
 const USER_SELECT =
-  "name dateOfBirth profession location gender photos photoBlurEnabled isPhoneVerified isEmailVerified " +
+  "name dateOfBirth profession location gender photos photoBlurEnabled unblurredFor isPhoneVerified isEmailVerified " +
   "subscription lastActive religiousPractice nationality";
 
 /**

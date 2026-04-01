@@ -34,11 +34,15 @@ export function serializeConversation(
     targetGender: participant.gender,
     blurEnabled: participant.photoBlurEnabled,
     isOwner,
+    viewerId: viewerUserId,
+    unblurredFor: participant.unblurredFor?.map((id: any) => id.toString()),
   });
   const shouldBlurPhotos = shouldBlurPhotosForViewer({
     targetGender: participant.gender,
     blurEnabled: participant.photoBlurEnabled,
     isOwner,
+    viewerId: viewerUserId,
+    unblurredFor: participant.unblurredFor?.map((id: any) => id.toString()),
   });
 
   return {
@@ -55,7 +59,7 @@ export function serializeConversation(
       participant.subscription?.isActive
     ),
     isOnline: participant.lastActive
-      ? Date.now() - new Date(participant.lastActive).getTime() < 15 * 60 * 1000
+      ? Date.now() - new Date(participant.lastActive).getTime() < 60 * 1000
       : false,
     lastActive: participant.lastActive
       ? new Date(participant.lastActive).toISOString()
@@ -355,11 +359,15 @@ export function serializeProfileCard(
     targetGender: user.gender,
     blurEnabled: user.photoBlurEnabled,
     isOwner,
+    viewerId: viewerUserId,
+    unblurredFor: user.unblurredFor?.map((id: any) => id.toString()),
   });
   const shouldBlurPhotos = shouldBlurPhotosForViewer({
     targetGender: user.gender,
     blurEnabled: user.photoBlurEnabled,
     isOwner,
+    viewerId: viewerUserId,
+    unblurredFor: user.unblurredFor?.map((id: any) => id.toString()),
   });
 
   return {
@@ -396,7 +404,7 @@ export function serializeProfileCard(
     compatibility,
     interests: user.interests || [],
     isOnline: user.lastActive
-      ? Date.now() - new Date(user.lastActive).getTime() < 15 * 60 * 1000
+      ? Date.now() - new Date(user.lastActive).getTime() < 60 * 1000
       : false,
   };
 }
@@ -421,11 +429,15 @@ export function serializeLikeCard(
     targetGender: user.gender,
     blurEnabled: user.photoBlurEnabled,
     isOwner,
+    viewerId: viewerUserId,
+    unblurredFor: user.unblurredFor?.map((id: any) => id.toString()),
   });
   const shouldBlurPhotos = shouldBlurPhotosForViewer({
     targetGender: user.gender,
     blurEnabled: user.photoBlurEnabled,
     isOwner,
+    viewerId: viewerUserId,
+    unblurredFor: user.unblurredFor?.map((id: any) => id.toString()),
   });
 
   return {
@@ -445,7 +457,7 @@ export function serializeLikeCard(
       user.subscription?.plan !== "free" && user.subscription?.isActive
     ),
     isOnline: user.lastActive
-      ? Date.now() - new Date(user.lastActive).getTime() < 15 * 60 * 1000
+      ? Date.now() - new Date(user.lastActive).getTime() < 60 * 1000
       : false,
     lastActive: user.lastActive
       ? new Date(user.lastActive).toISOString()
@@ -478,11 +490,15 @@ export function serializeFavoriteCard(
     targetGender: user.gender,
     blurEnabled: user.photoBlurEnabled,
     isOwner,
+    viewerId: viewerUserId,
+    unblurredFor: user.unblurredFor?.map((id: any) => id.toString()),
   });
   const shouldBlurPhotos = shouldBlurPhotosForViewer({
     targetGender: user.gender,
     blurEnabled: user.photoBlurEnabled,
     isOwner,
+    viewerId: viewerUserId,
+    unblurredFor: user.unblurredFor?.map((id: any) => id.toString()),
   });
 
   return {
@@ -502,7 +518,7 @@ export function serializeFavoriteCard(
       user.subscription?.plan !== "free" && user.subscription?.isActive
     ),
     isOnline: user.lastActive
-      ? Date.now() - new Date(user.lastActive).getTime() < 15 * 60 * 1000
+      ? Date.now() - new Date(user.lastActive).getTime() < 60 * 1000
       : false,
     lastActive: user.lastActive
       ? new Date(user.lastActive).toISOString()
@@ -533,11 +549,15 @@ export function serializeMatch(
     targetGender: otherUser.gender,
     blurEnabled: otherUser.photoBlurEnabled,
     isOwner: otherUser._id.toString() === currentUserId,
+    viewerId: currentUserId,
+    unblurredFor: otherUser.unblurredFor?.map((id: any) => id.toString()),
   });
   const shouldBlurPhotos = shouldBlurPhotosForViewer({
     targetGender: otherUser.gender,
     blurEnabled: otherUser.photoBlurEnabled,
     isOwner: otherUser._id.toString() === currentUserId,
+    viewerId: currentUserId,
+    unblurredFor: otherUser.unblurredFor?.map((id: any) => id.toString()),
   });
 
   return {
@@ -559,7 +579,7 @@ export function serializeMatch(
     isRead: true,
     hasNewMessage: false,
     isOnline: otherUser.lastActive
-      ? Date.now() - new Date(otherUser.lastActive).getTime() < 15 * 60 * 1000
+      ? Date.now() - new Date(otherUser.lastActive).getTime() < 60 * 1000
       : false,
     lastActive: otherUser.lastActive
       ? new Date(otherUser.lastActive).toISOString()

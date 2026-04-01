@@ -8,7 +8,7 @@ import { requireAuth } from '@/lib/auth/middleware';
 import { serializeConversation } from '@/lib/discover/helpers';
 
 const PARTICIPANT_SELECT =
-  "name dateOfBirth gender photos photoBlurEnabled isPhoneVerified isEmailVerified subscription lastActive";
+  "name dateOfBirth gender photos photoBlurEnabled unblurredFor isPhoneVerified isEmailVerified subscription lastActive";
 
 /**
  * GET /api/conversations
