@@ -41,6 +41,14 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
+        const prefs = currentUser.preferences;
+        console.log("[DISCOVER] countryFilter:", countryFilter, "prefs:", JSON.stringify({
+            religiousPractice: prefs?.religiousPractice,
+            ethnicity: prefs?.ethnicity,
+            education: prefs?.education,
+            ageRange: prefs?.ageRange,
+        }));
+
         // Exclude swiped users + blocked users (both directions)
         const [swipedIds, blockedByMe, blockedMe] = await Promise.all([
             Swipe.find({ fromUser: authResult.user.userId }).distinct('toUser'),
@@ -56,7 +64,6 @@ export async function GET(request: NextRequest) {
         ];
 
         const targetGender = currentUser.gender === 'male' ? 'female' : 'male';
-        const prefs = currentUser.preferences;
 
         const query: Record<string, unknown> = {
             _id: { $nin: excludedIds },
@@ -67,8 +74,19 @@ export async function GET(request: NextRequest) {
             photos: { $exists: true, $not: { $size: 0 } },
         };
 
-        // Age range from preferences (keep as hard filter - fundamental preference)
+        // Age range from preferences
         Object.assign(query, buildAgeRangeFilter(prefs?.ageRange));
+
+        // Hard filters — only show profiles matching selected preferences
+        if (prefs?.religiousPractice?.length) {
+            query.religiousPractice = { $in: prefs.religiousPractice };
+        }
+        if (prefs?.ethnicity?.length) {
+            query.ethnicity = { $in: prefs.ethnicity };
+        }
+        if (prefs?.education?.length) {
+            query.education = { $in: prefs.education };
+        }
 
         const countryClause = buildCountryFilter(countryFilter);
         if (countryClause) {

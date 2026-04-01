@@ -23,7 +23,6 @@ const userSchema = new mongoose.Schema({
   gender: { type: String, enum: ['male', 'female'] },
   bio: String,
   profession: String,
-  location: String,
   height: Number,
   password: String,
   provider: { type: String, enum: ['phone', 'google', 'email'], default: 'phone' },
@@ -43,30 +42,36 @@ const userSchema = new mongoose.Schema({
   personality: [String],
   photos: [String],
   photoBlurEnabled: { type: Boolean, default: true },
+  unblurredFor: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   preferences: {
     distance: Number,
     ageRange: { min: Number, max: Number },
     religiousPractice: [String],
     ethnicity: [String],
     education: [String],
+    children: String,
+    prayer: String,
+    diet: String,
   },
   subscription: {
     plan: { type: String, enum: ['free', 'premium', 'gold'], default: 'free' },
     startDate: Date,
     endDate: Date,
     isActive: { type: Boolean, default: false },
+    cancelledAt: Date,
+    stripeCustomerId: { type: String, sparse: true },
+    stripeSubscriptionId: { type: String, sparse: true },
   },
+  kycStatus: { type: String, enum: ['none', 'pending', 'verified', 'rejected', 'manual_review'], default: 'none' },
+  kycRejectedAt: { type: Date, default: null },
   role: { type: String, enum: ['user', 'admin', 'moderator'], default: 'user' },
   status: { type: String, enum: ['active', 'inactive', 'suspended', 'banned'], default: 'active' },
   isOnboarded: { type: Boolean, default: false },
   lastActive: Date,
-  guardian: {
+  mahram: {
     email: String,
-    name: String,
-    accessCode: String,
-    status: { type: String, enum: ['pending', 'active', 'revoked'], default: 'pending' },
-    linkedAt: Date,
-    requestedAt: Date,
+    relationship: { type: String, enum: ['father', 'brother', 'paternalUncle', 'maternalUncle', 'grandfather', 'son', 'muslimFriend', 'sisterInIslam', 'communityRepresentative', 'other'] },
+    notifiedAt: Date,
   },
 }, { timestamps: true });
 
@@ -120,13 +125,6 @@ const PROFESSIONS = [
   'Graphic Designer', 'Civil Engineer', 'Journalist', 'Psychologist', 'Chef',
 ];
 
-const LOCATIONS = [
-  'Brussels, Belgium', 'Paris, France', 'Algiers, Algeria',
-  'Casablanca, Morocco', 'Tunis, Tunisia', 'Istanbul, Turkey',
-  'Berlin, Germany', 'London, UK', 'Cairo, Egypt',
-  'Riyadh, Saudi Arabia', 'Dubai, UAE', 'Kuala Lumpur, Malaysia',
-];
-
 // Values must match EXACTLY what the mobile app stores
 const INTERESTS = [
   'football', 'basketball', 'gym', 'running', 'tennis', 'swimming', 'yoga',
@@ -163,16 +161,15 @@ const pickN = (arr, min, max) => {
 };
 const randomInt = (min, max) => min + Math.floor(Math.random() * (max - min + 1));
 
-function buildPhotos(index) {
+// pravatar.cc image IDs grouped by gender
+const MALE_AVATAR_IDS = [3, 5, 6, 7, 8, 11, 12, 13, 14, 15, 17, 18, 33, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 67, 68, 69, 70];
+const FEMALE_AVATAR_IDS = [1, 2, 4, 9, 10, 16, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 63, 64, 65, 66];
+
+function buildPhotos(gender) {
   const count = randomInt(3, 5);
-  const photos = [];
-  // Use unique avatar IDs per user to avoid duplicates
-  const baseId = ((index - 1) * 5) % 70 + 1;
-  for (let i = 0; i < count; i++) {
-    const imgId = ((baseId + i) % 70) + 1;
-    photos.push(`https://i.pravatar.cc/800?img=${imgId}`);
-  }
-  return photos;
+  const ids = gender === 'male' ? MALE_AVATAR_IDS : FEMALE_AVATAR_IDS;
+  const shuffled = [...ids].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count).map((id) => `https://i.pravatar.cc/800?img=${id}`);
 }
 
 function buildPhone(country, index) {
@@ -266,7 +263,7 @@ async function seed() {
       smoking: pick(['No', 'No', 'No', 'Yes']),
       interests: pickN(INTERESTS, 3, 6),
       personality: pickN(PERSONALITIES, 2, 4),
-      photos: buildPhotos(i),
+      photos: buildPhotos(gender),
       photoBlurEnabled: true,
       preferences: {
         distance: 500,
@@ -274,11 +271,16 @@ async function seed() {
         religiousPractice: [],
         ethnicity: [],
         education: [],
+        children: undefined,
+        prayer: undefined,
+        diet: undefined,
       },
       subscription: {
         plan: pick(['free', 'free', 'free', 'premium', 'gold']),
         isActive: false,
       },
+      kycStatus: pick(['none', 'none', 'pending', 'verified', 'verified']),
+      kycRejectedAt: null,
       role: 'user',
       status: 'active',
       isOnboarded: true,
