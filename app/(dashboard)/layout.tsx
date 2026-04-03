@@ -36,7 +36,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     useEffect(() => {
         if (typeof window === 'undefined') return;
 
-        if (!isLoading && !isAuthenticated) {
+        const token = localStorage.getItem('auth_token');
+        if (!isLoading && !isAuthenticated && !token) {
             router.push('/login');
         }
     }, [isAuthenticated, isLoading, router]);
