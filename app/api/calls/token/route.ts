@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import mongoose from "mongoose";
 import connectDB from '@/lib/db/mongodb';
 import { User } from '@/lib/db/models/User';
+import { Message } from '@/lib/db/models/Message';
 import { requireAuth } from '@/lib/auth/middleware';
 import { StreamClient } from '@stream-io/node-sdk';
 
 const STREAM_API_KEY = process.env.STREAM_VIDEO_API_KEY || '';
 const STREAM_API_SECRET = process.env.STREAM_VIDEO_API_SECRET || '';
+const RECENT_CALL_INVITE_WINDOW_MS = 10 * 60 * 1000;
 
 /**
  * POST /api/calls/token
@@ -77,7 +79,28 @@ export async function POST(request: NextRequest) {
         );
         const isAuthorized = authorizedCallers.includes(authResult.user.userId);
 
-        if (!isAuthorized) {
+        let hasRecentInviteFromParticipant = false;
+
+        // Keep initiation checks strict, but allow joining a recently invited call.
+        if (!isAuthorized && !validateOnly) {
+          const recentInviteThreshold = new Date(
+            Date.now() - RECENT_CALL_INVITE_WINDOW_MS,
+          );
+
+          const recentInvite = await Message.findOne({
+            senderId: participantId,
+            receiverId: authResult.user.userId,
+            contentType: "call_invite",
+            isDeleted: false,
+            createdAt: { $gte: recentInviteThreshold },
+          })
+            .select("_id")
+            .lean();
+
+          hasRecentInviteFromParticipant = !!recentInvite;
+        }
+
+        if (!isAuthorized && !hasRecentInviteFromParticipant) {
           return NextResponse.json(
             {
               error: "Call not authorized by this user",
