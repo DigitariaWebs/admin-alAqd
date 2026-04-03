@@ -263,17 +263,22 @@ export function serializeUser(user: any) {
       photos: user.photos ?? [],
       photoBlurEnabled: user.photoBlurEnabled !== false,
       unblurredFor: (user.unblurredFor ?? []).map((id: any) => id.toString()),
+      callAuthorizedFor: (user.callAuthorizedFor ?? []).map((id: any) =>
+        id.toString(),
+      ),
       role: user.role,
       status: user.status,
       isOnboarded: user.isOnboarded,
       isEmailVerified: user.isEmailVerified,
       isPhoneVerified: user.isPhoneVerified,
       subscription: user.subscription,
-      mahram: user.mahram ? {
-        email: user.mahram.email,
-        relationship: user.mahram.relationship,
-        notifiedAt: user.mahram.notifiedAt,
-      } : undefined,
+      mahram: user.mahram
+        ? {
+            email: user.mahram.email,
+            relationship: user.mahram.relationship,
+            notifiedAt: user.mahram.notifiedAt,
+          }
+        : undefined,
       lastActive: user.lastActive,
       createdAt: user.createdAt,
     };

@@ -38,6 +38,7 @@ export interface IUser {
   photos?: string[];
   photoBlurEnabled?: boolean;
   unblurredFor?: string[];
+  callAuthorizedFor?: string[];
 
   // Preferences
   preferences?: {
@@ -75,7 +76,17 @@ export interface IUser {
   // Mahram (for female users)
   mahram?: {
     email?: string;
-    relationship?: "father" | "brother" | "paternalUncle" | "maternalUncle" | "grandfather" | "son" | "muslimFriend" | "sisterInIslam" | "communityRepresentative" | "other";
+    relationship?:
+      | "father"
+      | "brother"
+      | "paternalUncle"
+      | "maternalUncle"
+      | "grandfather"
+      | "son"
+      | "muslimFriend"
+      | "sisterInIslam"
+      | "communityRepresentative"
+      | "other";
     notifiedAt?: Date;
     lastCallNotificationAt?: Date;
     lastCallNotificationSessionId?: string;
@@ -128,7 +139,8 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
     personality: [String],
     photos: [String],
     photoBlurEnabled: { type: Boolean, default: true },
-    unblurredFor: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    unblurredFor: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    callAuthorizedFor: [{ type: Schema.Types.ObjectId, ref: "User" }],
 
     preferences: {
       distance: { type: Number, default: 500 },
@@ -185,7 +197,18 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
       email: String,
       relationship: {
         type: String,
-        enum: ["father", "brother", "paternalUncle", "maternalUncle", "grandfather", "son", "muslimFriend", "sisterInIslam", "communityRepresentative", "other"],
+        enum: [
+          "father",
+          "brother",
+          "paternalUncle",
+          "maternalUncle",
+          "grandfather",
+          "son",
+          "muslimFriend",
+          "sisterInIslam",
+          "communityRepresentative",
+          "other",
+        ],
       },
       notifiedAt: Date,
       lastCallNotificationAt: Date,
