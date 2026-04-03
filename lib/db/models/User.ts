@@ -77,6 +77,8 @@ export interface IUser {
     email?: string;
     relationship?: "father" | "brother" | "paternalUncle" | "maternalUncle" | "grandfather" | "son" | "muslimFriend" | "sisterInIslam" | "communityRepresentative" | "other";
     notifiedAt?: Date;
+    lastCallNotificationAt?: Date;
+    lastCallNotificationSessionId?: string;
   };
 
   // Metadata
@@ -186,6 +188,8 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
         enum: ["father", "brother", "paternalUncle", "maternalUncle", "grandfather", "son", "muslimFriend", "sisterInIslam", "communityRepresentative", "other"],
       },
       notifiedAt: Date,
+      lastCallNotificationAt: Date,
+      lastCallNotificationSessionId: String,
     },
   },
   {
