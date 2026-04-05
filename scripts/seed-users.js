@@ -127,7 +127,7 @@ const PROFESSIONS = [
 
 // Values must match EXACTLY what the mobile app stores
 const INTERESTS = [
-  'football', 'basketball', 'gym', 'running', 'tennis', 'swimming', 'yoga',
+  'football', 'basketball', 'gym', 'running', 'tennis', 'swimming',
   'art', 'photography', 'writing', 'music', 'reading', 'cooking',
   'roadTrips', 'nature', 'hiking', 'camping', 'cycling',
   'volunteering', 'charity', 'gaming', 'coding',
@@ -162,7 +162,7 @@ const ETHNICITIES = [
 ];
 const EDUCATION_LEVELS = ['highSchool', 'bachelors', 'masters', 'doctorate', 'trade', 'other'];
 const MARITAL_STATUSES = ['single', 'divorced', 'widowed'];
-const RELIGIOUS_PRACTICES = ['veryPracticing', 'practicing', 'moderate', 'liberal', 'nonPracticing'];
+const RELIGIOUS_PRACTICES = ['veryPracticing', 'practicing', 'moderate', 'nonPracticing'];
 const FAITH_TAGS = ['prayer', 'fasting', 'zakat', 'hajj', 'quranReading', 'dhikr', 'charity', 'halalFood', 'mosqueAttendance', 'sunnah'];
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

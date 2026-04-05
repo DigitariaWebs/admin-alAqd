@@ -113,7 +113,7 @@ interface UserForScoring {
   faithTags?: string[];
 }
 
-const RELIGIOSITY_LEVELS = ['veryPracticing', 'practicing', 'moderate', 'liberal', 'nonPracticing'];
+const RELIGIOSITY_LEVELS = ['veryPracticing', 'practicing', 'moderate', 'nonPracticing'];
 const EDUCATION_LEVELS = ['highSchool', 'trade', 'bachelors', 'masters', 'doctorate'];
 
 function arrayOverlap(a?: string[], b?: string[]): number {

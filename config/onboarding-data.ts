@@ -18,7 +18,7 @@ export const ONBOARDING_DATA = {
         'sunnah', 'jummah', 'eidCelebration', 'islamicFinance'
     ],
     interests: {
-        'sports': ['football', 'basketball', 'gym', 'running', 'tennis', 'swimming', 'martialArts', 'yoga'],
+        'sports': ['football', 'basketball', 'gym', 'running', 'tennis', 'swimming', 'martialArts'],
         'creative': ['art', 'photography', 'writing', 'design', 'reading', 'diy', 'fashion'],
         'food': ['cooking', 'diningOut', 'coffee', 'baking', 'halalFoodie', 'healthyEating'],
         'travel': ['roadTrips', 'backpacking', 'cityBreaks', 'nature', 'museums', 'history'],

@@ -96,7 +96,7 @@ const locations = [
 const nationalities = ['DZ', 'TN', 'MA', 'FR', 'BE', 'CA', 'AE'];
 const ethnicities   = ['Arabe', 'Berbère', 'Africain(e)', 'Métis(se)', 'Européen(ne)'];
 const educations    = ['licence', 'masters', 'doctorat', 'bac', 'bts'];
-const practices     = ['practicing', 'moderate', 'liberal', 'non-practicing'];
+const practices     = ['practicing', 'moderate', 'non-practicing'];
 const maritalStatuses = ['single', 'divorced', 'annulled', 'widowed'];
 const interestPool  = [
   'Lecture', 'Voyages', 'Cuisine', 'Sport', 'Musique', 'Cinéma',
