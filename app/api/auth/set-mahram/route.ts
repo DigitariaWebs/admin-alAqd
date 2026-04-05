@@ -76,17 +76,22 @@ export async function POST(request: NextRequest) {
 
     const { email, phoneNumber, relationship, language } = await request.json();
 
-    if (!phoneNumber || !email || !relationship) {
-      return NextResponse.json({ error: 'Phone number, email and relationship are required' }, { status: 400 });
+    if (!relationship) {
+      return NextResponse.json({ error: 'Relationship is required' }, { status: 400 });
     }
 
-    const normalizedPhone = phoneNumber.trim();
-    if (!/^\+[1-9]\d{6,14}$/.test(normalizedPhone)) {
+    const normalizedPhone = phoneNumber ? phoneNumber.trim() : undefined;
+    const normalizedEmail = email ? email.toLowerCase().trim() : undefined;
+
+    if (!normalizedPhone && !normalizedEmail) {
+      return NextResponse.json({ error: 'At least a phone number or email is required' }, { status: 400 });
+    }
+
+    if (normalizedPhone && !/^\+[1-9]\d{6,14}$/.test(normalizedPhone)) {
       return NextResponse.json({ error: 'Invalid phone number format. Use international format (e.g. +33612345678)' }, { status: 400 });
     }
 
-    const normalizedEmail = email.toLowerCase().trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+    if (normalizedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
       return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
     }
 
@@ -112,29 +117,33 @@ export async function POST(request: NextRequest) {
     const lang = language || 'en';
 
     // Send SMS notification (bilingual if not Arabic)
-    try {
-      let sms = buildSmsBody(user.name, relationship, lang);
-      if (lang !== 'ar') {
-        sms += '\n\n---\n\n' + buildSmsBody(user.name, relationship, 'ar');
+    if (normalizedPhone) {
+      try {
+        let sms = buildSmsBody(user.name, relationship, lang);
+        if (lang !== 'ar') {
+          sms += '\n\n---\n\n' + buildSmsBody(user.name, relationship, 'ar');
+        }
+        await sendSMS(normalizedPhone, sms);
+      } catch (smsError) {
+        console.error('Failed to send mahram SMS:', smsError);
       }
-      await sendSMS(normalizedPhone, sms);
-    } catch (smsError) {
-      console.error('Failed to send mahram SMS:', smsError);
     }
 
     // Send email notification (bilingual if not Arabic)
-    try {
-      let body = buildEmailBody(user.name, relationship, lang);
-      if (lang !== 'ar') {
-        body += '\n\n━━━━━━━━━━━━━━━━━━━━\n\n' + buildEmailBody(user.name, relationship, 'ar');
+    if (normalizedEmail) {
+      try {
+        let body = buildEmailBody(user.name, relationship, lang);
+        if (lang !== 'ar') {
+          body += '\n\n━━━━━━━━━━━━━━━━━━━━\n\n' + buildEmailBody(user.name, relationship, 'ar');
+        }
+        await sendNotificationEmail({
+          to: normalizedEmail,
+          subject: lang !== 'ar' ? `${getEmailSubject(lang)} / ${getEmailSubject('ar')}` : getEmailSubject('ar'),
+          body,
+        });
+      } catch (emailError) {
+        console.error('Failed to send mahram email:', emailError);
       }
-      await sendNotificationEmail({
-        to: normalizedEmail,
-        subject: lang !== 'ar' ? `${getEmailSubject(lang)} / ${getEmailSubject('ar')}` : getEmailSubject('ar'),
-        body,
-      });
-    } catch (emailError) {
-      console.error('Failed to send mahram email:', emailError);
     }
 
     return NextResponse.json({
