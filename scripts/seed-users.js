@@ -70,6 +70,7 @@ const userSchema = new mongoose.Schema({
   lastActive: Date,
   mahram: {
     email: String,
+    phoneNumber: String,
     relationship: { type: String, enum: ['father', 'brother', 'paternalUncle', 'maternalUncle', 'grandfather', 'son', 'muslimFriend', 'sisterInIslam', 'communityRepresentative', 'other'] },
     notifiedAt: Date,
   },

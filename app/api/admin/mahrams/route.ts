@@ -20,7 +20,10 @@ export async function GET(request: NextRequest) {
 
     const query: Record<string, unknown> = {
       gender: 'female',
-      'mahram.email': { $exists: true, $ne: null },
+      $or: [
+        { 'mahram.phoneNumber': { $exists: true, $ne: null } },
+        { 'mahram.email': { $exists: true, $ne: null } },
+      ],
     };
 
     if (relationship) {
@@ -29,11 +32,14 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       const regex = new RegExp(search, 'i');
-      query.$or = [
-        { name: regex },
-        { email: regex },
-        { 'mahram.email': regex },
-      ];
+      query.$and = [{
+        $or: [
+          { name: regex },
+          { email: regex },
+          { 'mahram.phoneNumber': regex },
+          { 'mahram.email': regex },
+        ],
+      }];
     }
 
     const skip = (page - 1) * limit;
@@ -50,7 +56,7 @@ export async function GET(request: NextRequest) {
 
     // Stats
     const allMahramUsers = await User.aggregate([
-      { $match: { gender: 'female', 'mahram.email': { $exists: true, $ne: null } } },
+      { $match: { gender: 'female', $or: [{ 'mahram.phoneNumber': { $exists: true, $ne: null } }, { 'mahram.email': { $exists: true, $ne: null } }] } },
       { $group: { _id: '$mahram.relationship', count: { $sum: 1 } } },
     ]);
 
@@ -67,6 +73,7 @@ export async function GET(request: NextRequest) {
       phoneNumber: u.phoneNumber,
       mahram: {
         email: u.mahram?.email,
+        phoneNumber: u.mahram?.phoneNumber,
         relationship: u.mahram?.relationship,
         notifiedAt: u.mahram?.notifiedAt?.toISOString(),
       },

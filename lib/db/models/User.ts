@@ -74,6 +74,7 @@ export interface IUser {
   // Mahram (for female users)
   mahram?: {
     email?: string;
+    phoneNumber?: string;
     relationship?:
       | "father"
       | "brother"
@@ -191,6 +192,7 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
 
     mahram: {
       email: String,
+      phoneNumber: String,
       relationship: {
         type: String,
         enum: [

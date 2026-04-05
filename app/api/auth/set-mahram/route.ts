@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongodb';
 import { User } from '@/lib/db/models/User';
 import { requireAuth } from '@/lib/auth/middleware';
+import { sendSMS } from '@/lib/sms';
 import { sendNotificationEmail } from '@/lib/email';
 
 const RELATIONSHIP_LABELS: Record<string, Record<string, string>> = {
@@ -24,6 +25,22 @@ const MAHRAM_GREETING: Record<string, string> = {
   es: 'Assalamu Alaikum wa Rahmatullahi wa Barakatuh,',
 };
 
+function buildSmsBody(userName: string, relationship: string, lang: string): string {
+  const l = ['fr', 'ar', 'es'].includes(lang) ? lang : 'en';
+  const relLabel = RELATIONSHIP_LABELS[relationship]?.[l] || RELATIONSHIP_LABELS['other'][l];
+
+  if (l === 'fr') {
+    return `Assalamou Alaykoum,\nVotre ${relLabel}, ${userName}, a rejoint Al-Aqd, une application de mariage halal. Elle a choisi de vous informer en tant que son mahram.\nQu'Allah vous bénisse.`;
+  }
+  if (l === 'ar') {
+    return `السلام عليكم،\n${relLabel}، ${userName}، انضمت إلى تطبيق العقد للزواج الحلال. لقد اختارت إبلاغك بصفتك محرمها.\nبارك الله فيكم.`;
+  }
+  if (l === 'es') {
+    return `Assalamu Alaikum,\nSu ${relLabel}, ${userName}, se ha unido a Al-Aqd, una app de matrimonio halal. Ella eligió informarle como su mahram.\nQue Allah los bendiga.`;
+  }
+  return `Assalamu Alaikum,\nYour ${relLabel}, ${userName}, has joined Al-Aqd, a halal matrimony app. She chose to inform you as her mahram.\nMay Allah bless you.`;
+}
+
 function buildEmailBody(userName: string, relationship: string, lang: string): string {
   const l = ['fr', 'ar', 'es'].includes(lang) ? lang : 'en';
   const relLabel = RELATIONSHIP_LABELS[relationship]?.[l] || RELATIONSHIP_LABELS['other'][l];
@@ -38,11 +55,10 @@ function buildEmailBody(userName: string, relationship: string, lang: string): s
   if (l === 'es') {
     return `${greeting}\n\nSu ${relLabel}, ${userName}, se ha unido a Al-Aqd — una aplicación de matrimonio halal diseñada para ayudar a los musulmanes a encontrar un compañero de vida de manera respetuosa y conforme a los valores islámicos.\n\nElla eligió informarle como su mahram, porque su apoyo y bendición significan mucho para ella.\n\nAl-Aqd pone la transparencia y los valores familiares en el centro de su funcionamiento. Si tiene alguna pregunta, no dude en hablar con ella.\n\nQue Allah los bendiga a usted y a su familia.`;
   }
-  // English
   return `${greeting}\n\nYour ${relLabel}, ${userName}, has joined Al-Aqd — a halal matrimony app designed to help Muslims find a life partner in a respectful way that honors Islamic values.\n\nShe chose to inform you as her mahram, because your blessing and support mean a lot to her.\n\nAl-Aqd puts transparency and family values at its core. If you have any questions, feel free to discuss them with her.\n\nMay Allah bless you and your family.`;
 }
 
-function getSubject(lang: string): string {
+function getEmailSubject(lang: string): string {
   if (lang === 'fr') return 'Al-Aqd — Notification Mahram';
   if (lang === 'ar') return 'العقد — إشعار المحرم';
   if (lang === 'es') return 'Al-Aqd — Notificación Mahram';
@@ -58,10 +74,15 @@ export async function POST(request: NextRequest) {
 
     await connectDB();
 
-    const { email, relationship, language } = await request.json();
+    const { email, phoneNumber, relationship, language } = await request.json();
 
-    if (!email || !relationship) {
-      return NextResponse.json({ error: 'Email and relationship are required' }, { status: 400 });
+    if (!phoneNumber || !email || !relationship) {
+      return NextResponse.json({ error: 'Phone number, email and relationship are required' }, { status: 400 });
+    }
+
+    const normalizedPhone = phoneNumber.trim();
+    if (!/^\+[1-9]\d{6,14}$/.test(normalizedPhone)) {
+      return NextResponse.json({ error: 'Invalid phone number format. Use international format (e.g. +33612345678)' }, { status: 400 });
     }
 
     const normalizedEmail = email.toLowerCase().trim();
@@ -82,30 +103,37 @@ export async function POST(request: NextRequest) {
     // Update mahram info
     user.mahram = {
       email: normalizedEmail,
+      phoneNumber: normalizedPhone,
       relationship,
       notifiedAt: new Date(),
     };
     await user.save();
 
-    // Send notification email
     const lang = language || 'en';
-    const body = buildEmailBody(user.name, relationship, lang);
 
+    // Send SMS notification
+    try {
+      await sendSMS(normalizedPhone, buildSmsBody(user.name, relationship, lang));
+    } catch (smsError) {
+      console.error('Failed to send mahram SMS:', smsError);
+    }
+
+    // Send email notification
     try {
       await sendNotificationEmail({
         to: normalizedEmail,
-        subject: getSubject(lang),
-        body,
+        subject: getEmailSubject(lang),
+        body: buildEmailBody(user.name, relationship, lang),
       });
     } catch (emailError) {
       console.error('Failed to send mahram email:', emailError);
-      // Still save the mahram info even if email fails
     }
 
     return NextResponse.json({
       success: true,
       mahram: {
         email: normalizedEmail,
+        phoneNumber: normalizedPhone,
         relationship,
         notifiedAt: user.mahram.notifiedAt,
       },

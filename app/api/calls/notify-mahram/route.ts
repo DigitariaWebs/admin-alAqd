@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import connectDB from '@/lib/db/mongodb';
 import { User } from '@/lib/db/models/User';
 import { requireAuth } from '@/lib/auth/middleware';
+import { sendSMS } from '@/lib/sms';
 import { sendNotificationEmail } from '@/lib/email';
 
 const COOLDOWN_MS = 60 * 60 * 1000;
@@ -17,13 +18,6 @@ type NotifyPayload = {
 
 type SupportedLanguage = 'en' | 'fr' | 'ar' | 'es';
 
-const MAHRAM_GREETING: Record<SupportedLanguage, string> = {
-  en: 'Assalamu Alaikum wa Rahmatullahi wa Barakatuh,',
-  fr: 'Assalamou Alaykoum wa Rahmatoullahi wa Barakatouh,',
-  ar: 'السلام عليكم ورحمة الله وبركاته،',
-  es: 'Assalamu Alaikum wa Rahmatullahi wa Barakatuh,',
-};
-
 function normalizeOptionalString(value: unknown): string | undefined {
   if (typeof value !== 'string') return undefined;
   const normalized = value.trim();
@@ -36,115 +30,75 @@ function normalizeLanguage(value?: string): SupportedLanguage {
 }
 
 function getModeLabel(mode: 'audio' | 'video' | undefined, lang: SupportedLanguage): string {
-  if (lang === 'fr') {
-    if (mode === 'audio') return 'audio';
-    if (mode === 'video') return 'video';
-    return 'audio/video';
-  }
-
-  if (lang === 'ar') {
-    if (mode === 'audio') return 'صوتية';
-    if (mode === 'video') return 'فيديو';
-    return 'صوتية/فيديو';
-  }
-
-  if (lang === 'es') {
-    if (mode === 'audio') return 'de audio';
-    if (mode === 'video') return 'de video';
-    return 'de audio/video';
-  }
-
-  if (mode === 'audio') return 'audio';
-  if (mode === 'video') return 'video';
-  return 'audio/video';
+  const labels: Record<SupportedLanguage, Record<string, string>> = {
+    en: { audio: 'audio', video: 'video', default: 'audio/video' },
+    fr: { audio: 'audio', video: 'vidéo', default: 'audio/vidéo' },
+    ar: { audio: 'صوتية', video: 'فيديو', default: 'صوتية/فيديو' },
+    es: { audio: 'de audio', video: 'de video', default: 'de audio/video' },
+  };
+  return labels[lang][mode || 'default'];
 }
 
-function buildSubject(lang: SupportedLanguage): string {
+function buildSmsBody(
+  callerName: string,
+  participantName: string | undefined,
+  mode: 'audio' | 'video' | undefined,
+  lang: SupportedLanguage,
+): string {
+  const modeLabel = getModeLabel(mode, lang);
+  const withWho = participantName ? ` ${lang === 'ar' ? 'مع' : lang === 'fr' ? 'avec' : lang === 'es' ? 'con' : 'with'} ${participantName}` : '';
+
+  if (lang === 'fr') {
+    return `Al-Aqd: ${callerName} est en appel ${modeLabel}${withWho}. Vous recevez ce message en tant que mahram déclaré.`;
+  }
+  if (lang === 'ar') {
+    return `العقد: ${callerName} في مكالمة ${modeLabel}${withWho}. تتلقى هذه الرسالة بصفتك المحرم المصرح به.`;
+  }
+  if (lang === 'es') {
+    return `Al-Aqd: ${callerName} está en una llamada ${modeLabel}${withWho}. Recibe este mensaje como su mahram declarado.`;
+  }
+  return `Al-Aqd: ${callerName} is in a ${modeLabel} call${withWho}. You are receiving this as their declared mahram.`;
+}
+
+const MAHRAM_GREETING: Record<SupportedLanguage, string> = {
+  en: 'Assalamu Alaikum wa Rahmatullahi wa Barakatuh,',
+  fr: 'Assalamou Alaykoum wa Rahmatoullahi wa Barakatouh,',
+  ar: 'السلام عليكم ورحمة الله وبركاته،',
+  es: 'Assalamu Alaikum wa Rahmatullahi wa Barakatuh,',
+};
+
+function buildEmailSubject(lang: SupportedLanguage): string {
   if (lang === 'fr') return 'Al-Aqd — Alerte d\'appel Mahram';
   if (lang === 'ar') return 'العقد — تنبيه مكالمة المحرم';
   if (lang === 'es') return 'Al-Aqd — Alerta de llamada Mahram';
   return 'Al-Aqd — Mahram Call Alert';
 }
 
-function buildBody(
+function buildEmailBody(
   callerName: string,
   participantName: string | undefined,
   mode: 'audio' | 'video' | undefined,
-  callId: string | undefined,
   lang: SupportedLanguage,
 ): string {
-  const greeting = MAHRAM_GREETING[lang] || MAHRAM_GREETING.en;
+  const greeting = MAHRAM_GREETING[lang];
+  const modeLabel = getModeLabel(mode, lang);
+  const withWho = participantName ? ` ${lang === 'ar' ? 'مع' : lang === 'fr' ? 'avec' : lang === 'es' ? 'con' : 'with'} ${participantName}` : '';
 
   if (lang === 'fr') {
-    const withWho = participantName ? ` avec ${participantName}` : '';
-    const callReference = callId ? `\nReference de l'appel : ${callId}` : '';
-
-    return [
-      greeting,
-      '',
-      `${callerName} est maintenant en communication ${getModeLabel(mode, lang)} sur Al-Aqd${withWho}.`,
-      '',
-      'Vous recevez ce message en tant que mahram declare.',
-      'Pour eviter le spam, les alertes d\'appel mahram sont limitees a un e-mail par heure pour cette relation.',
-      callReference,
-    ]
-      .filter(Boolean)
-      .join('\n');
+    return `${greeting}\n\n${callerName} est maintenant en communication ${modeLabel} sur Al-Aqd${withWho}.\n\nVous recevez ce message en tant que mahram déclaré.\nPour éviter le spam, les alertes d'appel mahram sont limitées à un message par heure.`;
   }
-
   if (lang === 'ar') {
-    const withWho = participantName ? ` مع ${participantName}` : '';
-    const callReference = callId ? `\nمرجع المكالمة: ${callId}` : '';
-
-    return [
-      greeting,
-      '',
-      `${callerName} متصل(ة) الآن بمكالمة ${getModeLabel(mode, lang)} على Al-Aqd${withWho}.`,
-      '',
-      'تتلقى هذه الرسالة بصفتك المحرم المصرح به.',
-      'لتجنب الرسائل المزعجة، يتم إرسال تنبيهات مكالمات المحرم بحد أقصى بريد واحد كل ساعة لهذه العلاقة.',
-      callReference,
-    ]
-      .filter(Boolean)
-      .join('\n');
+    return `${greeting}\n\n${callerName} متصل(ة) الآن بمكالمة ${modeLabel} على العقد${withWho}.\n\nتتلقى هذه الرسالة بصفتك المحرم المصرح به.\nلتجنب الرسائل المزعجة، يتم إرسال تنبيهات المحرم بحد أقصى رسالة واحدة كل ساعة.`;
   }
-
   if (lang === 'es') {
-    const withWho = participantName ? ` con ${participantName}` : '';
-    const callReference = callId ? `\nReferencia de la llamada: ${callId}` : '';
-
-    return [
-      greeting,
-      '',
-      `${callerName} esta ahora conectado(a) en una llamada ${getModeLabel(mode, lang)} en Al-Aqd${withWho}.`,
-      '',
-      'Recibes este mensaje como su mahram declarado.',
-      'Para evitar spam, las alertas de llamada del mahram se limitan a un correo por hora para esta relacion.',
-      callReference,
-    ]
-      .filter(Boolean)
-      .join('\n');
+    return `${greeting}\n\n${callerName} está ahora conectado(a) en una llamada ${modeLabel} en Al-Aqd${withWho}.\n\nRecibes este mensaje como su mahram declarado.\nPara evitar spam, las alertas de llamada del mahram se limitan a un mensaje por hora.`;
   }
-
-  const withWho = participantName ? ` with ${participantName}` : '';
-  const callReference = callId ? `\nCall reference: ${callId}` : '';
-
-  return [
-    greeting,
-    '',
-    `${callerName} is now connected in a ${getModeLabel(mode, lang)} call on Al-Aqd${withWho}.`,
-    '',
-    'You are receiving this message as their declared mahram.',
-    'To avoid spam, mahram call alerts are limited to one email per hour for this relation.',
-    callReference,
-  ]
-    .filter(Boolean)
-    .join('\n');
+  return `${greeting}\n\n${callerName} is now connected in a ${modeLabel} call on Al-Aqd${withWho}.\n\nYou are receiving this message as their declared mahram.\nTo avoid spam, mahram call alerts are limited to one message per hour.`;
 }
 
 /**
  * POST /api/calls/notify-mahram
- * Sends a mahram call alert email when a call is connected.
+ * Sends a mahram call alert SMS when a call is connected.
  * Enforces a 1-hour cooldown per user-mahram pair.
  */
 export async function POST(request: NextRequest) {
@@ -164,7 +118,6 @@ export async function POST(request: NextRequest) {
     }
 
     const mode = payload.mode === 'audio' || payload.mode === 'video' ? payload.mode : undefined;
-    const callId = normalizeOptionalString(payload.callId);
     const sessionId = normalizeOptionalString(payload.sessionId);
     const language = normalizeLanguage(normalizeOptionalString(payload.language));
 
@@ -176,22 +129,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+    const mahramPhone = caller.mahram?.phoneNumber?.trim();
     const mahramEmail = caller.mahram?.email?.toLowerCase().trim();
-    if (!mahramEmail) {
+    const hasValidPhone = mahramPhone && /^\+[1-9]\d{6,14}$/.test(mahramPhone);
+    const hasValidEmail = mahramEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mahramEmail);
+
+    if (!hasValidPhone && !hasValidEmail) {
       return NextResponse.json({
         success: true,
         notified: false,
         skipped: true,
         reason: 'no_mahram_configured',
-      });
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mahramEmail)) {
-      return NextResponse.json({
-        success: true,
-        notified: false,
-        skipped: true,
-        reason: 'invalid_mahram_email',
       });
     }
 
@@ -223,15 +171,34 @@ export async function POST(request: NextRequest) {
     const participant = await User.findById(participantId).select('name').lean();
     const participantName = participant?.name?.trim();
 
-    try {
-      await sendNotificationEmail({
-        to: mahramEmail,
-        subject: buildSubject(language),
-        body: buildBody(caller.name, participantName, mode, callId, language),
-      });
-    } catch (emailError) {
-      console.error('Failed to send mahram call email:', emailError);
-      return NextResponse.json({ error: 'Failed to send mahram notification email' }, { status: 502 });
+    let notificationSent = false;
+
+    // Send SMS
+    if (hasValidPhone) {
+      try {
+        await sendSMS(mahramPhone!, buildSmsBody(caller.name, participantName, mode, language));
+        notificationSent = true;
+      } catch (smsError) {
+        console.error('Failed to send mahram call SMS:', smsError);
+      }
+    }
+
+    // Send email
+    if (hasValidEmail) {
+      try {
+        await sendNotificationEmail({
+          to: mahramEmail!,
+          subject: buildEmailSubject(language),
+          body: buildEmailBody(caller.name, participantName, mode, language),
+        });
+        notificationSent = true;
+      } catch (emailError) {
+        console.error('Failed to send mahram call email:', emailError);
+      }
+    }
+
+    if (!notificationSent) {
+      return NextResponse.json({ error: 'Failed to send mahram notification' }, { status: 502 });
     }
 
     const updateFields: Record<string, unknown> = {

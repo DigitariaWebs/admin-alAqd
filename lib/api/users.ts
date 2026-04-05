@@ -42,6 +42,7 @@ export interface AdminUser {
     provider?: string;
     mahram?: {
         email?: string;
+        phoneNumber?: string;
         relationship?: string;
         notifiedAt?: string;
     };

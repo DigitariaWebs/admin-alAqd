@@ -275,6 +275,7 @@ export function serializeUser(user: any) {
       mahram: user.mahram
         ? {
             email: user.mahram.email,
+            phoneNumber: user.mahram.phoneNumber,
             relationship: user.mahram.relationship,
             notifiedAt: user.mahram.notifiedAt,
           }

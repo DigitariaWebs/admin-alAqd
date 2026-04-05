@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/Badge';
 import {
     Search,
     Shield,
+    Phone,
     Mail,
     RefreshCw,
     Users,
@@ -19,7 +20,8 @@ interface MahramUser {
     email: string;
     phoneNumber?: string;
     mahram: {
-        email: string;
+        email?: string;
+        phoneNumber?: string;
         relationship: string;
         notifiedAt: string;
     };
@@ -101,11 +103,21 @@ export default function MahramPage() {
             ),
         },
         {
-            header: 'Email Mahram',
+            header: 'Contact Mahram',
             accessor: (row: MahramUser) => (
-                <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm">{row.mahram.email}</span>
+                <div className="space-y-1">
+                    {row.mahram.phoneNumber && (
+                        <div className="flex items-center gap-2">
+                            <Phone className="h-4 w-4 text-gray-400" />
+                            <span className="text-sm">{row.mahram.phoneNumber}</span>
+                        </div>
+                    )}
+                    {row.mahram.email && (
+                        <div className="flex items-center gap-2">
+                            <Mail className="h-4 w-4 text-gray-400" />
+                            <span className="text-sm">{row.mahram.email}</span>
+                        </div>
+                    )}
                 </div>
             ),
         },
@@ -174,7 +186,7 @@ export default function MahramPage() {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         <input
                             type="text"
-                            placeholder="Rechercher par nom ou email..."
+                            placeholder="Rechercher par nom, téléphone ou email..."
                             value={searchTerm}
                             onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
                             className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"

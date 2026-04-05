@@ -69,6 +69,7 @@ const userSchema = new mongoose.Schema({
   lastActive: Date,
   mahram: {
     email: String,
+    phoneNumber: String,
     relationship: { type: String, enum: ['father', 'brother', 'paternalUncle', 'maternalUncle', 'grandfather', 'son', 'muslimFriend', 'sisterInIslam', 'communityRepresentative', 'other'] },
     notifiedAt: Date,
   },
@@ -124,6 +125,7 @@ const TEST_ACCOUNTS = [
     lastActive: new Date('2026-04-01T22:16:08.207Z'),
     mahram: {
       email: 'denmohamed988@gmail.com',
+      phoneNumber: '+33612345678',
       relationship: 'communityRepresentative',
       notifiedAt: new Date('2026-03-31T11:39:31.572Z'),
     },
