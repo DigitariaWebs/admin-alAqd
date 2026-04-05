@@ -17,9 +17,10 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: authResult.error }, { status: authResult.status });
         }
 
-        // Check global ads toggle
+        // Check global ads toggle (default to enabled if no settings doc exists)
         const settings = await Setting.findOne();
-        if (!settings?.adsEnabled) {
+        const adsEnabled = settings?.adsEnabled ?? true;
+        if (!adsEnabled) {
             return NextResponse.json({ success: true, ads: [], adsEnabled: false });
         }
 
@@ -31,9 +32,12 @@ export async function GET(request: NextRequest) {
         const filter: Record<string, unknown> = {
             isActive: true,
             $or: [
-                { startDate: null, endDate: null },
-                { startDate: { $lte: now }, endDate: null },
-                { startDate: null, endDate: { $gte: now } },
+                { startDate: { $in: [null, undefined] }, endDate: { $in: [null, undefined] } },
+                { startDate: { $exists: false }, endDate: { $exists: false } },
+                { startDate: { $lte: now }, endDate: { $in: [null, undefined] } },
+                { startDate: { $lte: now }, endDate: { $exists: false } },
+                { startDate: { $in: [null, undefined] }, endDate: { $gte: now } },
+                { startDate: { $exists: false }, endDate: { $gte: now } },
                 { startDate: { $lte: now }, endDate: { $gte: now } },
             ],
         };
@@ -48,7 +52,7 @@ export async function GET(request: NextRequest) {
 
         const freeSwipeLimit = settings?.freeSwipeLimit ?? 7;
 
-        return NextResponse.json({ success: true, ads, adsEnabled: true, freeSwipeLimit });
+        return NextResponse.json({ success: true, ads, adsEnabled, freeSwipeLimit });
     } catch (error) {
         console.error('Get ads error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
