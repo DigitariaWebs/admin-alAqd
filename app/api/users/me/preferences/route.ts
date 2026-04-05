@@ -12,7 +12,6 @@ export const DEFAULT_PREFERENCES = {
     ethnicity: [] as string[],
     education: [] as string[],
     children: '',
-    diet: '',
 };
 
 function withDefaults(prefs: any) {
@@ -26,7 +25,6 @@ function withDefaults(prefs: any) {
         ethnicity:         prefs?.ethnicity         ?? DEFAULT_PREFERENCES.ethnicity,
         education:         prefs?.education         ?? DEFAULT_PREFERENCES.education,
         children:          prefs?.children          ?? DEFAULT_PREFERENCES.children,
-        diet:              prefs?.diet              ?? DEFAULT_PREFERENCES.diet,
     };
 }
 
@@ -73,8 +71,6 @@ export async function GET(request: NextRequest) {
  *   ethnicity?:         string[]
  *   education?:         string[]
  *   children?:          string
- *   prayer?:            string
- *   diet?:              string
  * }
  */
 export async function PATCH(request: NextRequest) {
@@ -90,7 +86,7 @@ export async function PATCH(request: NextRequest) {
         const {
             distance, ageRange,
             religiousPractice, ethnicity, education,
-            children, diet,
+            children,
         } = body;
 
         const update: Record<string, unknown> = {};
@@ -134,7 +130,6 @@ export async function PATCH(request: NextRequest) {
         }
 
         if (children !== undefined) update['preferences.children'] = children;
-        if (diet     !== undefined) update['preferences.diet']     = diet;
 
         if (Object.keys(update).length === 0) {
             return NextResponse.json({ error: 'No fields to update' }, { status: 400 });

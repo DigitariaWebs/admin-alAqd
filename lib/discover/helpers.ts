@@ -388,11 +388,11 @@ export function serializeProfileCard(
     maritalStatus: user.maritalStatus,
     nationality: (user.nationality || [])[0] as string | undefined,
     ethnicity: (user.ethnicity || [])[0] as string | undefined,
-    drinking: user.drinking,
+    children: user.children,
     smoking: user.smoking,
-    hijab: user.hijab,
     faithTags: user.faithTags || [],
     education: user.education,
+    personality: user.personality || [],
     //
     isVerified: !!(user.isPhoneVerified || user.isEmailVerified),
     isPremium: !!(

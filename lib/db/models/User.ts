@@ -48,7 +48,6 @@ export interface IUser {
     ethnicity?: string[];
     education?: string[];
     children?: string;
-    diet?: string;
   };
 
   // Subscription
@@ -151,8 +150,6 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
       ethnicity: [String],
       education: [String],
       children: String,
-      prayer: String,
-      diet: String,
     },
 
     subscription: {
