@@ -111,19 +111,27 @@ export async function POST(request: NextRequest) {
 
     const lang = language || 'en';
 
-    // Send SMS notification
+    // Send SMS notification (bilingual if not Arabic)
     try {
-      await sendSMS(normalizedPhone, buildSmsBody(user.name, relationship, lang));
+      let sms = buildSmsBody(user.name, relationship, lang);
+      if (lang !== 'ar') {
+        sms += '\n\n---\n\n' + buildSmsBody(user.name, relationship, 'ar');
+      }
+      await sendSMS(normalizedPhone, sms);
     } catch (smsError) {
       console.error('Failed to send mahram SMS:', smsError);
     }
 
-    // Send email notification
+    // Send email notification (bilingual if not Arabic)
     try {
+      let body = buildEmailBody(user.name, relationship, lang);
+      if (lang !== 'ar') {
+        body += '\n\n━━━━━━━━━━━━━━━━━━━━\n\n' + buildEmailBody(user.name, relationship, 'ar');
+      }
       await sendNotificationEmail({
         to: normalizedEmail,
-        subject: getEmailSubject(lang),
-        body: buildEmailBody(user.name, relationship, lang),
+        subject: lang !== 'ar' ? `${getEmailSubject(lang)} / ${getEmailSubject('ar')}` : getEmailSubject('ar'),
+        body,
       });
     } catch (emailError) {
       console.error('Failed to send mahram email:', emailError);

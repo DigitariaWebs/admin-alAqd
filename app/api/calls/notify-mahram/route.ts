@@ -173,23 +173,31 @@ export async function POST(request: NextRequest) {
 
     let notificationSent = false;
 
-    // Send SMS
+    // Send SMS (bilingual if not Arabic)
     if (hasValidPhone) {
       try {
-        await sendSMS(mahramPhone!, buildSmsBody(caller.name, participantName, mode, language));
+        let sms = buildSmsBody(caller.name, participantName, mode, language);
+        if (language !== 'ar') {
+          sms += '\n\n---\n\n' + buildSmsBody(caller.name, participantName, mode, 'ar');
+        }
+        await sendSMS(mahramPhone!, sms);
         notificationSent = true;
       } catch (smsError) {
         console.error('Failed to send mahram call SMS:', smsError);
       }
     }
 
-    // Send email
+    // Send email (bilingual if not Arabic)
     if (hasValidEmail) {
       try {
+        let body = buildEmailBody(caller.name, participantName, mode, language);
+        if (language !== 'ar') {
+          body += '\n\n━━━━━━━━━━━━━━━━━━━━\n\n' + buildEmailBody(caller.name, participantName, mode, 'ar');
+        }
         await sendNotificationEmail({
           to: mahramEmail!,
-          subject: buildEmailSubject(language),
-          body: buildEmailBody(caller.name, participantName, mode, language),
+          subject: language !== 'ar' ? `${buildEmailSubject(language)} / ${buildEmailSubject('ar')}` : buildEmailSubject('ar'),
+          body,
         });
         notificationSent = true;
       } catch (emailError) {
