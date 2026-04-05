@@ -9,20 +9,19 @@ export const FAITH_TAGS = [
 ];
 
 export const ETHNICITIES = [
-    'Amazigh', 'Kabyle', 'Chaoui', 'Riffain', 'Chleuh', 'Mozabite', 'Touareg',
-    'Maghrébin', 'Arabe Maghrébin',
-    'Africain de l\'Ouest', 'Africain de l\'Est', 'Africain Central',
-    'Peul', 'Wolof', 'Soninké', 'Bambara', 'Comorien', 'Sénégalais', 'Malien', 'Ivoirien',
-    'Haoussa', 'Somali',
-    'Arabe', 'Moyen-Oriental', 'Levantin', 'Khaliji', 'Bédouin',
-    'Egyptien', 'Copte',
-    'Turc', 'Kurde', 'Persan',
-    'Sud-Asiatique', 'Indien', 'Pakistanais', 'Bengali', 'Afghan',
-    'Asiatique de l\'Est', 'Indonésien', 'Malais', 'Hui',
-    'Européen', 'Blanc', 'Balkans', 'Bosniaque', 'Albanais', 'Tchétchène', 'Russe',
-    'Latino', 'Hispanique', 'Américain', 'Caribéen', 'Antillais',
-    'Métis', 'Noir', 'Autre'
-].sort();
+    'african',
+    'arabMiddleEastern',
+    'asianEastAsian',
+    'asianSouthAsian',
+    'asianSoutheastAsian',
+    'centralAsian',
+    'european',
+    'hispanicLatino',
+    'indigenousNative',
+    'pacificIslander',
+    'mixedMultiracial',
+    'other',
+];
 
 export const COUNTRIES = [
     { code: 'DZ', name: 'Algerian', emoji: '🇩🇿' },

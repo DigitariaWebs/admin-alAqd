@@ -146,7 +146,20 @@ const NATIONALITIES = [
   'ID', 'DE', 'GB', 'CA', 'US',
 ];
 
-const ETHNICITIES = ['arab', 'amazigh', 'turkish', 'southAsian', 'african', 'european', 'northAfrican', 'middleEastern', 'mixed'];
+const ETHNICITIES = [
+  "african",
+  "arabMiddleEastern",
+  "asianEastAsian",
+  "asianSouthAsian",
+  "asianSoutheastAsian",
+  "centralAsian",
+  "european",
+  "hispanicLatino",
+  "indigenousNative",
+  "pacificIslander",
+  "mixedMultiracial",
+  "other",
+];
 const EDUCATION_LEVELS = ['highSchool', 'bachelors', 'masters', 'doctorate', 'trade', 'other'];
 const MARITAL_STATUSES = ['single', 'divorced', 'widowed'];
 const RELIGIOUS_PRACTICES = ['veryPracticing', 'practicing', 'moderate', 'liberal', 'nonPracticing'];
