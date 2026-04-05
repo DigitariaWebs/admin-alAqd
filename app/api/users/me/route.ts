@@ -74,8 +74,8 @@ export async function PATCH(request: NextRequest) {
           maritalStatus,
           religiousPractice,
           faithTags,
-          drinking,
           smoking,
+          children,
           interests,
           personality,
           photos,
@@ -98,8 +98,8 @@ export async function PATCH(request: NextRequest) {
         if (maritalStatus !== undefined) updateData.maritalStatus = maritalStatus;
         if (religiousPractice !== undefined) updateData.religiousPractice = religiousPractice;
         if (faithTags !== undefined) updateData.faithTags = faithTags;
-        if (drinking !== undefined) updateData.drinking = drinking;
         if (smoking !== undefined) updateData.smoking = smoking;
+        if (children !== undefined) updateData.children = children;
         if (interests !== undefined) updateData.interests = interests;
         if (personality !== undefined) updateData.personality = personality;
         if (photos !== undefined) updateData.photos = photos;
@@ -256,8 +256,8 @@ export function serializeUser(user: any) {
       education: user.education,
       religiousPractice: user.religiousPractice,
       faithTags: user.faithTags ?? [],
-      drinking: user.drinking,
       smoking: user.smoking,
+      children: user.children,
       interests: user.interests ?? [],
       personality: user.personality ?? [],
       photos: user.photos ?? [],

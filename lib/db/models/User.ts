@@ -30,9 +30,9 @@ export interface IUser {
   education?: string;
   religiousPractice?: string;
   faithTags?: string[];
-  drinking?: string;
   smoking?: string;
   hijab?: string;
+  children?: string;
   interests?: string[];
   personality?: string[];
   photos?: string[];
@@ -48,7 +48,6 @@ export interface IUser {
     ethnicity?: string[];
     education?: string[];
     children?: string;
-    prayer?: string;
     diet?: string;
   };
 
@@ -132,9 +131,9 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
     education: String,
     religiousPractice: String,
     faithTags: [String],
-    drinking: String,
     smoking: String,
     hijab: String,
+    children: String,
     interests: [String],
     personality: [String],
     photos: [String],

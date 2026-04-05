@@ -12,7 +12,6 @@ export const DEFAULT_PREFERENCES = {
     ethnicity: [] as string[],
     education: [] as string[],
     children: '',
-    prayer: '',
     diet: '',
 };
 
@@ -27,7 +26,6 @@ function withDefaults(prefs: any) {
         ethnicity:         prefs?.ethnicity         ?? DEFAULT_PREFERENCES.ethnicity,
         education:         prefs?.education         ?? DEFAULT_PREFERENCES.education,
         children:          prefs?.children          ?? DEFAULT_PREFERENCES.children,
-        prayer:            prefs?.prayer            ?? DEFAULT_PREFERENCES.prayer,
         diet:              prefs?.diet              ?? DEFAULT_PREFERENCES.diet,
     };
 }
@@ -92,7 +90,7 @@ export async function PATCH(request: NextRequest) {
         const {
             distance, ageRange,
             religiousPractice, ethnicity, education,
-            children, prayer, diet,
+            children, diet,
         } = body;
 
         const update: Record<string, unknown> = {};
@@ -136,7 +134,6 @@ export async function PATCH(request: NextRequest) {
         }
 
         if (children !== undefined) update['preferences.children'] = children;
-        if (prayer   !== undefined) update['preferences.prayer']   = prayer;
         if (diet     !== undefined) update['preferences.diet']     = diet;
 
         if (Object.keys(update).length === 0) {

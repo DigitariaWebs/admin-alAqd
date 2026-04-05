@@ -26,8 +26,8 @@ export interface AdminUser {
     personality?: string[];
     photos?: string[];
     photoBlurEnabled?: boolean;
-    drinking?: string;
     smoking?: string;
+    children?: string;
     role: 'user' | 'moderator' | 'admin';
     status: 'active' | 'inactive' | 'suspended' | 'banned';
     subscription?: {
