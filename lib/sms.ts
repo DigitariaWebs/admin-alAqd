@@ -15,12 +15,15 @@ function getClient() {
 }
 
 /**
- * Send an SMS message via Twilio Messaging Service (AlAqd sender ID).
+ * Send a WhatsApp message via Twilio.
  */
 export async function sendSMS(to: string, body: string) {
+    const whatsappFrom = `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER!}`;
+    const whatsappTo = `whatsapp:${to}`;
+
     await getClient().messages.create({
-        to,
-        messagingServiceSid: process.env.TWILIO_MESSAGING_SERVICE_SID!,
+        to: whatsappTo,
+        from: whatsappFrom,
         body,
     });
 }
