@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongodb';
 import { OTP } from '@/lib/db/models/OTP';
 import { normalizePhoneNumber, buildPhoneDigitsRegex } from '@/lib/auth/phone-utils';
+import { sendSMS } from '@/lib/sms';
 
 export async function POST(request: NextRequest) {
     try {
@@ -49,9 +50,8 @@ export async function POST(request: NextRequest) {
         expiresAt,
       });
 
-      // TODO: Send SMS via Twilio or other SMS service
-      // For development, we'll return the OTP in the response
-      console.log(`OTP for ${normalizedPhoneNumber}: ${otpCode}`);
+      await sendSMS(normalizedPhoneNumber, `Your Al-Aqd verification code is: ${otpCode}. Valid for 10 minutes.`);
+      console.log(`OTP sent to ${normalizedPhoneNumber}`);
 
       return NextResponse.json({
         success: true,

@@ -15,12 +15,12 @@ function getClient() {
 }
 
 /**
- * Send an SMS message via Twilio.
+ * Send an SMS message via Twilio Messaging Service (AlAqd sender ID).
  */
 export async function sendSMS(to: string, body: string) {
     await getClient().messages.create({
         to,
-        from: process.env.TWILIO_PHONE_NUMBER!,
+        messagingServiceSid: process.env.TWILIO_MESSAGING_SERVICE_SID!,
         body,
     });
 }
