@@ -124,8 +124,8 @@ export async function POST(request: NextRequest) {
           sms += '\n\n---\n\n' + buildSmsBody(user.name, relationship, 'ar');
         }
         await sendSMS(normalizedPhone, sms);
-      } catch (smsError) {
-        console.error('Failed to send mahram SMS:', smsError);
+      } catch (smsError: any) {
+        console.error('Failed to send mahram SMS:', smsError?.message, smsError?.code, smsError?.status);
       }
     }
 
