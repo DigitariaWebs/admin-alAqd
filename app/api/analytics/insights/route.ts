@@ -74,22 +74,22 @@ async function generateInsights(): Promise<Array<{
         usersWithoutBio,
         inactiveUsers30d
     ] = await Promise.all([
-        User.countDocuments({ role: 'user' }),
-        User.countDocuments({ role: 'user', createdAt: { $gte: sevenDaysAgo } }),
-        User.countDocuments({ role: 'user', createdAt: { $gte: thirtyDaysAgo } }),
+        User.countDocuments({ role: 'user', isOnboarded: true }),
+        User.countDocuments({ role: 'user', isOnboarded: true, createdAt: { $gte: sevenDaysAgo } }),
+        User.countDocuments({ role: 'user', isOnboarded: true, createdAt: { $gte: thirtyDaysAgo } }),
         User.countDocuments({ 'subscription.plan': { $in: ['premium', 'gold'] } }),
-        User.countDocuments({ role: 'user', lastActive: { $gte: thirtyDaysAgo } }),
+        User.countDocuments({ role: 'user', isOnboarded: true, lastActive: { $gte: thirtyDaysAgo } }),
         Match.countDocuments({ createdAt: { $gte: sevenDaysAgo } }),
         Message.countDocuments({ createdAt: { $gte: sevenDaysAgo } }),
-        User.countDocuments({ role: 'user', photos: { $exists: true, $size: 0 } }),
-        User.countDocuments({ role: 'user', $or: [{ bio: { $exists: false } }, { bio: '' }] }),
-        User.countDocuments({ role: 'user', lastActive: { $lt: thirtyDaysAgo } })
+        User.countDocuments({ role: 'user', isOnboarded: true, photos: { $exists: true, $size: 0 } }),
+        User.countDocuments({ role: 'user', isOnboarded: true, $or: [{ bio: { $exists: false } }, { bio: '' }] }),
+        User.countDocuments({ role: 'user', isOnboarded: true, lastActive: { $lt: thirtyDaysAgo } })
     ]);
 
     const freeUsers = totalUsers - premiumUsers;
     const engagementRate = totalUsers > 0 ? Math.round((activeUsers30d / totalUsers) * 100) : 0;
     const previous7dUsers = await User.countDocuments({
-        role: 'user',
+        role: 'user', isOnboarded: true,
         createdAt: { $gte: new Date(sevenDaysAgo.getTime() - 7 * 24 * 60 * 60 * 1000), $lt: sevenDaysAgo }
     });
 
@@ -180,7 +180,7 @@ async function generateInsights(): Promise<Array<{
     }
 
     // 4. Profile Completion
-    const usersWithoutBioCount = await User.countDocuments({ role: 'user', $or: [{ bio: { $exists: false } }, { bio: '' }] });
+    const usersWithoutBioCount = await User.countDocuments({ role: 'user', isOnboarded: true, $or: [{ bio: { $exists: false } }, { bio: '' }] });
     const incompleteProfiles = usersWithoutPhotos + usersWithoutBioCount;
     const incompleteRate = totalUsers > 0 ? Math.round((incompleteProfiles / totalUsers) * 100) : 0;
     

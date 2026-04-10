@@ -83,8 +83,8 @@ async function generateSummaryReport(startDate: Date, endDate: Date): Promise<Re
         newMessages,
         premiumUsers
     ] = await Promise.all([
-        User.countDocuments({ role: 'user' }),
-        User.countDocuments({ role: 'user', createdAt: { $gte: startDate, $lt: endDate } }),
+        User.countDocuments({ role: 'user', isOnboarded: true }),
+        User.countDocuments({ role: 'user', isOnboarded: true, createdAt: { $gte: startDate, $lt: endDate } }),
         Match.countDocuments(),
         Match.countDocuments({ createdAt: { $gte: startDate, $lt: endDate } }),
         Message.countDocuments(),
@@ -189,7 +189,7 @@ async function generateFinancialReport(startDate: Date, endDate: Date): Promise<
 }
 
 async function generateUserReport(startDate: Date, endDate: Date): Promise<Record<string, unknown>> {
-    const users = await User.find({ role: 'user' })
+    const users = await User.find({ role: 'user', isOnboarded: true })
         .select('name email gender nationality createdAt lastActive subscription status')
         .lean();
 
@@ -247,13 +247,13 @@ async function generateEngagementReport(startDate: Date, endDate: Date): Promise
         totalMatches,
         matchesPeriod
     ] = await Promise.all([
-        User.countDocuments({ role: 'user' }),
+        User.countDocuments({ role: 'user', isOnboarded: true }),
         User.countDocuments({
-            role: 'user',
+            role: 'user', isOnboarded: true,
             lastActive: { $gte: thirtyDaysAgo }
         }),
         User.countDocuments({
-            role: 'user',
+            role: 'user', isOnboarded: true,
             lastActive: { $gte: startDate, $lt: endDate }
         }),
         Message.countDocuments(),

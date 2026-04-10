@@ -118,7 +118,7 @@ export async function GET(request: NextRequest) {
         // Get user push notification tokens count (for potential reach)
         const [pushTokenStats] = await Promise.all([
             User.aggregate([
-                { $match: { status: 'active' } },
+                { $match: { status: 'active', isOnboarded: true } },
                 {
                     $group: {
                         _id: null,

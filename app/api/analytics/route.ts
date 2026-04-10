@@ -47,25 +47,25 @@ export async function GET(request: NextRequest) {
         }
 
         // Total users
-        const totalUsers = await User.countDocuments({ role: 'user' });
+        const totalUsers = await User.countDocuments({ role: 'user', isOnboarded: true });
         
         // New users in period
         const newUsers = await User.countDocuments({
-            role: 'user',
+            role: 'user', isOnboarded: true,
             createdAt: { $gte: startDate }
         });
 
         // Previous period for comparison
         const prevStartDate = new Date(startDate.getTime() - (now.getTime() - startDate.getTime()));
         const prevNewUsers = await User.countDocuments({
-            role: 'user',
+            role: 'user', isOnboarded: true,
             createdAt: { $gte: prevStartDate, $lt: startDate }
         });
 
         // Active users (users active in last 30 days)
         const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
         const activeUsers = await User.countDocuments({
-            role: 'user',
+            role: 'user', isOnboarded: true,
             lastActive: { $gte: thirtyDaysAgo }
         });
 
@@ -122,7 +122,7 @@ export async function GET(request: NextRequest) {
 
         // Gender distribution
         const genderStats = await User.aggregate([
-            { $match: { role: 'user' } },
+            { $match: { role: 'user', isOnboarded: true } },
             { $group: { _id: '$gender', count: { $sum: 1 } } }
         ]);
 
@@ -194,7 +194,7 @@ async function calculateRevenue(startDate: Date, endDate: Date): Promise<number>
 async function getDailyGrowth(startDate: Date, endDate: Date): Promise<Array<{ date: string; users: number; revenue: number }>> {
     // Aggregate daily user registrations
     const userGrowth = await User.aggregate([
-        { $match: { role: 'user', createdAt: { $gte: startDate, $lt: endDate } } },
+        { $match: { role: 'user', isOnboarded: true, createdAt: { $gte: startDate, $lt: endDate } } },
         {
             $group: {
                 _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },

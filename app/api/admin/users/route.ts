@@ -37,11 +37,15 @@ export async function GET(request: NextRequest) {
         const startDate = searchParams.get('startDate');
         const endDate = searchParams.get('endDate');
         const subscription = searchParams.get('subscription');
+        const includeIncomplete = searchParams.get('includeIncomplete') === 'true';
         const sortBy = searchParams.get('sortBy') || 'createdAt';
         const sortOrder = searchParams.get('sortOrder') || 'desc';
 
-        // Build query
+        // Build query — by default, hide users who haven't completed onboarding
+        // (they show up as ghost records with no real data). Set
+        // ?includeIncomplete=true to show them anyway.
         const query: Record<string, unknown> = { role: { $ne: 'superadmin' } };
+        if (!includeIncomplete) query.isOnboarded = true;
 
         if (role) query.role = role;
         if (status) query.status = status;

@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
 
         if (!type || type === 'user' || type === 'all') {
             // Recent user registrations
-            const recentUsers = await User.find({ role: 'user' })
+            const recentUsers = await User.find({ role: 'user', isOnboarded: true })
                 .sort({ createdAt: -1 })
                 .limit(Math.floor(recentLimit / 5))
                 .select('name email createdAt')
@@ -155,7 +155,7 @@ export async function GET(request: NextRequest) {
         today.setHours(0, 0, 0, 0);
         
         const [todayUsers, todayMatches, todayMessages] = await Promise.all([
-            User.countDocuments({ role: 'user', createdAt: { $gte: today } }),
+            User.countDocuments({ role: 'user', isOnboarded: true, createdAt: { $gte: today } }),
             Match.countDocuments({ createdAt: { $gte: today } }),
             Message.countDocuments({ createdAt: { $gte: today } })
         ]);

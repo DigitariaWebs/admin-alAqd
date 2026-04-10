@@ -29,9 +29,11 @@ export async function GET(request: NextRequest) {
         const startDate = searchParams.get('startDate');
         const endDate = searchParams.get('endDate');
         const subscription = searchParams.get('subscription');
+        const includeIncomplete = searchParams.get('includeIncomplete') === 'true';
 
-        // Build query
+        // Build query — match the list endpoint default and hide incomplete users
         const query: Record<string, unknown> = {};
+        if (!includeIncomplete) query.isOnboarded = true;
 
         if (role) query.role = role;
         if (status) query.status = status;

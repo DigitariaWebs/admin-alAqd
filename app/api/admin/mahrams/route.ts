@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
 
     const query: Record<string, unknown> = {
       gender: 'female',
+      isOnboarded: true,
       $or: [
         { 'mahram.phoneNumber': { $exists: true, $ne: null } },
         { 'mahram.email': { $exists: true, $ne: null } },
@@ -56,7 +57,7 @@ export async function GET(request: NextRequest) {
 
     // Stats
     const allMahramUsers = await User.aggregate([
-      { $match: { gender: 'female', $or: [{ 'mahram.phoneNumber': { $exists: true, $ne: null } }, { 'mahram.email': { $exists: true, $ne: null } }] } },
+      { $match: { gender: 'female', isOnboarded: true, $or: [{ 'mahram.phoneNumber': { $exists: true, $ne: null } }, { 'mahram.email': { $exists: true, $ne: null } }] } },
       { $group: { _id: '$mahram.relationship', count: { $sum: 1 } } },
     ]);
 

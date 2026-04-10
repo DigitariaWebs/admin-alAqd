@@ -159,9 +159,9 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Scheduled time must be in the future' }, { status: 400 });
         }
 
-        // Calculate target users for stats
+        // Calculate target users for stats — only count fully-onboarded users
         let totalRecipients = 0;
-        let recipientFilter: Record<string, unknown> = { status: 'active' };
+        let recipientFilter: Record<string, unknown> = { status: 'active', isOnboarded: true };
 
         if (targetAudience === 'premium') {
             recipientFilter['subscription.plan'] = { $in: ['premium', 'gold'] };
@@ -208,7 +208,7 @@ export async function POST(request: NextRequest) {
         // Send emails to target users
         if (sendNow && !isScheduled) {
             // Query target users with email addresses
-            const userQuery: Record<string, unknown> = { status: 'active', email: { $exists: true, $ne: null } };
+            const userQuery: Record<string, unknown> = { status: 'active', isOnboarded: true, email: { $exists: true, $ne: null } };
 
             if (targetAudience === 'premium') {
                 userQuery['subscription.plan'] = { $in: ['premium', 'gold'] };

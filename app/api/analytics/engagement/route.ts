@@ -55,23 +55,26 @@ export async function GET(request: NextRequest) {
             periodMatches
         ] = await Promise.all([
             // Total users
-            User.countDocuments({ role: 'user' }),
+            User.countDocuments({ role: 'user', isOnboarded: true }),
             
             // Active users in last 30 days
             User.countDocuments({
                 role: 'user',
+                isOnboarded: true,
                 lastActive: { $gte: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) }
             }),
             
             // Active users in last 7 days
             User.countDocuments({
                 role: 'user',
+                isOnboarded: true,
                 lastActive: { $gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) }
             }),
             
             // Active users today
             User.countDocuments({
                 role: 'user',
+                isOnboarded: true,
                 lastActive: { $gte: new Date(now.setHours(0, 0, 0, 0)) }
             }),
             
@@ -113,11 +116,13 @@ export async function GET(request: NextRequest) {
         // Conversion funnel
         const usersWithPhotos = await User.countDocuments({
             role: 'user',
+            isOnboarded: true,
             photos: { $exists: true, $ne: [] }
         });
-        
+
         const usersWithBio = await User.countDocuments({
             role: 'user',
+            isOnboarded: true,
             bio: { $exists: true, $ne: '' }
         });
 
@@ -133,7 +138,7 @@ export async function GET(request: NextRequest) {
         const engagementBySegment = await getEngagementBySegment(startDate);
 
         // Top active users
-        const topActiveUsers = await User.find({ role: 'user' })
+        const topActiveUsers = await User.find({ role: 'user', isOnboarded: true })
             .sort({ lastActive: -1 })
             .limit(10)
             .select('name email lastActive')
@@ -205,6 +210,7 @@ async function getDailyEngagement(startDate: Date, endDate: Date): Promise<Array
         const [activeUsers, messages, swipes, matches] = await Promise.all([
             User.countDocuments({
                 role: 'user',
+                isOnboarded: true,
                 lastActive: { $gte: dayStart, $lt: dayEnd }
             }),
             Message.countDocuments({
@@ -281,9 +287,10 @@ async function getEngagementBySegment(startDate: Date): Promise<Array<{
 
     // By gender
     const [maleUsers, maleActive] = await Promise.all([
-        User.countDocuments({ role: 'user', gender: 'male' }),
+        User.countDocuments({ role: 'user', isOnboarded: true, gender: 'male' }),
         User.countDocuments({
             role: 'user',
+            isOnboarded: true,
             gender: 'male',
             lastActive: { $gte: startDate }
         })
@@ -297,9 +304,10 @@ async function getEngagementBySegment(startDate: Date): Promise<Array<{
     });
 
     const [femaleUsers, femaleActive] = await Promise.all([
-        User.countDocuments({ role: 'user', gender: 'female' }),
+        User.countDocuments({ role: 'user', isOnboarded: true, gender: 'female' }),
         User.countDocuments({
             role: 'user',
+            isOnboarded: true,
             gender: 'female',
             lastActive: { $gte: startDate }
         })

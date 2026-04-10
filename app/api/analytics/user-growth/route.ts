@@ -45,23 +45,28 @@ export async function GET(request: NextRequest) {
                 const [newUsers, totalUsers, activeUsers, maleUsers, femaleUsers] = await Promise.all([
                     User.countDocuments({
                         role: 'user',
+                        isOnboarded: true,
                         createdAt: { $gte: dayStart, $lt: dayEnd }
                     }),
                     User.countDocuments({
                         role: 'user',
+                        isOnboarded: true,
                         createdAt: { $lt: dayEnd }
                     }),
                     User.countDocuments({
                         role: 'user',
+                        isOnboarded: true,
                         lastActive: { $gte: dayStart }
                     }),
                     User.countDocuments({
                         role: 'user',
+                        isOnboarded: true,
                         gender: 'male',
                         createdAt: { $lt: dayEnd }
                     }),
                     User.countDocuments({
                         role: 'user',
+                        isOnboarded: true,
                         gender: 'female',
                         createdAt: { $lt: dayEnd }
                     })
@@ -89,23 +94,28 @@ export async function GET(request: NextRequest) {
                 const [newUsers, totalUsers, activeUsers, maleUsers, femaleUsers] = await Promise.all([
                     User.countDocuments({
                         role: 'user',
+                        isOnboarded: true,
                         createdAt: { $gte: weekStart, $lt: weekEnd }
                     }),
                     User.countDocuments({
                         role: 'user',
+                        isOnboarded: true,
                         createdAt: { $lt: weekEnd }
                     }),
                     User.countDocuments({
                         role: 'user',
+                        isOnboarded: true,
                         lastActive: { $gte: weekStart }
                     }),
                     User.countDocuments({
                         role: 'user',
+                        isOnboarded: true,
                         gender: 'male',
                         createdAt: { $lt: weekEnd }
                     }),
                     User.countDocuments({
                         role: 'user',
+                        isOnboarded: true,
                         gender: 'female',
                         createdAt: { $lt: weekEnd }
                     })
@@ -129,23 +139,28 @@ export async function GET(request: NextRequest) {
                 const [newUsers, totalUsers, activeUsers, maleUsers, femaleUsers] = await Promise.all([
                     User.countDocuments({
                         role: 'user',
+                        isOnboarded: true,
                         createdAt: { $gte: monthStart, $lt: monthEnd }
                     }),
                     User.countDocuments({
                         role: 'user',
+                        isOnboarded: true,
                         createdAt: { $lt: monthEnd }
                     }),
                     User.countDocuments({
                         role: 'user',
+                        isOnboarded: true,
                         lastActive: { $gte: monthStart }
                     }),
                     User.countDocuments({
                         role: 'user',
+                        isOnboarded: true,
                         gender: 'male',
                         createdAt: { $lt: monthEnd }
                     }),
                     User.countDocuments({
                         role: 'user',
+                        isOnboarded: true,
                         gender: 'female',
                         createdAt: { $lt: monthEnd }
                     })
