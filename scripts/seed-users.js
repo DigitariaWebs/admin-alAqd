@@ -163,7 +163,7 @@ const ETHNICITIES = [
 ];
 const EDUCATION_LEVELS = ['highSchool', 'bachelors', 'masters', 'doctorate', 'trade', 'other'];
 const MARITAL_STATUSES = ['single', 'divorced', 'widowed'];
-const RELIGIOUS_PRACTICES = ['veryPracticing', 'practicing', 'moderate', 'nonPracticing'];
+const RELIGIOUS_PRACTICES = ["practicing", "moderate", "nonPracticing"];
 const FAITH_TAGS = ['prayer', 'fasting', 'zakat', 'hajj', 'quranReading', 'dhikr', 'charity', 'halalFood', 'mosqueAttendance', 'sunnah'];
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
