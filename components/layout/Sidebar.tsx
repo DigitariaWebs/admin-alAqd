@@ -16,6 +16,7 @@ import {
     Shield,
     ShieldCheck,
     Megaphone,
+    FileText,
 } from 'lucide-react';
 import { Assets } from '@/config/assets';
 
@@ -29,6 +30,7 @@ const MENU_ITEMS = [
     { name: 'Commandes', icon: ShoppingCart, path: '/orders' },
     { name: 'Analytique', icon: BarChart2, path: '/analytics' },
     { name: 'Notifications', icon: Bell, path: '/notifications' },
+    { name: 'Documents légaux', icon: FileText, path: '/legal' },
 ];
 
 export const Sidebar = () => {
