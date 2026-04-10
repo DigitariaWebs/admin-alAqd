@@ -42,7 +42,6 @@ export interface IUser {
 
   // Preferences
   preferences?: {
-    distance?: number;
     ageRange?: { min: number; max: number };
     religiousPractice?: string[];
     ethnicity?: string[];
@@ -143,7 +142,6 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
     callAuthorizedFor: [{ type: Schema.Types.ObjectId, ref: "User" }],
 
     preferences: {
-      distance: { type: Number, default: 500 },
       ageRange: {
         min: { type: Number, default: 18 },
         max: { type: Number, default: 60 },

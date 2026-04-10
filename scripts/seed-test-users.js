@@ -49,7 +49,6 @@ const userSchema = new mongoose.Schema(
         personality:      [String],
         photos:           [String],
         preferences: {
-            distance:          Number,
             ageRange:          { min: Number, max: Number },
             religiousPractice: [String],
         },
@@ -147,7 +146,6 @@ const MALE_USERS = [
       "https://images.unsplash.com/photo-1542178243-bc20204b769f?w=800",
     ],
     preferences: {
-      distance: 100,
       ageRange: { min: 20, max: 32 },
       religiousPractice: ["Practicing", "Moderate"],
     },
@@ -176,7 +174,6 @@ const MALE_USERS = [
       "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800",
     ],
     preferences: {
-      distance: 150,
       ageRange: { min: 22, max: 35 },
       religiousPractice: ["Practicing", "Moderate"],
     },
@@ -205,7 +202,6 @@ const MALE_USERS = [
       "https://images.unsplash.com/photo-1583864697784-a0efc8379f70?w=800",
     ],
     preferences: {
-      distance: 80,
       ageRange: { min: 23, max: 30 },
       religiousPractice: ["Practicing", "Moderate"],
     },
@@ -233,7 +229,6 @@ const MALE_USERS = [
       "https://images.unsplash.com/photo-1463453091185-61582044d556?w=800",
     ],
     preferences: {
-      distance: 200,
       ageRange: { min: 24, max: 36 },
       religiousPractice: ["Practicing", "Moderate"],
     },
@@ -261,7 +256,6 @@ const MALE_USERS = [
       "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=800",
     ],
     preferences: {
-      distance: 300,
       ageRange: { min: 20, max: 28 },
       religiousPractice: ["Practicing", "Moderate"],
     },
@@ -289,7 +283,6 @@ const MALE_USERS = [
       "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=800",
     ],
     preferences: {
-      distance: 100,
       ageRange: { min: 22, max: 32 },
       religiousPractice: ["Practicing", "Moderate"],
     },
@@ -317,7 +310,6 @@ const MALE_USERS = [
       "https://images.unsplash.com/photo-1488161628813-04466f872be2?w=800",
     ],
     preferences: {
-      distance: 100,
       ageRange: { min: 22, max: 30 },
       religiousPractice: ["Practicing", "Moderate"],
     },
@@ -345,7 +337,6 @@ const MALE_USERS = [
       "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=800",
     ],
     preferences: {
-      distance: 80,
       ageRange: { min: 23, max: 33 },
       religiousPractice: ["Practicing", "Moderate"],
     },

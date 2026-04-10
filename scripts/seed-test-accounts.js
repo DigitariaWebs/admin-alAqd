@@ -43,7 +43,6 @@ const userSchema = new mongoose.Schema({
   photoBlurEnabled: { type: Boolean, default: true },
   unblurredFor: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   preferences: {
-    distance: Number,
     ageRange: { min: Number, max: Number },
     religiousPractice: [String],
     ethnicity: [String],
@@ -109,7 +108,6 @@ const TEST_ACCOUNTS = [
     unblurredFor: [],
     preferences: {
       ageRange: { min: 18, max: 60 },
-      distance: 500,
       religiousPractice: [],
       ethnicity: [],
       education: [],
@@ -161,7 +159,6 @@ const TEST_ACCOUNTS = [
     unblurredFor: [],
     preferences: {
       ageRange: { min: 18, max: 60 },
-      distance: 500,
       religiousPractice: [],
       ethnicity: [],
       education: [],

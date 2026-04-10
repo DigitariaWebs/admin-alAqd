@@ -6,7 +6,6 @@ import { requireAuth } from '@/lib/auth/middleware';
 // ─── Defaults ─────────────────────────────────────────────────────────────────
 
 export const DEFAULT_PREFERENCES = {
-    distance: 500,
     ageRange: { min: 18, max: 60 },
     religiousPractice: [] as string[],
     ethnicity: [] as string[],
@@ -28,7 +27,6 @@ function coerceArray(value: unknown): string[] {
 
 function withDefaults(prefs: any) {
     return {
-        distance:          prefs?.distance          ?? DEFAULT_PREFERENCES.distance,
         ageRange: {
             min: prefs?.ageRange?.min ?? DEFAULT_PREFERENCES.ageRange.min,
             max: prefs?.ageRange?.max ?? DEFAULT_PREFERENCES.ageRange.max,
@@ -78,7 +76,6 @@ export async function GET(request: NextRequest) {
  *
  * Body (all fields optional):
  * {
- *   distance?:          number          (1-500 km)
  *   ageRange?:          { min: number, max: number }
  *   religiousPractice?: string[]
  *   ethnicity?:         string[]
@@ -98,20 +95,12 @@ export async function PATCH(request: NextRequest) {
 
         const body = await request.json();
         const {
-            distance, ageRange,
+            ageRange,
             religiousPractice, ethnicity, education,
             children, smoking,
         } = body;
 
         const update: Record<string, unknown> = {};
-
-        if (distance !== undefined) {
-            const d = Number(distance);
-            if (isNaN(d) || d < 1 || d > 500) {
-                return NextResponse.json({ error: 'distance must be 1–500 km' }, { status: 400 });
-            }
-            update['preferences.distance'] = d;
-        }
 
         if (ageRange !== undefined) {
             const min = Number(ageRange.min);

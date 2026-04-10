@@ -50,7 +50,7 @@
 
 ## 6. User Preferences & Filters
 - [x] Get user preferences
-- [x] Update discovery preferences (distance, age range)
+- [x] Update discovery preferences (age range)
 - [x] Update advanced filters (religious practice, ethnicity, education, children, prayer, diet)
 - [x] Reset preferences to default
 

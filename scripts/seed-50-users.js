@@ -44,7 +44,6 @@ const userSchema = new mongoose.Schema(
     photos:            [String],
     preferences: {
       ageRange:          { min: Number, max: Number },
-      distance:          Number,
       religiousPractice: [String],
       ethnicity:         [String],
       education:         [String],
@@ -147,7 +146,6 @@ function buildUser(index, gender, name) {
     photos:            [`https://i.pravatar.cc/800?img=${avatarIdx}`],
     preferences: {
       ageRange:          { min: 18, max: 60 },
-      distance:          100,
       religiousPractice: [],
       ethnicity:         [],
       education:         [],
