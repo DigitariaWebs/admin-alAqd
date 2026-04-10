@@ -11,8 +11,20 @@ export const DEFAULT_PREFERENCES = {
     religiousPractice: [] as string[],
     ethnicity: [] as string[],
     education: [] as string[],
-    children: '',
+    children: [] as string[],
+    smoking: [] as string[],
 };
+
+/**
+ * Coerces a value that may be a legacy string ("", "wants") into the new
+ * array form. Older user records have `children` stored as a single string
+ * from before these fields were multi-select.
+ */
+function coerceArray(value: unknown): string[] {
+    if (Array.isArray(value)) return value as string[];
+    if (typeof value === 'string' && value.length > 0) return [value];
+    return [];
+}
 
 function withDefaults(prefs: any) {
     return {
@@ -24,7 +36,8 @@ function withDefaults(prefs: any) {
         religiousPractice: prefs?.religiousPractice ?? DEFAULT_PREFERENCES.religiousPractice,
         ethnicity:         prefs?.ethnicity         ?? DEFAULT_PREFERENCES.ethnicity,
         education:         prefs?.education         ?? DEFAULT_PREFERENCES.education,
-        children:          prefs?.children          ?? DEFAULT_PREFERENCES.children,
+        children:          coerceArray(prefs?.children),
+        smoking:           coerceArray(prefs?.smoking),
     };
 }
 
@@ -70,7 +83,8 @@ export async function GET(request: NextRequest) {
  *   religiousPractice?: string[]
  *   ethnicity?:         string[]
  *   education?:         string[]
- *   children?:          string
+ *   children?:          string[]
+ *   smoking?:           string[]
  * }
  */
 export async function PATCH(request: NextRequest) {
@@ -86,7 +100,7 @@ export async function PATCH(request: NextRequest) {
         const {
             distance, ageRange,
             religiousPractice, ethnicity, education,
-            children,
+            children, smoking,
         } = body;
 
         const update: Record<string, unknown> = {};
@@ -129,7 +143,19 @@ export async function PATCH(request: NextRequest) {
             update['preferences.education'] = education;
         }
 
-        if (children !== undefined) update['preferences.children'] = children;
+        if (children !== undefined) {
+            if (!Array.isArray(children)) {
+                return NextResponse.json({ error: 'children must be an array' }, { status: 400 });
+            }
+            update['preferences.children'] = children;
+        }
+
+        if (smoking !== undefined) {
+            if (!Array.isArray(smoking)) {
+                return NextResponse.json({ error: 'smoking must be an array' }, { status: 400 });
+            }
+            update['preferences.smoking'] = smoking;
+        }
 
         if (Object.keys(update).length === 0) {
             return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
