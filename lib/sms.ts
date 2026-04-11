@@ -15,15 +15,31 @@ function getClient() {
 }
 
 /**
- * Send a WhatsApp message via Twilio.
+ * Send a plain SMS message via Twilio.
+ *
+ * Configure one of these in your environment:
+ *   - TWILIO_MESSAGING_SERVICE_SID (preferred, starts with "MG...")
+ *     Handles sender pool, opt-outs (STOP/UNSTOP), and A2P 10DLC routing.
+ *   - TWILIO_PHONE_NUMBER (e.g. "+14155551234")
+ *     A Twilio-owned SMS-capable phone number used as the sender.
+ *
+ * If both are set, TWILIO_MESSAGING_SERVICE_SID wins.
  */
 export async function sendSMS(to: string, body: string) {
-    const whatsappFrom = `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER!}`;
-    const whatsappTo = `whatsapp:${to}`;
+    const messagingServiceSid = process.env.TWILIO_MESSAGING_SERVICE_SID;
+    const fromNumber = process.env.TWILIO_PHONE_NUMBER;
+
+    if (!messagingServiceSid && !fromNumber) {
+        throw new Error(
+            'Twilio sender is not configured. Set TWILIO_MESSAGING_SERVICE_SID or TWILIO_PHONE_NUMBER in .env',
+        );
+    }
 
     await getClient().messages.create({
-        to: whatsappTo,
-        from: whatsappFrom,
+        to,
         body,
+        ...(messagingServiceSid
+            ? { messagingServiceSid }
+            : { from: fromNumber! }),
     });
 }
