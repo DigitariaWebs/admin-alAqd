@@ -13,6 +13,27 @@ function generateOrderNumber(): string {
     return `ORD-${timestamp}${random}`;
 }
 
+// Stripe API 2025-08-27.basil moved current_period_start/end from the subscription
+// root onto each item. Read from whichever location is populated.
+function getPeriod(sub: any): { startDate: Date; endDate: Date } {
+    const start = sub.current_period_start ?? sub.items?.data?.[0]?.current_period_start;
+    const end = sub.current_period_end ?? sub.items?.data?.[0]?.current_period_end;
+    return {
+        startDate: new Date(start * 1000),
+        endDate: new Date(end * 1000),
+    };
+}
+
+// Read subscription ID from an invoice across API versions.
+function getInvoiceSubscriptionId(invoice: any): string | null {
+    return (
+        invoice.subscription ||
+        invoice.parent?.subscription_details?.subscription ||
+        invoice.lines?.data?.[0]?.subscription ||
+        null
+    );
+}
+
 // Helper to generate transaction number
 function generateTransactionNumber(): string {
     const timestamp = Date.now().toString(36).toUpperCase();
@@ -81,8 +102,7 @@ export async function POST(request: NextRequest) {
                 const stripeSubId = session.subscription as string;
                 const stripeSub = await stripe.subscriptions.retrieve(stripeSubId);
 
-                const startDate = new Date((stripeSub as any).current_period_start * 1000);
-                const endDate = new Date((stripeSub as any).current_period_end * 1000);
+                const { startDate, endDate } = getPeriod(stripeSub);
 
                 // Update user subscription
                 await User.findByIdAndUpdate(userId, {
@@ -150,13 +170,42 @@ export async function POST(request: NextRequest) {
                 break;
             }
 
+            // ── Subscription created (fires reliably on checkout) ─────────
+            case 'customer.subscription.created': {
+                const stripeSub = event.data.object as Stripe.Subscription;
+                const userId = stripeSub.metadata?.userId;
+                const planId = stripeSub.metadata?.planId as PlanId | undefined;
+                if (!userId || !planId) break;
+
+                const plan = PLAN_MAP.get(planId);
+                if (!plan) break;
+
+                const { startDate, endDate } = getPeriod(stripeSub);
+
+                await User.findByIdAndUpdate(userId, {
+                    $set: {
+                        stripeSubscriptionId: stripeSub.id,
+                        subscription: {
+                            plan: plan.tier,
+                            isActive: true,
+                            startDate,
+                            endDate,
+                            cancelledAt: undefined,
+                        },
+                    },
+                });
+
+                console.log(`✅  Stripe: subscription.created activated for user ${userId} — plan ${planId}`);
+                break;
+            }
+
             // ── Subscription updated (renewal / downgrade / cancel) ───────
             case 'customer.subscription.updated': {
                 const stripeSub = event.data.object as Stripe.Subscription;
                 const userId    = stripeSub.metadata?.userId;
                 if (!userId) break;
 
-                const endDate    = new Date((stripeSub as any).current_period_end * 1000);
+                const { endDate } = getPeriod(stripeSub);
                 const isCancelled = stripeSub.cancel_at_period_end;
 
                 await User.findByIdAndUpdate(userId, {
@@ -211,19 +260,19 @@ export async function POST(request: NextRequest) {
                 const invoice = event.data.object as Stripe.Invoice;
                 const customerId = invoice.customer as string;
 
-                const user = await User.findOne({ stripeCustomerId: customerId }).select('_id name email').lean();
+                const user = await User.findOne({ stripeCustomerId: customerId }).select('_id name email stripeSubscriptionId').lean();
                 if (!user) break;
 
                 // Get subscription info
-                const subscriptionId = invoice.subscription as string;
+                const subscriptionId = getInvoiceSubscriptionId(invoice);
+                if (!subscriptionId) break;
                 const stripeSub = await stripe.subscriptions.retrieve(subscriptionId);
                 const planId = (stripeSub as any).metadata?.planId as PlanId | undefined;
                 const plan: SubscriptionPlan | undefined = planId ? PLAN_MAP.get(planId) : undefined;
 
                 if (!plan) break;
 
-                const startDate = new Date((stripeSub as any).current_period_start * 1000);
-                const endDate = new Date((stripeSub as any).current_period_end * 1000);
+                const { startDate, endDate } = getPeriod(stripeSub);
 
                 // Check if this is the first payment (subscription activation) or a renewal
                 const isFirstPayment = !user.stripeSubscriptionId || user.stripeSubscriptionId !== subscriptionId;
