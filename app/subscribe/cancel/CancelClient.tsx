@@ -15,13 +15,13 @@ export default function CancelClient() {
 
     return (
         <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-6 text-center">
-            <h1 className="mb-2 text-2xl font-bold text-[#6B5B3A]">Payment cancelled</h1>
+            <h1 className="mb-2 text-2xl font-bold text-[#6B5B3A]">Paiement annulé</h1>
             <p className="text-sm text-[#8B7744]">
-                No charge was made. Returning you to the app…
+                Aucun montant n&apos;a été débité. Retour vers l&apos;application…
             </p>
             {fallback && (
                 <p className="mt-6 text-xs text-neutral-500">
-                    You can close this tab and try again from the app.
+                    Vous pouvez fermer cet onglet et réessayer depuis l&apos;application.
                 </p>
             )}
         </main>

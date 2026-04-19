@@ -55,12 +55,12 @@ export default function SubscribeClient({ token, plans, initialPlanId, firstName
                 </div>
                 {firstName && (
                     <p className="mb-1 text-sm font-medium text-[#A8893A]">
-                        Hello, {firstName} 👋
+                        Bonjour, {firstName} 👋
                     </p>
                 )}
                 <h1 className="text-2xl font-bold text-[#6B5B3A]">Al-Aqd Gold</h1>
                 <p className="mt-2 text-sm text-[#8B7744]">
-                    Unlock unlimited swipes and an ad-free experience.
+                    Profils illimités et une expérience sans publicité.
                 </p>
             </header>
 
@@ -84,13 +84,13 @@ export default function SubscribeClient({ token, plans, initialPlanId, firstName
                             ) : null}
                             <div className="text-[10px] font-bold uppercase tracking-wide text-[#6B5B3A]">
                                 {p.durationMonths === 1
-                                    ? '1 month'
-                                    : `${p.durationMonths} months`}
+                                    ? '1 mois'
+                                    : `${p.durationMonths} mois`}
                             </div>
                             <div className="mt-2 text-lg font-bold text-[#2A1B0F]">
                                 {p.pricePerMonthLabel}
                             </div>
-                            <div className="text-[10px] text-[#8B7744]">/ month</div>
+                            <div className="text-[10px] text-[#8B7744]">/ mois</div>
                         </button>
                     );
                 })}
@@ -98,11 +98,11 @@ export default function SubscribeClient({ token, plans, initialPlanId, firstName
 
             <div className="mb-6 rounded-xl bg-white px-4 py-3 text-sm shadow-sm ring-1 ring-neutral-200">
                 <div className="flex items-center justify-between">
-                    <span className="text-[#6B5B3A]">Total today</span>
+                    <span className="text-[#6B5B3A]">Total aujourd&apos;hui</span>
                     <span className="font-bold text-[#2A1B0F]">{selected.priceLabel}</span>
                 </div>
                 <p className="mt-1 text-[11px] text-neutral-500">
-                    Auto-renewal · Cancel anytime in the app
+                    Renouvellement automatique · Annulable à tout moment depuis l&apos;appli
                 </p>
             </div>
 
@@ -117,12 +117,12 @@ export default function SubscribeClient({ token, plans, initialPlanId, firstName
                 disabled={loading}
                 className="rounded-2xl bg-gradient-to-r from-[#C5A55A] to-[#A8893A] py-4 text-base font-bold text-white shadow-md transition disabled:opacity-60"
             >
-                {loading ? 'Opening secure checkout…' : `Pay ${selected.priceLabel}`}
+                {loading ? 'Ouverture du paiement sécurisé…' : `Payer ${selected.priceLabel}`}
             </button>
 
             <p className="mt-4 text-center text-[11px] text-neutral-400">
-                Secure payment powered by Stripe. You&apos;ll return to the app
-                automatically after payment.
+                Paiement sécurisé par Stripe. Vous serez redirigé automatiquement
+                vers l&apos;application après le paiement.
             </p>
         </main>
     );
