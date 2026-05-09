@@ -13,16 +13,17 @@ export async function POST(request: NextRequest) {
     await connectDB();
 
     const body = await request.json();
-    const { email } = body;
+    const { phone } = body;
 
-    if (!email) {
-      return NextResponse.json({ error: 'Email required' }, { status: 400 });
+    if (!phone) {
+      return NextResponse.json({ error: 'Phone required' }, { status: 400 });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const normalized = phone.replace(/\s+/g, '');
+    const user = await User.findOne({ phoneNumber: { $regex: normalized.replace('+', '\\+'), $options: 'i' } });
 
     if (!user) {
-      return NextResponse.json({ error: `No user found with email: ${email}` }, { status: 404 });
+      return NextResponse.json({ error: `No user found with phone: ${phone}` }, { status: 404 });
     }
 
     const tokenPayload = {
