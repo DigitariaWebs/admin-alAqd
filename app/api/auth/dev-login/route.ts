@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongodb';
 import { User } from '@/lib/db/models/User';
 import { generateAccessToken, generateRefreshToken, storeRefreshToken } from '@/lib/auth/jwt';
+import { buildPhoneDigitsRegex, normalizePhoneNumber } from '@/lib/auth/phone-utils';
 
 export async function POST(request: NextRequest) {
   const secret = request.headers.get('x-dev-secret');
@@ -19,11 +20,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Phone required' }, { status: 400 });
     }
 
-    const normalized = phone.replace(/\s+/g, '');
-    const user = await User.findOne({ phoneNumber: { $regex: normalized.replace('+', '\\+'), $options: 'i' } });
+    const normalized = normalizePhoneNumber(phone);
+    let user = await User.findOne({ phoneNumber: normalized });
 
     if (!user) {
-      return NextResponse.json({ error: `No user found with phone: ${phone}` }, { status: 404 });
+      const flexible = buildPhoneDigitsRegex(normalized);
+      user = await User.findOne({ phoneNumber: flexible });
+    }
+
+    if (!user) {
+      return NextResponse.json({ error: `No user found with phone: ${phone} (normalized: ${normalized})` }, { status: 404 });
     }
 
     const tokenPayload = {
