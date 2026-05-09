@@ -4,7 +4,8 @@ import { User } from '@/lib/db/models/User';
 import { generateAccessToken, generateRefreshToken, storeRefreshToken } from '@/lib/auth/jwt';
 
 export async function POST(request: NextRequest) {
-  if (process.env.NODE_ENV === 'production') {
+  const secret = request.headers.get('x-dev-secret');
+  if (!process.env.DEV_LOGIN_SECRET || secret !== process.env.DEV_LOGIN_SECRET) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
